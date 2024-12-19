@@ -1,0 +1,15 @@
+[Unit]
+Description=Moonclock Panel
+After=network.target
+Wants=network.target
+[Service]
+User=root
+Group=root
+Type=simple
+Restart=always
+RestartSec=5
+TimeoutStopSec=600
+WorkingDirectory=/usr/local/bin/hardware-client/my-app
+ExecStart=sudo /usr/local/bin/node --experimental-strip-types panel.ts --brightness 30
+[Install]
+WantedBy=default.target
