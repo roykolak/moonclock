@@ -124,7 +124,11 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
             return open();
           }
 
-          setSelectedScene(scenes.find(({ name }) => name === value));
+          const newSelectedScene = scenes.find(({ name }) => name === value);
+
+          if (newSelectedScene) {
+            setSelectedScene(newSelectedScene);
+          }
         }}
       />
       <Modal title="New scene" opened={opened} onClose={close}>
