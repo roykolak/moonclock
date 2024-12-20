@@ -8,8 +8,8 @@
     "app:build": "next build",
     "app:start": "next start -p 80",
     "lint": "next lint",
-    "hardware-client:dev": "npx tsx panel.ts --brightness 30 --emulate true",
-    "hardware-client": "npx tsx panel.ts --brightness 30"
+    "hardware-client:dev": "tsx panel.ts --brightness 30 --emulate true",
+    "hardware-client": "tsx panel.ts --brightness 30"
   },
   "dependencies": {
     "@mantine/core": "^7.15.1",
