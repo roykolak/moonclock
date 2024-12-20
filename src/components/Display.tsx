@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { createCanvas } from "canvas";
 import { Scene } from "../types";
 
 const dimensions = { height: 32, width: 32 };
@@ -16,8 +15,12 @@ export default function Display({ scene }: DisplayProps) {
       return setImageData(null);
     }
 
-    const canvas = createCanvas(dimensions.width, dimensions.height);
+    const canvas = document.createElement("canvas");
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
     const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
 
     for (const coordinate in scene.coordinates) {
       ctx.fillStyle = scene.coordinates[coordinate];
