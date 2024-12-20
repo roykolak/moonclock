@@ -9,7 +9,7 @@ Type=simple
 Restart=always
 RestartSec=5
 TimeoutStopSec=600
-WorkingDirectory=/usr/local/bin/hardware-client/my-app
+WorkingDirectory=/usr/local/bin/moonclock
 ExecStart=sudo npm run start
 [Install]
 WantedBy=default.target
