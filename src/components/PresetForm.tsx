@@ -1,6 +1,5 @@
 "use client";
 
-import "@mantine/core/styles.css";
 import {
   Button,
   Group,
@@ -11,9 +10,19 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { Preset, SceneData } from "./types";
+import { Preset, Scene } from "../types";
 import { useForm } from "@mantine/form";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import Display from "./Display";
+
+interface PresetFormProps {
+  opened: boolean;
+  showName?: boolean;
+  onClose: () => void;
+  onSubmit: (values: Preset) => void;
+  scenes: Scene[];
+  preset: Preset | null;
+}
 
 export function PresetForm({
   opened,
@@ -22,19 +31,12 @@ export function PresetForm({
   preset,
   onSubmit,
   showName = true,
-}: {
-  opened: boolean;
-  showName?: boolean;
-  onClose: () => void;
-  onSubmit: (values: Preset) => void;
-  scenes: SceneData[];
-  preset: Preset | null;
-}) {
-  const form = useForm<Partial<Preset>>({
-    mode: "uncontrolled",
+}: PresetFormProps) {
+  const form = useForm<Preset>({
     initialValues: {
       mode: "forever",
       name: "",
+      sceneName: scenes[0].name,
       end: {
         hour: 0,
         day: 0,
@@ -43,17 +45,9 @@ export function PresetForm({
     },
   });
 
-  const [showModeInputs, setShowModeInputs] = useState(false);
-
   useEffect(() => {
-    const presetValues = preset || { mode: "forever" };
-    form.setValues(presetValues);
-    setShowModeInputs(presetValues?.mode !== "forever");
-  }, [preset?.name, opened]);
-
-  form.watch("mode", ({ value }) => {
-    setShowModeInputs(value !== "forever");
-  });
+    if (preset) form.setValues(preset);
+  }, [JSON.stringify(preset)]);
 
   return (
     <Modal
@@ -96,6 +90,9 @@ export function PresetForm({
             key={form.key("scene")}
             {...form.getInputProps("scene")}
           />
+          <Display
+            scene={scenes.find((s) => s.name === form.values.sceneName)}
+          />
           <SegmentedControl
             fullWidth
             data={["forever", "offset", "until"]}
@@ -103,7 +100,7 @@ export function PresetForm({
             {...form.getInputProps("mode")}
           />
 
-          {showModeInputs && (
+          {form.values.mode !== "forever" && (
             <Group>
               <NumberInput
                 placeholder=""

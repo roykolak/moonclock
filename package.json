@@ -2,11 +2,14 @@
   "name": "moonclock",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 80",
-    "lint": "next lint"
+    "lint": "next lint",
+    "hardware-client:dev": "npx tsx panel.ts --brightness 30 --emulate true",
+    "hardware-client": "npx tsx panel.ts --brightness 30"
   },
   "dependencies": {
     "@bigdots-io/display-engine": "^0.14.7",
@@ -30,6 +33,7 @@
     "postcss": "^8.4.49",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   },
   "overrides": {

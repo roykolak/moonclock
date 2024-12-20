@@ -1,16 +1,15 @@
-import "@mantine/core/styles.css";
-import App from "../../App";
-import { getAllSceneData, getPanel, getPresets } from "../../server/actions";
-import Panel from "../../Panel";
+import App from "../../components/App";
+import { getActiveSlot, getScenes, getPresets } from "../../server/actions";
+import Panel from "../../components/Panel";
 
 export default async function Home() {
-  const panel = await getPanel();
-  const scenes = await getAllSceneData();
+  const activeSlot = await getActiveSlot();
+  const scenes = await getScenes();
   const presets = await getPresets();
 
   return (
     <App>
-      <Panel panel={panel} scenes={scenes} presets={presets} />
+      <Panel activeSlot={activeSlot} scenes={scenes} presets={presets} />
     </App>
   );
 }

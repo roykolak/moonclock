@@ -1,14 +1,13 @@
-import "@mantine/core/styles.css";
-import App from "../../App";
-import { getAllSceneData } from "../../server/actions";
+import App from "../../components/App";
+import { getScenes } from "../../server/actions";
 import { Editor } from "./Editor";
 
 export default async function Composer() {
-  const allSceneData = await getAllSceneData();
+  const scenes = await getScenes();
 
   return (
     <App>
-      <Editor allSceneData={allSceneData} />
+      <Editor scenes={scenes} />
     </App>
   );
 }

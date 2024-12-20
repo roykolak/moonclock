@@ -1,5 +1,5 @@
-import { Preset, Slot } from "../types";
 import fs from "fs";
+import { DataTypes } from "../types";
 
 function loadPersistedData(): Partial<DataTypes> {
   try {
@@ -7,11 +7,11 @@ function loadPersistedData(): Partial<DataTypes> {
     return JSON.parse(file);
   } catch {
     return {
-      [DataKey.ActiveSlot]: null,
-      [DataKey.Presets]: [
+      activeSlot: null,
+      presets: [
         {
           name: "Sleep Mode",
-          scene: "moon",
+          sceneName: "moon",
           mode: "until",
           end: {
             hour: 7,
@@ -24,23 +24,14 @@ function loadPersistedData(): Partial<DataTypes> {
   }
 }
 
-export enum DataKey {
-  ActiveSlot = "activeSlot",
-  Presets = "presets",
-}
-
-export interface DataTypes {
-  activeSlot: Slot | null;
-  presets: Preset[];
-}
-
-export function get<K extends DataKey>(key: K): DataTypes[K] {
+export function get<T>(key: keyof DataTypes): T {
   const db = loadPersistedData();
   return JSON.parse(JSON.stringify(db[key]));
 }
 
-export function set<K extends DataKey>(key: K, value: DataTypes[K]) {
+export function set<T>(key: keyof DataTypes, value: T) {
   const db = loadPersistedData();
+
   if (JSON.stringify(db[key]) === JSON.stringify(value)) {
     return;
   }

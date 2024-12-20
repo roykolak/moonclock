@@ -1,13 +1,15 @@
-import type { Macro, SceneName } from "@bigdots-io/display-engine";
+export interface DataTypes {
+  activeSlot: Slot | null;
+  presets: Preset[];
+}
 
 export interface Panel {
   activeSlot: Slot | null;
-  macros: Macro[];
 }
 
 export interface Slot {
   endTime: string | null;
-  scene: SceneName;
+  sceneName: string;
 }
 
 export interface Time {
@@ -17,7 +19,7 @@ export interface Time {
 
 export interface Preset {
   name: string;
-  scene: SceneName;
+  sceneName: string;
   mode: "offset" | "until" | "forever";
   end: {
     hour: number;
@@ -26,7 +28,11 @@ export interface Preset {
   };
 }
 
-export interface SceneData {
-  name: SceneName;
-  coordinates: { [k: string]: string };
+export interface Scene {
+  name: string;
+  coordinates: Coordinates;
+}
+
+export interface Coordinates {
+  [k: string]: string;
 }

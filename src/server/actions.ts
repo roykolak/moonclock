@@ -1,40 +1,45 @@
 "use server";
 
-import { coordinates, SceneName } from "@bigdots-io/display-engine";
 import fs from "fs";
 import { revalidatePath } from "next/cache";
-import { Panel, Preset, Slot } from "../types";
-import { DataKey, get, set } from "./db";
+import { Preset, Scene, Slot } from "../types";
+import { get, set } from "./db";
 
-export async function getPanel(): Promise<Panel> {
-  const activeSlot = get(DataKey.ActiveSlot);
-
-  return {
-    activeSlot,
-    macros: [
-      coordinates({
-        coordinates: await getSceneData(activeSlot?.scene || "nothing"),
-      }),
-    ],
-  };
-}
-
-export async function getPresets() {
-  return get(DataKey.Presets);
+export async function getActiveSlot() {
+  return get<Slot>("activeSlot");
 }
 
 export async function setActiveSlot(slot: Slot | null) {
-  set(DataKey.ActiveSlot, slot);
+  set("activeSlot", slot);
   revalidatePath("/");
+}
+
+export async function getPresets() {
+  return get<Preset[]>("presets");
 }
 
 export async function setPresets(presets: Preset[]) {
-  set(DataKey.Presets, presets);
+  set("presets", presets);
   revalidatePath("/");
 }
 
+export async function setScene({ name, coordinates }: Scene) {
+  const fileName = `./scenes/${name}.json`;
+  fs.writeFileSync(fileName, JSON.stringify(coordinates, null, 2));
+}
+
+export async function getScenes(): Promise<Scene[]> {
+  return fs.readdirSync("./scenes").map((file) => {
+    const name = file.split(".")[0];
+    const coordinates = JSON.parse(
+      fs.readFileSync(`./scenes/${name}.json`).toString()
+    );
+    return { name, coordinates };
+  });
+}
+
 export async function changeEndTime(minuteChange: number) {
-  const activeSlot = get(DataKey.ActiveSlot);
+  const activeSlot = await getActiveSlot();
 
   if (!activeSlot) {
     return revalidatePath("/");
@@ -47,30 +52,7 @@ export async function changeEndTime(minuteChange: number) {
 
   activeSlot.endTime = newEnd.toJSON();
 
-  set(DataKey.ActiveSlot, activeSlot);
+  await setActiveSlot(activeSlot);
 
   revalidatePath("/");
-}
-
-export async function getSceneData(name: string) {
-  const file = fs.readFileSync(`./scenes/${name}.json`).toString();
-  return JSON.parse(file);
-}
-
-export async function setSceneData(
-  name: string,
-  coordinates: { [k: string]: string }
-) {
-  const fileName = `./scenes/${name}.json`;
-  fs.writeFileSync(fileName, JSON.stringify(coordinates, null, 2));
-}
-
-export async function getAllSceneData() {
-  return fs.readdirSync("./scenes").map((file) => {
-    const name = file.split(".")[0] as SceneName;
-    const coordinates = JSON.parse(
-      fs.readFileSync(`./scenes/${name}.json`).toString()
-    );
-    return { name, coordinates };
-  });
 }

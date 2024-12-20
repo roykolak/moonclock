@@ -11,23 +11,23 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { changeEndTime, setActiveSlot } from "./server/actions";
+import { changeEndTime, setActiveSlot } from "../server/actions";
 import Display from "./Display";
-import { Panel as PanelType, Preset, SceneData } from "./types";
+import { Preset, Scene, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
-import { getEndDate } from "./PresetsList";
+import { getEndDate } from "../utils";
 import { PresetForm } from "./PresetForm";
 
-export default function Panel({
-  panel,
-  scenes,
-  presets,
-}: {
-  panel: PanelType;
+interface PanelProps {
+  activeSlot: Slot;
   presets: Preset[];
-  scenes: SceneData[];
-}) {
+  scenes: Scene[];
+}
+
+export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
   const [editOpened, editHandlers] = useDisclosure();
+
+  const scene = scenes.find(({ name }) => name === activeSlot?.sceneName);
 
   return (
     <>
@@ -41,7 +41,7 @@ export default function Panel({
           const endDate = getEndDate(values);
 
           setActiveSlot({
-            scene: values.scene,
+            sceneName: values.sceneName,
             endTime: endDate ? endDate.toJSON() : null,
           });
         }}
@@ -50,7 +50,7 @@ export default function Panel({
         <Card.Section withBorder inheritPadding py="xs">
           <Group justify="space-between">
             <Text fw={700}>Winnie&apos;s Room</Text>
-            {panel.activeSlot && (
+            {activeSlot && (
               <Button
                 variant="light"
                 color="red"
@@ -66,11 +66,8 @@ export default function Panel({
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <Display
-              layers={panel.macros}
-              dimensions={{ height: 32, width: 32 }}
-            />
-            {!panel.activeSlot && (
+            <Display scene={scene} />
+            {!activeSlot && (
               <Stack
                 style={{
                   position: "absolute",
@@ -88,7 +85,7 @@ export default function Panel({
                       const endDate = getEndDate(preset);
                       setActiveSlot({
                         endTime: endDate?.toJSON() || null,
-                        scene: preset.scene,
+                        sceneName: preset.sceneName,
                       });
                     }}
                   >
@@ -108,12 +105,12 @@ export default function Panel({
             )}
           </div>
 
-          {panel.activeSlot && (
+          {activeSlot && (
             <Flex p="lg">
               <Box>
                 <Stack gap={4}>
                   <Center>
-                    <Text>Showing {panel.activeSlot.scene} until...</Text>
+                    <Text>Showing {activeSlot.sceneName} until...</Text>
                   </Center>
                   <Badge
                     color="gray"
@@ -128,14 +125,11 @@ export default function Panel({
                       label: { color: "#CCC" },
                     }}
                   >
-                    {panel.activeSlot.endTime
-                      ? new Date(panel.activeSlot.endTime).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
+                    {activeSlot.endTime
+                      ? new Date(activeSlot.endTime).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : "forever"}
                   </Badge>
                 </Stack>
@@ -145,14 +139,14 @@ export default function Panel({
                 <Stack gap={8}>
                   <Button
                     variant="filled"
-                    disabled={panel.activeSlot.endTime === null}
+                    disabled={activeSlot.endTime === null}
                     onClick={() => changeEndTime(5)}
                   >
                     +5 min
                   </Button>
                   <Button
                     variant="filled"
-                    disabled={panel.activeSlot.endTime === null}
+                    disabled={activeSlot.endTime === null}
                     onClick={() => changeEndTime(-5)}
                   >
                     -5 min

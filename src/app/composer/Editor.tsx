@@ -13,7 +13,8 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import Display from "./display";
-import { setSceneData } from "../server/actions";
+import { Scene } from "@/types";
+import { setScene } from "@/server/actions";
 
 function Color({
   color,
@@ -86,14 +87,8 @@ function Palette({
   );
 }
 
-export function Editor({
-  allSceneData,
-}: {
-  allSceneData: { name: string; coordinates: { [k: string]: string } }[];
-}) {
-  const scenes = allSceneData.map(({ name }) => name);
-
-  const [scene, setScene] = useState(scenes[0]);
+export function Editor({ scenes }: { scenes: Scene[] }) {
+  const [selectedScene, setSelectedScene] = useState(scenes[0]);
 
   const [activeColor, setActiveColor] = useState(null);
   const [matrix, setMatrix] = useState({});
@@ -106,10 +101,9 @@ export function Editor({
   });
 
   useEffect(() => {
-    const selectedScene = allSceneData.find(({ name }) => name === scene);
     if (!selectedScene) return;
     setMatrix(selectedScene.coordinates);
-  }, [scene, JSON.stringify(allSceneData[scene])]);
+  }, [selectedScene]);
 
   return (
     <Stack>
@@ -117,26 +111,28 @@ export function Editor({
         placeholder="Select a scene..."
         variant="filled"
         style={{ flex: 1 }}
-        value={scene}
+        value={selectedScene.name}
         data={[
           { label: "New scene", value: "new-scene" },
-          ...scenes?.map((scene: any) => ({
-            label: scene,
-            value: scene,
+          ...scenes?.map(({ name }) => ({
+            label: name,
+            value: name,
           })),
         ]}
         onChange={(value) => {
           if (value === "new-scene") {
             return open();
           }
-          setScene(value as string);
+
+          setSelectedScene(scenes.find(({ name }) => name === value));
         }}
       />
       <Modal title="New scene" opened={opened} onClose={close}>
         <form
           onSubmit={form.onSubmit(async ({ name }) => {
-            await setSceneData(name, {});
-            setScene(name);
+            const newScene = { name, coordinates: {} };
+            await setScene(newScene);
+            setSelectedScene(newScene);
             close();
           })}
         >
@@ -151,7 +147,7 @@ export function Editor({
         </form>
       </Modal>
 
-      {matrix && scene && (
+      {matrix && selectedScene && (
         <>
           <Flex>
             <Palette
@@ -161,7 +157,7 @@ export function Editor({
             />
             <Button
               onClick={() => {
-                setSceneData(scene, matrix);
+                setScene({ name: selectedScene.name, coordinates: matrix });
               }}
             >
               Save

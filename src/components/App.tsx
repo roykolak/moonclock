@@ -1,6 +1,5 @@
 "use client";
 
-import "@mantine/core/styles.css";
 import { AppShell, Burger, Group, NavLink } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";

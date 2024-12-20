@@ -10,6 +10,6 @@ Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/hardware-client/my-app
-ExecStart=sudo /usr/local/bin/node --experimental-strip-types panel.ts --brightness 30
+ExecStart=sudo npm run hardware-client
 [Install]
 WantedBy=default.target

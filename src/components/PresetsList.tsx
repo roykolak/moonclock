@@ -1,41 +1,21 @@
 "use client";
 
-import "@mantine/core/styles.css";
 import { Box, Button, Card, Flex, Group, Stack, Text } from "@mantine/core";
-import { Preset, SceneData } from "./types";
+import { Preset, Scene } from "../types";
 import { useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import Display from "./Display";
-import { coordinates } from "@bigdots-io/display-engine";
-import { setPresets } from "./server/actions";
+import { setPresets } from "../server/actions";
 import { IconTrash } from "@tabler/icons-react";
 import { PresetForm } from "./PresetForm";
+import { getEndDate } from "@/utils";
 
-export function getEndDate(preset: Preset) {
-  if (preset.mode === "forever") {
-    return null;
-  }
-
-  const endDate = new Date();
-
-  if (preset.mode === "until") {
-    endDate.setDate(endDate.getDate() + preset.end.day);
-    endDate.setHours(preset.end.hour, preset.end.minute, 0, 0);
-  } else if (preset.mode === "offset") {
-    endDate.setHours(endDate.getHours() + preset.end.hour);
-    endDate.setMinutes(endDate.getMinutes() + preset.end.minute);
-  }
-
-  return endDate;
+interface PresetsListProps {
+  presets: Preset[];
+  scenes: Scene[];
 }
 
-export function PresetsList({
-  presets,
-  scenes,
-}: {
-  presets: Preset[];
-  scenes: SceneData[];
-}) {
+export function PresetsList({ presets, scenes }: PresetsListProps) {
   const [selectedPresetIndex, setSelectedPresetIndex] = useState<number | null>(
     null
   );
@@ -66,34 +46,19 @@ export function PresetsList({
       />
       <Stack>
         {presets.map((preset, i) => {
-          const endDate = getEndDate(preset);
+          const scene = scenes.find(({ name }) => name === preset.sceneName);
+
           return (
             <Card key={preset.name} padding="xs">
               <Group justify="space-between">
                 <Flex align="center" gap="sm">
                   <Box w="46">
-                    <Display
-                      layers={[
-                        coordinates({
-                          coordinates: scenes.find(
-                            ({ name }) => name === preset.scene
-                          )?.coordinates,
-                        }),
-                      ]}
-                      dimensions={{ height: 32, width: 32 }}
-                    />
+                    <Display scene={scene} />
                   </Box>
                   <Box>
                     <Text fw="bold">{preset.name}</Text>
                     <Text size="sm" c="dimmed">
-                      {preset.mode === "until" &&
-                        `Until ${endDate?.toLocaleTimeString([], {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}`}
-                      {preset.mode === "offset" &&
-                        `For ${preset.end.hour} hours`}
-                      {preset.mode === "forever" && `Forever`}
+                      <FriendlyEndTime preset={preset} />
                     </Text>
                   </Box>
                 </Flex>
@@ -140,4 +105,23 @@ export function PresetsList({
       </Button>
     </>
   );
+}
+
+function FriendlyEndTime({ preset }: { preset: Preset }) {
+  const endDate = getEndDate(preset);
+
+  if (preset.mode === "until") {
+    return `Until ${endDate?.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    })}`;
+  }
+
+  if (preset.mode === "offset") {
+    return `For ${preset.end.hour} hours`;
+  }
+
+  if (preset.mode === "forever") {
+    return `Forever`;
+  }
 }

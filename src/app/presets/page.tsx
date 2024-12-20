@@ -1,11 +1,10 @@
-import "@mantine/core/styles.css";
-import App from "../../App";
-import { getAllSceneData, getPresets } from "../../server/actions";
-import { PresetsList } from "../../PresetsList";
+import App from "../../components/App";
+import { getScenes, getPresets } from "../../server/actions";
+import { PresetsList } from "../../components/PresetsList";
 
 export default async function Presets() {
   const presets = await getPresets();
-  const scenes = await getAllSceneData();
+  const scenes = await getScenes();
 
   return (
     <App>

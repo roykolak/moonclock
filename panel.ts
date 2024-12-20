@@ -1,8 +1,13 @@
-import { coordinates, createDisplayEngine } from "@bigdots-io/display-engine";
-import type { Pixel } from "@bigdots-io/display-engine";
-import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import fs from "fs";
+import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
+import { Coordinates, Slot } from "./src/types";
+import { get, set } from "./src/server/db";
+
+export async function getSceneCoordinates(name: string) {
+  const file = fs.readFileSync(`./scenes/${name}.json`).toString();
+  return JSON.parse(file) as Coordinates;
+}
 
 const program = new Command();
 
@@ -20,33 +25,7 @@ program.parse(process.argv);
 
 const options = program.opts();
 
-function getSceneData(name: string) {
-  if (!name) return {};
-  const file = fs.readFileSync(`./scenes/${name}.json`).toString();
-  return JSON.parse(file);
-}
-
-function getDatabase() {
-  const file = fs.readFileSync(`./database.json`).toString();
-  return JSON.parse(file);
-}
-
-function setDatabase(data: any) {
-  fs.writeFileSync("database.json", JSON.stringify(data, null, 2));
-}
-
-function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
-  const hexValues = [...rgba]
-    .filter((_number, index) => !forceRemoveAlpha || index !== 3)
-    .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
-    .map((number) => number.toString(16));
-
-  return hexValues
-    .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
-    .join("");
-}
-
-const updateQueue: Pixel[][] = [];
+const updateQueue: Coordinates[] = [];
 
 if (!options.emulate) {
   const matrix = new LedMatrix(
@@ -66,71 +45,52 @@ if (!options.emulate) {
     if (options.debug && updateQueue.length > 0) {
       console.log("Queue:", updateQueue.length);
     }
-    const pixelUpdates = updateQueue.shift();
-    if (pixelUpdates) {
-      for (const pixel of pixelUpdates) {
-        matrix
-          .brightness(parseInt(options.brightness, 10))
-          .fgColor(
-            parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
-          )
-          .setPixel(pixel.x, pixel.y);
-      }
+    const coordinates = updateQueue.shift();
+
+    for (const coordinate in coordinates) {
+      const [x, y] = coordinate.split(":");
+      matrix
+        .brightness(parseInt(options.brightness, 10))
+        .fgColor(parseInt(coordinates[coordinate], 16))
+        .setPixel(parseInt(x, 10), parseInt(y, 10));
     }
+
     setTimeout(() => matrix.sync(), 0);
   });
   matrix.sync();
 }
 
-const engine = createDisplayEngine({
-  dimensions: {
-    width: 32,
-    height: 32,
-  },
-  onPixelsChange: (pixels) => {
-    updateQueue.push(pixels);
-  },
-});
+let currentActiveSlot: Slot | null = null;
 
-let currentActiveSlot: any = null;
-
-setInterval(() => {
+setInterval(async () => {
   try {
-    const database = getDatabase();
-    const { activeSlot } = database;
+    const activeSlot = await get<Slot>("activeSlot");
 
     if (
       activeSlot?.endTime !== null &&
       new Date().getTime() > new Date(activeSlot?.endTime).getTime()
     ) {
-      database.activeSlot = null;
-      return setDatabase(database);
+      console.log(`[CLEAR] ${activeSlot.sceneName} has expired`);
+      return await set("activeSlot", null);
     }
 
-    const activeSlotScene = activeSlot?.scene || "nothing";
+    const activeSceneName = activeSlot?.sceneName || "nothing";
+    const currentSceneName = currentActiveSlot?.sceneName || "nothing";
 
-    const slotToActivateSceneData = getSceneData(activeSlotScene);
-
-    const currentActiveSlotSceneData = getSceneData(
-      currentActiveSlot?.scene || "nothing"
-    );
+    const activeCoordinates = await getSceneCoordinates(activeSceneName);
+    const currentCoordinates = await getSceneCoordinates(currentSceneName);
 
     if (
-      JSON.stringify(currentActiveSlotSceneData) !==
-      JSON.stringify(slotToActivateSceneData)
+      JSON.stringify(currentCoordinates) !== JSON.stringify(activeCoordinates)
     ) {
       console.log(
-        `[UPDATE] Rerendering ${activeSlotScene} until ${activeSlot?.endTime}`
+        `[UPDATE] Rerendering ${activeSceneName} until ${activeSlot?.endTime}`
       );
 
-      engine?.render([
-        coordinates({
-          coordinates: slotToActivateSceneData,
-        }),
-      ]);
+      updateQueue.push(activeCoordinates);
     } else if (currentActiveSlot?.endTime !== activeSlot?.endTime) {
       console.log(
-        `[UPDATE] ${activeSlotScene} endTime changed to ${activeSlot.endTime}`
+        `[UPDATE] ${activeSceneName} endTime changed to ${activeSlot.endTime}`
       );
     }
 
