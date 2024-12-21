@@ -5,7 +5,8 @@ function loadPersistedData(): Partial<DataTypes> {
   try {
     const file = fs.readFileSync(`./database.json`).toString();
     return JSON.parse(file);
-  } catch {
+  } catch (e) {
+    console.log("Error loading db, falling back. ", e);
     return {
       activeSlot: null,
       presets: [
@@ -16,7 +17,7 @@ function loadPersistedData(): Partial<DataTypes> {
           end: {
             hour: 7,
             minute: 0,
-            day: 0,
+            day: 1,
           },
         },
       ],

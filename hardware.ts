@@ -28,6 +28,7 @@ const options = program.opts();
 const updateQueue: Coordinates[] = [];
 
 if (!options.emulate) {
+  console.log("Starting Hardware...");
   const matrix = new LedMatrix(
     {
       ...LedMatrix.defaultMatrixOptions(),
@@ -49,18 +50,29 @@ if (!options.emulate) {
 
     for (const coordinate in coordinates) {
       const [x, y] = coordinate.split(":");
+      const hex = coordinates[coordinate]?.replace("#", "") || "000000";
       matrix
         .brightness(parseInt(options.brightness, 10))
-        .fgColor(parseInt(coordinates[coordinate], 16))
+        .fgColor(parseInt(hex, 16))
         .setPixel(parseInt(x, 10), parseInt(y, 10));
     }
 
     setTimeout(() => matrix.sync(), 0);
   });
   matrix.sync();
+} else {
+  console.log("Skipping hardware...");
 }
 
 let currentActiveSlot: Slot | null = null;
+
+const resetCoordinates: Coordinates = {};
+
+for (let x = 0; x < 32; x++) {
+  for (let y = 0; y < 32; y++) {
+    resetCoordinates[`${x}:${y}`] = "#000000";
+  }
+}
 
 setInterval(async () => {
   try {
@@ -87,6 +99,7 @@ setInterval(async () => {
         `[UPDATE] Rerendering ${activeSceneName} until ${activeSlot?.endTime}`
       );
 
+      updateQueue.push(resetCoordinates);
       updateQueue.push(activeCoordinates);
     } else if (currentActiveSlot?.endTime !== activeSlot?.endTime) {
       console.log(

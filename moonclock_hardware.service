@@ -1,5 +1,5 @@
 [Unit]
-Description=Moonclock Panel
+Description=Moonclock Hardware
 After=network.target
 Wants=network.target
 [Service]
@@ -10,6 +10,6 @@ Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=sudo npm run hardware-client
+ExecStart=sudo npm run hardware
 [Install]
 WantedBy=default.target

@@ -46,6 +46,7 @@ export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
           });
         }}
       />
+
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Card.Section withBorder inheritPadding py="xs">
           <Group justify="space-between">
@@ -67,6 +68,7 @@ export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
         <Card.Section>
           <div style={{ position: "relative" }}>
             <Display scene={scene} />
+
             {!activeSlot && (
               <Stack
                 style={{

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Box,
   Button,
   Group,
   Modal,
@@ -77,22 +78,26 @@ export function PresetForm({
               {...form.getInputProps("name")}
             />
           )}
-          <Select
-            placeholder="Scene"
-            variant="filled"
-            style={{ flex: 1 }}
-            label="Scene name"
-            data={scenes?.map(({ name }) => ({
-              label: name,
-              value: name,
-            }))}
-            required
-            key={form.key("scene")}
-            {...form.getInputProps("scene")}
-          />
-          <Display
-            scene={scenes.find((s) => s.name === form.values.sceneName)}
-          />
+          <Group>
+            <Select
+              placeholder="Scene"
+              variant="filled"
+              style={{ flex: 1 }}
+              label="Scene name"
+              data={scenes?.map(({ name }) => ({
+                label: name,
+                value: name,
+              }))}
+              required
+              key={form.key("sceneName")}
+              {...form.getInputProps("sceneName")}
+            />
+            <Box w="36" mt={24}>
+              <Display
+                scene={scenes.find((s) => s.name === form.values.sceneName)}
+              />
+            </Box>
+          </Group>
           <SegmentedControl
             fullWidth
             data={["forever", "offset", "until"]}
@@ -129,6 +134,7 @@ export function PresetForm({
               />
             </Group>
           )}
+
           <Button type="submit" mt="lg">
             Save
           </Button>
