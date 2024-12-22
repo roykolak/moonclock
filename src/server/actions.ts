@@ -11,7 +11,7 @@ export async function getActiveSlot() {
 
 export async function setActiveSlot(slot: Slot | null) {
   set("activeSlot", slot);
-  revalidatePath("/");
+  revalidatePath("/panel");
 }
 
 export async function getPresets() {
@@ -20,7 +20,7 @@ export async function getPresets() {
 
 export async function setPresets(presets: Preset[]) {
   set("presets", presets);
-  revalidatePath("/");
+  revalidatePath("/panel");
 }
 
 export async function setScene({ name, coordinates }: Scene) {
@@ -42,7 +42,7 @@ export async function changeEndTime(minuteChange: number) {
   const activeSlot = await getActiveSlot();
 
   if (!activeSlot) {
-    return revalidatePath("/");
+    return revalidatePath("/panel");
   }
 
   if (activeSlot.endTime === null) return;
@@ -54,5 +54,5 @@ export async function changeEndTime(minuteChange: number) {
 
   await setActiveSlot(activeSlot);
 
-  revalidatePath("/");
+  revalidatePath("/panel");
 }
