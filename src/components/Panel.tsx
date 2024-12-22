@@ -20,7 +20,7 @@ import { PresetForm } from "./PresetForm";
 import { useEffect, useState } from "react";
 
 interface PanelProps {
-  activeSlot: Slot;
+  activeSlot: Slot | null;
   presets: Preset[];
   scenes: Scene[];
 }
@@ -31,7 +31,7 @@ export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
 
   useEffect(() => {
     setEndTime(
-      activeSlot.endTime
+      activeSlot?.endTime
         ? new Date(activeSlot.endTime).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
