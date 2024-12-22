@@ -38,7 +38,7 @@ export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
           })
         : "forever"
     );
-  }, []);
+  }, [JSON.stringify(activeSlot)]);
 
   const scene = scenes.find(({ name }) => name === activeSlot?.sceneName);
 

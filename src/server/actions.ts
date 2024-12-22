@@ -53,6 +53,4 @@ export async function changeEndTime(minuteChange: number) {
   activeSlot.endTime = newEnd.toJSON();
 
   await setActiveSlot(activeSlot);
-
-  revalidatePath("/panel");
 }
