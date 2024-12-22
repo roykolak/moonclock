@@ -17,6 +17,7 @@ import { Preset, Scene, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { getEndDate } from "../utils";
 import { PresetForm } from "./PresetForm";
+import { useEffect, useState } from "react";
 
 interface PanelProps {
   activeSlot: Slot;
@@ -26,6 +27,18 @@ interface PanelProps {
 
 export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
   const [editOpened, editHandlers] = useDisclosure();
+  const [endTime, setEndTime] = useState<string>();
+
+  useEffect(() => {
+    setEndTime(
+      activeSlot.endTime
+        ? new Date(activeSlot.endTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "forever"
+    );
+  }, []);
 
   const scene = scenes.find(({ name }) => name === activeSlot?.sceneName);
 
@@ -127,12 +140,7 @@ export default function Panel({ activeSlot, scenes, presets }: PanelProps) {
                       label: { color: "#CCC" },
                     }}
                   >
-                    {activeSlot.endTime
-                      ? new Date(activeSlot.endTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "forever"}
+                    {endTime}
                   </Badge>
                 </Stack>
               </Box>
