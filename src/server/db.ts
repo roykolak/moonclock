@@ -14,11 +14,10 @@ function loadPersistedData(): Partial<DataTypes> {
           name: "Sleep Mode",
           sceneName: "moon",
           mode: "until",
-          end: {
-            hour: 7,
-            minute: 0,
-            day: 1,
-          },
+          untilDay: "1",
+          untilHour: "7",
+          untilMinute: "0",
+          forTime: "",
         },
       ],
     };

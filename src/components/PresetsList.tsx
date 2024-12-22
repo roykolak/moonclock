@@ -108,20 +108,30 @@ export function PresetsList({ presets, scenes }: PresetsListProps) {
 }
 
 function FriendlyEndTime({ preset }: { preset: Preset }) {
-  const endDate = getEndDate(preset);
+  const { mode } = preset;
 
-  if (preset.mode === "until") {
+  if (mode === "until") {
+    const endDate = getEndDate(preset);
     return `Until ${endDate?.toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit",
-    })}`;
+    })} tomorrow`;
   }
 
-  if (preset.mode === "offset") {
-    return `For ${preset.end.hour} hours`;
-  }
-
-  if (preset.mode === "forever") {
-    return `Forever`;
+  if (mode === "for") {
+    console.log(preset);
+    const [hour, minute] = preset.forTime.split(":");
+    if (hour === "0" && minute === "0") {
+      return "Forever";
+    }
+    if (hour === "0") {
+      return `For ${minute} minutes`;
+    } else {
+      if (minute === "0") {
+        return `For ${hour} hours`;
+      } else {
+        return `For ${hour} hours & ${minute} mins`;
+      }
+    }
   }
 }

@@ -20,12 +20,11 @@ export interface Time {
 export interface Preset {
   name: string;
   sceneName: string;
-  mode: "offset" | "until" | "forever";
-  end: {
-    hour: number;
-    day: number;
-    minute: number;
-  };
+  mode: "for" | "until";
+  untilDay: string;
+  untilHour: string;
+  untilMinute: string;
+  forTime: string;
 }
 
 export interface Scene {
