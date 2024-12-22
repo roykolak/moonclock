@@ -6,10 +6,12 @@
   "scripts": {
     "app:dev": "next dev",
     "app:build": "next build",
-    "app:start": "next start -p 80",
+    "app": "next start -p 80",
     "lint": "next lint",
     "hardware:dev": "tsx hardware.ts --brightness 30 --emulate true",
-    "hardware": "tsx hardware.ts --brightness 30"
+    "hardware": "tsx hardware.ts --brightness 30",
+    "start:dev": "concurrently \"npm run app:dev\" \"npm run hardware:dev\"",
+    "start": "concurrently \"npm run app\" \"npm run hardware\""
   },
   "dependencies": {
     "@mantine/core": "^7.15.1",
@@ -26,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "concurrently": "^9.1.0",
     "eslint": "^8",
     "eslint-config-next": "15.0.4",
     "postcss": "^8.4.49",
