@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { Preset, Scene } from "../types";
 import { useForm } from "@mantine/form";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Display from "./Display";
 
 interface PresetFormProps {
@@ -34,14 +34,13 @@ export function PresetForm({
   onSubmit,
   showName = true,
 }: PresetFormProps) {
-  const ref = useRef<HTMLInputElement>(null);
   const form = useForm<Preset>({
     initialValues: {
       mode: "for",
       name: "",
       sceneName: scenes[0].name,
       untilMinute: "0",
-      untilDay: "0",
+      untilDay: "0git",
       untilHour: "0",
       forTime: "0:0",
     },
