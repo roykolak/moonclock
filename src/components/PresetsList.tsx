@@ -2,64 +2,32 @@
 
 import { Button, Stack } from "@mantine/core";
 import { Preset, Scene } from "../types";
-import { useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import { setPresets } from "../server/actions";
-import { PresetForm } from "./PresetForm";
 import { PresetItem } from "./PresetItem";
+import Link from "next/link";
 
 interface PresetsListProps {
   presets: Preset[];
   scenes: Scene[];
+  formattedEndTimes: string[];
 }
 
-export function PresetsList({ presets, scenes }: PresetsListProps) {
-  const [selectedPresetIndex, setSelectedPresetIndex] = useState<number | null>(
-    null
-  );
-  const [editOpened, editHandlers] = useDisclosure();
-
+export function PresetsList({
+  presets,
+  scenes,
+  formattedEndTimes,
+}: PresetsListProps) {
   return (
     <>
-      <PresetForm
-        opened={editOpened}
-        preset={
-          selectedPresetIndex === null ? null : presets[selectedPresetIndex]
-        }
-        scenes={scenes}
-        onSubmit={(values) => {
-          const newPresets = [...presets];
-
-          if (selectedPresetIndex === null) {
-            newPresets.push(values);
-          } else {
-            newPresets[selectedPresetIndex as number] = values;
-          }
-          setPresets(newPresets);
-        }}
-        onClose={() => {
-          editHandlers.close();
-          setSelectedPresetIndex(null);
-        }}
-      />
       <Stack>
         {presets.map((preset, i) => (
           <PresetItem
             key={i}
             preset={preset}
             index={i}
+            formattedEndTime={formattedEndTimes[i]}
             scene={
               scenes.find(({ name }) => name === preset.sceneName) as Scene
             }
-            handleDelete={(i) => {
-              const newPresets = [...presets];
-              newPresets.splice(i, 1);
-              setPresets(newPresets);
-            }}
-            handleEdit={(i) => {
-              setSelectedPresetIndex(i);
-              editHandlers.open();
-            }}
           />
         ))}
       </Stack>
@@ -68,10 +36,8 @@ export function PresetsList({ presets, scenes }: PresetsListProps) {
         fullWidth
         mt="lg"
         size="md"
-        onClick={() => {
-          setSelectedPresetIndex(null);
-          editHandlers.open();
-        }}
+        component={Link}
+        href={`/presets/new`}
       >
         New Preset
       </Button>

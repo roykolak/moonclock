@@ -16,24 +16,24 @@ import { Preset, Scene } from "../types";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import Display from "./Display";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { setActiveSlot, setPresets } from "@/server/actions";
+import { getEndDate } from "@/utils";
+import { IconTrash } from "@tabler/icons-react";
 
 interface PresetFormProps {
-  opened: boolean;
   showName?: boolean;
-  onClose: () => void;
-  onSubmit: (values: Preset) => void;
+  id?: number;
   scenes: Scene[];
-  preset: Preset | null;
+  presets: Preset[];
 }
 
-export function PresetForm({
-  opened,
-  onClose,
-  scenes,
-  preset,
-  onSubmit,
-  showName = true,
-}: PresetFormProps) {
+export function PresetForm({ scenes, presets, id }: PresetFormProps) {
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const isSettingActiveSlot = searchParams.get("setActiveSlot");
+
   const form = useForm<Preset>({
     initialValues: {
       mode: "for",
@@ -47,27 +47,48 @@ export function PresetForm({
   });
 
   useEffect(() => {
-    if (preset) form.setValues(preset);
-  }, [JSON.stringify(preset)]);
+    if (editting) form.setValues(presets[id]);
+  }, [id]);
+
+  const editting = id !== null && id !== undefined;
 
   return (
     <Modal
-      opened={opened}
+      opened={true}
       onClose={() => {
         form.reset();
-        onClose();
+        router.back();
       }}
-      title={preset ? "Edit Preset" : "New Preset"}
+      title={editting ? "Edit Preset" : "New Preset"}
     >
       <form
         onSubmit={form.onSubmit((values) => {
-          onSubmit(values as Preset);
-          form.reset();
-          onClose();
+          if (isSettingActiveSlot) {
+            const endDate = getEndDate(values);
+
+            setActiveSlot({
+              sceneName: values.sceneName,
+              endTime: endDate ? endDate.toJSON() : null,
+            });
+
+            return redirect("/panel");
+          }
+
+          const newPresets = [...presets];
+
+          if (!id) {
+            newPresets.push(values);
+          } else {
+            newPresets[id] = values;
+          }
+
+          setPresets(newPresets);
+
+          redirect("/presets");
         })}
       >
         <Stack>
-          {showName && (
+          {!isSettingActiveSlot && (
             <TextInput
               placeholder=""
               variant="filled"
@@ -158,9 +179,26 @@ export function PresetForm({
             </>
           )}
 
-          <Button type="submit" mt="lg">
-            Save
-          </Button>
+          <Flex gap="sm" mt="lg">
+            {editting && (
+              <Button
+                color="red"
+                variant="light"
+                onClick={() => {
+                  const newPresets = [...presets];
+                  newPresets.splice(id, 1);
+                  setPresets(newPresets);
+
+                  redirect("/presets");
+                }}
+              >
+                <IconTrash size="20" />
+              </Button>
+            )}
+            <Button type="submit" fullWidth>
+              Save
+            </Button>
+          </Flex>
         </Stack>
       </form>
     </Modal>
