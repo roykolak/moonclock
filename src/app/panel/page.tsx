@@ -9,9 +9,25 @@ export default async function Home() {
   const scenes = await getScenes();
   const presets = await getPresets();
 
+  let formattedEndTime = null;
+
+  if (activeSlot) {
+    formattedEndTime = activeSlot.endTime
+      ? new Date(activeSlot.endTime).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "forever";
+  }
+
   return (
     <App>
-      <Panel activeSlot={activeSlot} scenes={scenes} presets={presets} />
+      <Panel
+        activeSlot={activeSlot}
+        formattedEndTime={formattedEndTime || null}
+        scenes={scenes}
+        presets={presets}
+      />
     </App>
   );
 }
