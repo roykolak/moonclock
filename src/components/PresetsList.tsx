@@ -1,14 +1,12 @@
 "use client";
 
-import { Box, Button, Card, Flex, Group, Stack, Text } from "@mantine/core";
+import { Button, Stack } from "@mantine/core";
 import { Preset, Scene } from "../types";
 import { useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import Display from "./Display";
 import { setPresets } from "../server/actions";
-import { IconTrash } from "@tabler/icons-react";
 import { PresetForm } from "./PresetForm";
-import { getEndDate } from "@/utils";
+import { PresetItem } from "./PresetItem";
 
 interface PresetsListProps {
   presets: Preset[];
@@ -45,51 +43,25 @@ export function PresetsList({ presets, scenes }: PresetsListProps) {
         }}
       />
       <Stack>
-        {presets.map((preset, i) => {
-          const scene = scenes.find(({ name }) => name === preset.sceneName);
-
-          return (
-            <Card key={preset.name} padding="xs">
-              <Group justify="space-between">
-                <Flex align="center" gap="sm">
-                  <Box w="46">
-                    <Display scene={scene} />
-                  </Box>
-                  <Box>
-                    <Text fw="bold">{preset.name}</Text>
-                    <Text size="sm" c="dimmed">
-                      <FriendlyEndTime preset={preset} />
-                    </Text>
-                  </Box>
-                </Flex>
-                <Flex align="center" gap="xs">
-                  <Button
-                    size="compact-xs"
-                    color="red"
-                    variant="transparent"
-                    onClick={() => {
-                      const newPresets = [...presets];
-                      newPresets.splice(i, 1);
-                      setPresets(newPresets);
-                    }}
-                  >
-                    <IconTrash size="20" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    onClick={() => {
-                      setSelectedPresetIndex(i);
-                      editHandlers.open();
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </Flex>
-              </Group>
-            </Card>
-          );
-        })}
+        {presets.map((preset, i) => (
+          <PresetItem
+            key={i}
+            preset={preset}
+            index={i}
+            scene={
+              scenes.find(({ name }) => name === preset.sceneName) as Scene
+            }
+            handleDelete={(i) => {
+              const newPresets = [...presets];
+              newPresets.splice(i, 1);
+              setPresets(newPresets);
+            }}
+            handleEdit={(i) => {
+              setSelectedPresetIndex(i);
+              editHandlers.open();
+            }}
+          />
+        ))}
       </Stack>
       <Button
         variant="light"
@@ -105,33 +77,4 @@ export function PresetsList({ presets, scenes }: PresetsListProps) {
       </Button>
     </>
   );
-}
-
-function FriendlyEndTime({ preset }: { preset: Preset }) {
-  const { mode } = preset;
-
-  if (mode === "until") {
-    const endDate = getEndDate(preset);
-    return `Until ${endDate?.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    })} tomorrow`;
-  }
-
-  if (mode === "for") {
-    console.log(preset);
-    const [hour, minute] = preset.forTime.split(":");
-    if (hour === "0" && minute === "0") {
-      return "Forever";
-    }
-    if (hour === "0") {
-      return `For ${minute} minutes`;
-    } else {
-      if (minute === "0") {
-        return `For ${hour} hours`;
-      } else {
-        return `For ${hour} hours & ${minute} mins`;
-      }
-    }
-  }
 }

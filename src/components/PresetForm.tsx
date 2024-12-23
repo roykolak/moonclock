@@ -46,8 +46,6 @@ export function PresetForm({
     },
   });
 
-  console.log(preset);
-
   useEffect(() => {
     if (preset) form.setValues(preset);
   }, [JSON.stringify(preset)]);

@@ -20,7 +20,7 @@ export async function getPresets() {
 
 export async function setPresets(presets: Preset[]) {
   set("presets", presets);
-  revalidatePath("/panel");
+  revalidatePath("/presets");
 }
 
 export async function setScene({ name, coordinates }: Scene) {
