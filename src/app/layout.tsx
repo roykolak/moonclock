@@ -1,10 +1,12 @@
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import {
   ColorSchemeScript,
   createTheme,
   mantineHtmlProps,
   MantineProvider,
 } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 
 export default function RootLayout({
   children,
@@ -27,6 +29,7 @@ export default function RootLayout({
             primaryColor: "cyan",
           })}
         >
+          <Notifications />
           {children}
         </MantineProvider>
       </body>

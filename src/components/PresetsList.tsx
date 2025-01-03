@@ -1,9 +1,13 @@
 "use client";
 
-import { Button, Stack } from "@mantine/core";
+import { Button, Modal, Stack } from "@mantine/core";
 import { Preset, Scene } from "../types";
 import { PresetItem } from "./PresetItem";
-import Link from "next/link";
+import { useDisclosure } from "@mantine/hooks";
+import { PresetForm } from "./PresetForm";
+import { useState } from "react";
+import { showNotification } from "@mantine/notifications";
+import { setPresets } from "@/server/actions";
 
 interface PresetsListProps {
   presets: Preset[];
@@ -16,8 +20,53 @@ export function PresetsList({
   scenes,
   formattedEndTimes,
 }: PresetsListProps) {
+  const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
+  const [presetModalOpen, presetModalHandlers] = useDisclosure();
+
   return (
     <>
+      <Modal
+        title="Custom Preset"
+        opened={presetModalOpen}
+        onClose={() => {
+          presetModalHandlers.close();
+          setSelectedPresetId(null);
+        }}
+      >
+        <PresetForm
+          presets={presets}
+          scenes={scenes}
+          id={selectedPresetId}
+          onDelete={() => {
+            if (selectedPresetId === null) return;
+
+            const newPresets = [...presets];
+            newPresets.splice(selectedPresetId, 1);
+            setPresets(newPresets);
+
+            showNotification({ message: "Removed preset!" });
+
+            setSelectedPresetId(null);
+            presetModalHandlers.close();
+          }}
+          onSubmit={(values) => {
+            const newPresets = [...presets];
+
+            if (selectedPresetId !== null) {
+              newPresets[selectedPresetId] = values;
+              showNotification({ message: "Successfully updated preset!" });
+            } else {
+              newPresets.push(values);
+              showNotification({ message: "Successfully created preset!" });
+            }
+
+            setPresets(newPresets);
+
+            setSelectedPresetId(null);
+            presetModalHandlers.close();
+          }}
+        />
+      </Modal>
       <Stack>
         {presets.map((preset, i) => (
           <PresetItem
@@ -28,6 +77,10 @@ export function PresetsList({
             scene={
               scenes.find(({ name }) => name === preset.sceneName) as Scene
             }
+            onClick={(index) => {
+              setSelectedPresetId(index);
+              presetModalHandlers.open();
+            }}
           />
         ))}
       </Stack>
@@ -36,8 +89,7 @@ export function PresetsList({
         fullWidth
         mt="lg"
         size="md"
-        component={Link}
-        href={`/presets/new`}
+        onClick={presetModalHandlers.open}
       >
         New Preset
       </Button>

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
-import { Coordinates, Slot } from "./src/types";
+import { Coordinates, HeartBeat, Slot } from "./src/types";
 import { get, set } from "./src/server/db";
 
 export async function getSceneCoordinates(name: string) {
@@ -64,7 +64,7 @@ if (!options.emulate) {
   console.log("Skipping hardware...");
 }
 
-let currentActiveSlot: Slot | null = null;
+let currentSlot: Slot | null = null;
 
 const resetCoordinates: Coordinates = {};
 
@@ -75,19 +75,30 @@ for (let x = 0; x < 32; x++) {
 }
 
 setInterval(async () => {
+  const now = new Date().toJSON();
+
+  const heartBeat = await get<HeartBeat>("heartBeat");
+  heartBeat.lastCheckedAt = now;
+
   try {
-    const activeSlot = await get<Slot>("activeSlot");
+    const slot = await get<Slot>("slot");
 
     if (
-      activeSlot?.endTime !== null &&
-      new Date().getTime() > new Date(activeSlot?.endTime).getTime()
+      slot?.endTime !== null &&
+      new Date().getTime() > new Date(slot?.endTime).getTime()
     ) {
-      console.log(`[CLEAR] ${activeSlot.sceneName} has expired`);
-      return await set("activeSlot", null);
+      console.log(`[CLEAR] ${slot.sceneName} has expired`);
+
+      heartBeat.lastUpdatedAt = now;
+
+      await set("heartBeat", heartBeat);
+      await set("slot", null);
+
+      return;
     }
 
-    const activeSceneName = activeSlot?.sceneName || "nothing";
-    const currentSceneName = currentActiveSlot?.sceneName || "nothing";
+    const activeSceneName = slot?.sceneName || "nothing";
+    const currentSceneName = currentSlot?.sceneName || "nothing";
 
     const activeCoordinates = await getSceneCoordinates(activeSceneName);
     const currentCoordinates = await getSceneCoordinates(currentSceneName);
@@ -96,18 +107,23 @@ setInterval(async () => {
       JSON.stringify(currentCoordinates) !== JSON.stringify(activeCoordinates)
     ) {
       console.log(
-        `[UPDATE] Rerendering ${activeSceneName} until ${activeSlot?.endTime}`
+        `[UPDATE] Rerendering ${activeSceneName} until ${slot?.endTime}`
       );
+
+      heartBeat.lastUpdatedAt = now;
 
       updateQueue.push(resetCoordinates);
       updateQueue.push(activeCoordinates);
-    } else if (currentActiveSlot?.endTime !== activeSlot?.endTime) {
+    } else if (currentSlot?.endTime !== slot?.endTime) {
       console.log(
-        `[UPDATE] ${activeSceneName} endTime changed to ${activeSlot.endTime}`
+        `[UPDATE] ${activeSceneName} endTime changed to ${slot.endTime}`
       );
+      heartBeat.lastUpdatedAt = now;
     }
 
-    currentActiveSlot = activeSlot;
+    set("heartBeat", heartBeat);
+
+    currentSlot = slot;
   } catch (e) {
     console.log("Error!", e);
   }

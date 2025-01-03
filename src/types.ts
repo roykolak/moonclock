@@ -1,6 +1,12 @@
 export interface DataTypes {
-  activeSlot: Slot | null;
+  slot: Slot | null;
+  heartBeat: HeartBeat | null;
   presets: Preset[];
+}
+
+export interface HeartBeat {
+  lastUpdatedAt: string | null;
+  lastCheckedAt: string | null;
 }
 
 export interface Panel {
@@ -17,14 +23,24 @@ export interface Time {
   minute: number;
 }
 
+export enum PresetField {
+  Name = "name",
+  SceneName = "sceneName",
+  Mode = "mode",
+  UntilDay = "untilDay",
+  UntilHour = "untilHour",
+  UntilMinute = "untilMinute",
+  ForTime = "forTime",
+}
+
 export interface Preset {
-  name: string;
-  sceneName: string;
-  mode: "for" | "until";
-  untilDay: string;
-  untilHour: string;
-  untilMinute: string;
-  forTime: string;
+  [PresetField.Name]: string;
+  [PresetField.SceneName]: string;
+  [PresetField.Mode]: "for" | "until";
+  [PresetField.UntilDay]: string;
+  [PresetField.UntilHour]: string;
+  [PresetField.UntilMinute]: string;
+  [PresetField.ForTime]: string;
 }
 
 export interface Scene {

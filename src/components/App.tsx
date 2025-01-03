@@ -1,6 +1,6 @@
 "use client";
 
-import { AppShell, Burger, Group, NavLink } from "@mantine/core";
+import { AppShell, Burger, Group, NavLink, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 
@@ -24,16 +24,21 @@ function App({ children }: { children: React.ReactNode }) {
             onClick={toggleNav}
             hiddenFrom="sm"
             size="sm"
+            data-testid="app-menu"
           />
-          <div>Moon Clock</div>
+          <Text flex={1}>Moon Clock</Text>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
         <NavLink component={Link} href="/" label="Panel" />
-        <NavLink component={Link} href="/presets" label="Presets" />
+        <NavLink
+          component={Link}
+          href="/presets"
+          label="Presets"
+          data-testid="nav-presets"
+        />
         <NavLink component={Link} href="/composer" label="Composer" />
       </AppShell.Navbar>
-
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
   );

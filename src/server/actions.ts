@@ -2,20 +2,24 @@
 
 import fs from "fs";
 import { revalidatePath } from "next/cache";
-import { Preset, Scene, Slot } from "../types";
+import { HeartBeat, Preset, Scene, Slot } from "../types";
 import { get, set } from "./db";
 
-export async function getActiveSlot() {
-  return get<Slot>("activeSlot");
+export async function getSlot() {
+  return get<Slot>("slot");
 }
 
-export async function setActiveSlot(slot: Slot | null) {
-  set("activeSlot", slot);
+export async function setSlot(slot: Slot | null) {
+  set("slot", slot);
   revalidatePath("/panel");
 }
 
 export async function getPresets() {
   return get<Preset[]>("presets");
+}
+
+export async function getHeartBeat() {
+  return get<HeartBeat>("heartBeat");
 }
 
 export async function setPresets(presets: Preset[]) {
@@ -39,18 +43,18 @@ export async function getScenes(): Promise<Scene[]> {
 }
 
 export async function changeEndTime(minuteChange: number) {
-  const activeSlot = await getActiveSlot();
+  const slot = await getSlot();
 
-  if (!activeSlot) {
+  if (!slot) {
     return revalidatePath("/panel");
   }
 
-  if (activeSlot.endTime === null) return;
+  if (slot.endTime === null) return;
 
-  const newEnd = new Date(activeSlot.endTime);
+  const newEnd = new Date(slot.endTime);
   newEnd.setMinutes(newEnd.getMinutes() + minuteChange);
 
-  activeSlot.endTime = newEnd.toJSON();
+  slot.endTime = newEnd.toJSON();
 
-  await setActiveSlot(activeSlot);
+  await setSlot(slot);
 }

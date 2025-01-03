@@ -5,7 +5,7 @@ import { getFriendlyEndTime } from "@/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function Edit() {
+export default async function Page() {
   const presets = await getPresets();
   const scenes = await getScenes();
 

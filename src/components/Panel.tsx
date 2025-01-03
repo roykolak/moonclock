@@ -8,136 +8,173 @@ import {
   Center,
   Flex,
   Group,
+  Modal,
   Stack,
   Text,
 } from "@mantine/core";
-import { changeEndTime, setActiveSlot } from "../server/actions";
+import { changeEndTime, setSlot } from "../server/actions";
 import Display from "./Display";
 import { Preset, Scene, Slot } from "../types";
 import { getEndDate } from "../utils";
-import Link from "next/link";
+import { useDisclosure } from "@mantine/hooks";
+import { PresetForm } from "./PresetForm";
 
 interface PanelProps {
-  activeSlot: Slot | null;
+  slot: Slot | null;
   presets: Preset[];
   scenes: Scene[];
   formattedEndTime: string | null;
+  formattedLastCheckedAt: string | null;
 }
 
 export default function Panel({
-  activeSlot,
+  slot,
   formattedEndTime,
+  formattedLastCheckedAt,
   scenes,
   presets,
 }: PanelProps) {
-  const scene = scenes.find(({ name }) => name === activeSlot?.sceneName);
+  const [presetModalOpen, presetModalHandlers] = useDisclosure();
+
+  const scene = scenes.find(({ name }) => name === slot?.sceneName);
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
-      <Card.Section withBorder inheritPadding py="xs">
-        <Group justify="space-between">
-          <Text fw={700}>Winnie&apos;s Room</Text>
-          {activeSlot && (
-            <Button
-              variant="light"
-              color="red"
-              size="compact-sm"
-              onClick={() => {
-                setActiveSlot(null);
-              }}
-            >
-              Clear
-            </Button>
-          )}
-        </Group>
-      </Card.Section>
-      <Card.Section>
-        <div style={{ position: "relative" }}>
-          <Display scene={scene} />
+    <>
+      <Modal
+        title="Custom Preset"
+        opened={presetModalOpen}
+        onClose={presetModalHandlers.close}
+      >
+        <PresetForm
+          scenes={scenes}
+          presets={presets}
+          onSubmit={(values) => {
+            const endDate = getEndDate(values);
 
-          {!activeSlot && (
-            <Stack
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              {presets.map((preset, i) => (
-                <Button
-                  key={`preset-${i}`}
-                  variant="filled"
-                  fullWidth
-                  onClick={() => {
-                    const endDate = getEndDate(preset);
-                    setActiveSlot({
-                      endTime: endDate?.toJSON() || null,
-                      sceneName: preset.sceneName,
-                    });
-                  }}
-                >
-                  {preset.name}
-                </Button>
-              ))}
+            setSlot({
+              sceneName: values.sceneName,
+              endTime: endDate ? endDate.toJSON() : null,
+            });
+
+            presetModalHandlers.close();
+          }}
+        />
+      </Modal>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        withBorder
+        style={{ maxWidth: 500 }}
+      >
+        <Card.Section withBorder inheritPadding py="xs">
+          <Group justify="space-between">
+            <Text fw={700}>Winnie&apos;s Room</Text>
+            {slot && (
               <Button
                 variant="light"
-                fullWidth
-                component={Link}
-                href="/presets/new?setActiveSlot=true"
+                color="red"
+                size="compact-sm"
+                onClick={() => {
+                  setSlot(null);
+                }}
               >
-                Custom...
+                Clear
               </Button>
-            </Stack>
-          )}
-        </div>
+            )}
+          </Group>
+        </Card.Section>
+        <Card.Section>
+          <div style={{ position: "relative" }}>
+            <Display scene={scene} />
 
-        {activeSlot && (
-          <Flex p="lg">
-            <Box>
-              <Stack gap={4}>
-                <Center>
-                  <Text>Showing {activeSlot.sceneName} until...</Text>
-                </Center>
-                <Badge
-                  color="gray"
-                  radius="sm"
-                  style={{
-                    height: 50,
-                    padding: "8px 16px",
-                    fontSize: 38,
-                    lineHeight: 38,
-                  }}
-                  styles={{
-                    label: { color: "#CCC" },
-                  }}
-                >
-                  {formattedEndTime}
-                </Badge>
-              </Stack>
-            </Box>
-            <Box flex="auto"></Box>
-            <Flex gap="lg">
-              <Stack gap={8}>
+            {!slot && (
+              <Stack
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                {presets.map((preset, i) => (
+                  <Button
+                    key={`preset-${i}`}
+                    variant="filled"
+                    fullWidth
+                    onClick={() => {
+                      const endDate = getEndDate(preset);
+                      setSlot({
+                        endTime: endDate?.toJSON() || null,
+                        sceneName: preset.sceneName,
+                      });
+                    }}
+                  >
+                    {preset.name}
+                  </Button>
+                ))}
                 <Button
-                  variant="filled"
-                  disabled={activeSlot.endTime === null}
-                  onClick={() => changeEndTime(5)}
+                  variant="light"
+                  fullWidth
+                  onClick={presetModalHandlers.open}
                 >
-                  +5 min
-                </Button>
-                <Button
-                  variant="filled"
-                  disabled={activeSlot.endTime === null}
-                  onClick={() => changeEndTime(-5)}
-                >
-                  -5 min
+                  Custom...
                 </Button>
               </Stack>
+            )}
+          </div>
+
+          {slot && (
+            <Flex p="lg">
+              <Box>
+                <Stack gap={4}>
+                  <Center>
+                    <Text>Showing {slot.sceneName} until...</Text>
+                  </Center>
+                  <Badge
+                    color="gray"
+                    radius="sm"
+                    style={{
+                      height: 50,
+                      padding: "8px 16px",
+                      fontSize: 38,
+                      lineHeight: 38,
+                    }}
+                    styles={{
+                      label: { color: "#CCC" },
+                    }}
+                    data-testid="end-time"
+                  >
+                    {formattedEndTime}
+                  </Badge>
+                </Stack>
+              </Box>
+              <Box flex="auto"></Box>
+              <Flex gap="lg">
+                <Stack gap={8}>
+                  <Button
+                    variant="filled"
+                    disabled={slot.endTime === null}
+                    onClick={() => changeEndTime(5)}
+                  >
+                    +5 min
+                  </Button>
+                  <Button
+                    variant="filled"
+                    disabled={slot.endTime === null}
+                    onClick={() => changeEndTime(-5)}
+                  >
+                    -5 min
+                  </Button>
+                </Stack>
+              </Flex>
             </Flex>
-          </Flex>
-        )}
-      </Card.Section>
-    </Card>
+          )}
+        </Card.Section>
+      </Card>
+      <Text c="dimmed" size="sm" mt="sm">
+        Last checked at: {formattedLastCheckedAt}
+      </Text>
+    </>
   );
 }

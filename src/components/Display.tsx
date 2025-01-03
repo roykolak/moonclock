@@ -48,6 +48,7 @@ export default function Display({ scene }: DisplayProps) {
           src={imageData}
           width="100%"
           style={{ imageRendering: "pixelated" }}
+          alt={`${scene?.name} scene`}
         />
       )}
     </div>
