@@ -1,7 +1,7 @@
 import App from "../../components/App";
 import { getScenes, getPresets } from "../../server/actions";
 import { PresetsList } from "../../components/PresetsList";
-import { getFriendlyEndTime } from "@/utils";
+import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 export const dynamic = "force-dynamic";
 

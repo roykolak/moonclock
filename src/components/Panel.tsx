@@ -15,9 +15,9 @@ import {
 import { changeEndTime, setSlot } from "../server/actions";
 import Display from "./Display";
 import { Preset, Scene, Slot } from "../types";
-import { getEndDate } from "../utils";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
+import { getEndDate } from "@/helpers/getEndDate";
 
 interface PanelProps {
   slot: Slot | null;
