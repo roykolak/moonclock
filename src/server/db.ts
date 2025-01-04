@@ -40,7 +40,7 @@ function loadPersistedData(): Partial<DataTypes> {
   try {
     const file = fs.readFileSync(`./${dbFile}`).toString();
     return JSON.parse(file);
-  } catch (e) {
+  } catch {
     console.log(`${dbFile} not found, loading default data`);
     return JSON.parse(JSON.stringify(defaultData));
   }
