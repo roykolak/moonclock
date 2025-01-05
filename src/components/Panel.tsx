@@ -172,9 +172,11 @@ export default function Panel({
           )}
         </Card.Section>
       </Card>
-      <Text c="dimmed" size="sm" mt="sm">
-        Last checked at: {formattedLastCheckedAt}
-      </Text>
+      <Group justify="flex-end">
+        <Text c="dimmed" size="xs" mt="sm">
+          Last checked at: {formattedLastCheckedAt}
+        </Text>
+      </Group>
     </>
   );
 }
