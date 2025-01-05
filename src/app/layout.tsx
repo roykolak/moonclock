@@ -29,7 +29,7 @@ export default function RootLayout({
             primaryColor: "cyan",
           })}
         >
-          <Notifications />
+          <Notifications position="bottom-center" />
           {children}
         </MantineProvider>
       </body>

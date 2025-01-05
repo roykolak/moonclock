@@ -48,7 +48,7 @@ describe("getFriendlyEndTime", () => {
           name: "test preset",
           mode: "for",
           sceneName: "bunny",
-          forTime: "2:0",
+          forTime: "2:00",
           untilDay: "0",
           untilHour: "0",
           untilMinute: "0",

@@ -14,7 +14,7 @@ const defaultData: DataTypes = {
       mode: "until",
       untilDay: "1",
       untilHour: "7",
-      untilMinute: "0",
+      untilMinute: "00",
       forTime: "",
     },
     {

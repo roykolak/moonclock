@@ -98,13 +98,13 @@ export function PresetForm({
             <Text>Show for...</Text>
             <Select
               data={[
-                { label: "Forever", value: "0:0" },
-                { label: "5 minutes", value: "0:5" },
+                { label: "Forever", value: "0:00" },
+                { label: "5 minutes", value: "0:05" },
                 { label: "15 minutes", value: "0:15" },
                 { label: "30 minutes", value: "0:30" },
-                { label: "1 hour", value: "1:0" },
+                { label: "1 hour", value: "1:00" },
                 { label: "1 hour 30 minutes", value: "1:30" },
-                { label: "2 hours", value: "2:0" },
+                { label: "2 hours", value: "2:00" },
               ]}
               data-testid="for-time-select"
               key={form.key(PresetField.ForTime)}
@@ -137,7 +137,7 @@ export function PresetForm({
               <Select
                 placeholder="Minute"
                 data={[
-                  { label: "0", value: "0" },
+                  { label: "00", value: "00" },
                   { label: "15", value: "15" },
                   { label: "30", value: "30" },
                   { label: "45", value: "45" },
