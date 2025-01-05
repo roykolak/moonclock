@@ -137,7 +137,7 @@ export function PresetForm({
               <Select
                 placeholder="Minute"
                 data={[
-                  { label: "0", value: "0" },
+                  { label: "00", value: "00" },
                   { label: "15", value: "15" },
                   { label: "30", value: "30" },
                   { label: "45", value: "45" },
