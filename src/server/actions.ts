@@ -19,7 +19,11 @@ export async function getPresets() {
 }
 
 export async function getLastHeartbeat() {
-  return fs.readFileSync(`./lastHeartbeat.txt`).toString();
+  try {
+    return fs.readFileSync(`./lastHeartbeat.txt`).toString();
+  } catch {
+    return null;
+  }
 }
 
 export async function setPresets(presets: Preset[]) {
