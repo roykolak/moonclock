@@ -2,7 +2,7 @@ import App from "../../components/App";
 import {
   getScenes,
   getPresets,
-  getHeartBeat,
+  getLastHeartbeat,
   getSlot,
 } from "../../server/actions";
 import Panel from "../../components/Panel";
@@ -13,10 +13,10 @@ export default async function Page() {
   const slot = await getSlot();
   const scenes = await getScenes();
   const presets = await getPresets();
-  const heartBeat = await getHeartBeat();
+  const lastHeartBeat = await getLastHeartbeat();
 
   let formattedEndTime = null;
-  let formattedLastCheckedAt = null;
+  let formattedLastHeartbeat = null;
 
   if (slot) {
     formattedEndTime = slot.endTime
@@ -27,10 +27,8 @@ export default async function Page() {
       : "forever";
   }
 
-  if (heartBeat.lastCheckedAt) {
-    formattedLastCheckedAt = new Date(
-      heartBeat.lastCheckedAt
-    ).toLocaleTimeString([], {
+  if (lastHeartBeat) {
+    formattedLastHeartbeat = new Date(lastHeartBeat).toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit",
       second: "2-digit",
@@ -42,7 +40,7 @@ export default async function Page() {
       <Panel
         slot={slot}
         formattedEndTime={formattedEndTime}
-        formattedLastCheckedAt={formattedLastCheckedAt}
+        formattedLastHeartbeat={formattedLastHeartbeat}
         scenes={scenes}
         presets={presets}
       />

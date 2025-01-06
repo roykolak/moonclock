@@ -24,13 +24,13 @@ interface PanelProps {
   presets: Preset[];
   scenes: Scene[];
   formattedEndTime: string | null;
-  formattedLastCheckedAt: string | null;
+  formattedLastHeartbeat: string | null;
 }
 
 export default function Panel({
   slot,
   formattedEndTime,
-  formattedLastCheckedAt,
+  formattedLastHeartbeat,
   scenes,
   presets,
 }: PanelProps) {
@@ -174,7 +174,7 @@ export default function Panel({
       </Card>
       <Group justify="flex-end">
         <Text c="dimmed" size="xs" mt="sm">
-          Last checked at: {formattedLastCheckedAt}
+          Last checked at: {formattedLastHeartbeat}
         </Text>
       </Group>
     </>

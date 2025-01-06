@@ -1,16 +1,6 @@
 export interface DataTypes {
   slot: Slot | null;
-  heartBeat: HeartBeat | null;
   presets: Preset[];
-}
-
-export interface HeartBeat {
-  lastUpdatedAt: string | null;
-  lastCheckedAt: string | null;
-}
-
-export interface Panel {
-  activeSlot: Slot | null;
 }
 
 export interface Slot {
