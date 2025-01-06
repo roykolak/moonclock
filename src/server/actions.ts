@@ -2,7 +2,7 @@
 
 import fs from "fs";
 import { revalidatePath } from "next/cache";
-import { HeartBeat, Preset, Scene, Slot } from "../types";
+import { Preset, Scene, Slot } from "../types";
 import { get, set } from "./db";
 
 export async function getSlot() {
@@ -18,8 +18,8 @@ export async function getPresets() {
   return get<Preset[]>("presets");
 }
 
-export async function getHeartBeat() {
-  return get<HeartBeat>("heartBeat");
+export async function getLastHeartbeat() {
+  return fs.readFileSync(`./lastHeartbeat.txt`).toString();
 }
 
 export async function setPresets(presets: Preset[]) {

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
-import { Coordinates, HeartBeat, Slot } from "./src/types";
+import { Coordinates, Slot } from "./src/types";
 import { get, set } from "./src/server/db";
 
 export async function getSceneCoordinates(name: string) {
@@ -75,11 +75,6 @@ for (let x = 0; x < 32; x++) {
 }
 
 setInterval(async () => {
-  const now = new Date().toJSON();
-
-  const heartBeat = await get<HeartBeat>("heartBeat");
-  heartBeat.lastCheckedAt = now;
-
   try {
     const slot = await get<Slot>("slot");
 
@@ -88,10 +83,6 @@ setInterval(async () => {
       new Date().getTime() > new Date(slot?.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${slot.sceneName} has expired`);
-
-      heartBeat.lastUpdatedAt = now;
-
-      await set("heartBeat", heartBeat);
       await set("slot", null);
 
       return;
@@ -110,20 +101,17 @@ setInterval(async () => {
         `[UPDATE] Rerendering ${activeSceneName} until ${slot?.endTime}`
       );
 
-      heartBeat.lastUpdatedAt = now;
-
       updateQueue.push(resetCoordinates);
       updateQueue.push(activeCoordinates);
     } else if (currentSlot?.endTime !== slot?.endTime) {
       console.log(
         `[UPDATE] ${activeSceneName} endTime changed to ${slot.endTime}`
       );
-      heartBeat.lastUpdatedAt = now;
     }
 
-    set("heartBeat", heartBeat);
-
     currentSlot = slot;
+
+    fs.writeFileSync("./lastHeartbeat.txt", new Date().toJSON());
   } catch (e) {
     console.log("Error!", e);
   }
