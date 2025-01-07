@@ -1,12 +1,12 @@
 import { beforeEach, describe, it } from "node:test";
 import { Preset } from "@/types";
-import tk from "timekeeper";
+import timekeeper from "timekeeper";
 import assert from "node:assert";
 import { getFriendlyEndTime } from "./getFriendlyEndTime";
 
 describe("getFriendlyEndTime", () => {
   beforeEach(() => {
-    tk.freeze(new Date(1735994402614));
+    timekeeper.freeze(new Date(1735994402614));
   });
 
   describe("when passed a 'for' preset", () => {
