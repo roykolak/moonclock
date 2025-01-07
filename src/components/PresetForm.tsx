@@ -21,6 +21,7 @@ interface PresetFormProps {
   id?: number | null;
   scenes: Scene[];
   presets: Preset[];
+  showName?: boolean;
   onSubmit: (value: Preset) => void;
   onDelete?: () => void;
 }
@@ -29,6 +30,7 @@ export function PresetForm({
   scenes,
   presets,
   id,
+  showName = true,
   onSubmit,
   onDelete,
 }: PresetFormProps) {
@@ -40,7 +42,7 @@ export function PresetForm({
       untilMinute: "0",
       untilDay: "0",
       untilHour: "0",
-      forTime: "0:0",
+      forTime: "0:00",
     },
   });
 
@@ -56,16 +58,19 @@ export function PresetForm({
       data-testid="preset-form"
     >
       <Stack>
-        <TextInput
-          placeholder=""
-          variant="filled"
-          style={{ flex: 1 }}
-          label="Name"
-          required
-          data-testid="preset-name"
-          key={form.key(PresetField.Name)}
-          {...form.getInputProps(PresetField.Name)}
-        />
+        {showName && (
+          <TextInput
+            placeholder=""
+            variant="filled"
+            style={{ flex: 1 }}
+            label="Name"
+            required
+            data-testid="preset-name"
+            key={form.key(PresetField.Name)}
+            {...form.getInputProps(PresetField.Name)}
+          />
+        )}
+
         <Group>
           <Select
             placeholder="Scene"

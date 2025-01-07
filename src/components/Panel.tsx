@@ -48,6 +48,7 @@ export default function Panel({
         <PresetForm
           scenes={scenes}
           presets={presets}
+          showName={false}
           onSubmit={(values) => {
             const endDate = getEndDate(values);
 

@@ -53,8 +53,6 @@ test.describe("Test", () => {
 
     await expect(page.getByText("Custom Preset")).toBeVisible();
 
-    await page.getByTestId("preset-name").fill("Custom preset");
-
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByTestId("preset-form").waitFor({ state: "detached" });
