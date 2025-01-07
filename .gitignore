@@ -40,7 +40,8 @@ yarn-error.log*
 next-env.d.ts
 
 database.json
-lastHeartbeat.txt
+database-test.json
+hardware/lastHeartbeat.txt
 
 node_modules
 /test-results/

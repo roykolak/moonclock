@@ -3,10 +3,6 @@ import { DataTypes } from "../types";
 
 const defaultData: DataTypes = {
   slot: null,
-  heartBeat: {
-    lastCheckedAt: null,
-    lastUpdatedAt: null,
-  },
   presets: [
     {
       name: "Sleep Mode",
@@ -59,5 +55,9 @@ export function set<T>(key: keyof DataTypes, value: T) {
   }
 
   db[key] = JSON.parse(JSON.stringify(value));
+  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
+}
+
+export function writeDb(db: DataTypes) {
   fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
 }
