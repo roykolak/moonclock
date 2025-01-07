@@ -11,8 +11,10 @@ You can configure an LED scene to display..
 
 I created it this to help with bedtime, naptime, and more for my toddler to teach them when activities are over.
 
-<img src="images/panel.png" width="200" />
-<img src="images/presets.png" width="200" />
+<p float="left">
+    <img src="images/panel.png" width="200" />
+    <img src="images/presets.png" width="200" />
+</p>
 
 ## Getting Started
 
