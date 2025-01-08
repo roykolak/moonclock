@@ -1,6 +1,6 @@
 "use client";
 
-import { AppShell, Burger, Group, NavLink, Text } from "@mantine/core";
+import { AppShell, Burger, Divider, Group, NavLink, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 
@@ -38,6 +38,8 @@ function App({ children }: { children: React.ReactNode }) {
           data-testid="nav-presets"
         />
         <NavLink component={Link} href="/composer" label="Composer" />
+        <Divider />
+        <NavLink component={Link} href="/settings" label="Settings" />
       </AppShell.Navbar>
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>

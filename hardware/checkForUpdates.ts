@@ -1,4 +1,4 @@
-import { get, set } from "@/server/db";
+import { getData, set } from "@/server/db";
 import { Coordinates, Slot } from "@/types";
 import fs from "fs";
 
@@ -25,11 +25,13 @@ export async function checkForUpdates(): Promise<Coordinates[]> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const slot = await get<Slot>("slot");
+    const { slot } = await getData();
+
+    if (!slot) return [];
 
     if (
       slot?.endTime !== null &&
-      new Date().getTime() > new Date(slot?.endTime).getTime()
+      new Date().getTime() > new Date(slot.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${slot.sceneName} has expired`);
       await set("slot", null);

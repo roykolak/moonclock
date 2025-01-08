@@ -2,20 +2,17 @@
 
 import fs from "fs";
 import { revalidatePath } from "next/cache";
-import { Preset, Scene, Slot } from "../types";
-import { get, set } from "./db";
+import { Panel, Preset, Scene, Slot } from "../types";
+import { getData, set } from "./db";
 
-export async function getSlot() {
-  return get<Slot>("slot");
+export async function setPanel(panel: Panel | null) {
+  set("panel", panel);
+  revalidatePath("/panel");
 }
 
 export async function setSlot(slot: Slot | null) {
   set("slot", slot);
   revalidatePath("/panel");
-}
-
-export async function getPresets() {
-  return get<Preset[]>("presets");
 }
 
 export async function getLastHeartbeat() {
@@ -47,7 +44,7 @@ export async function getScenes(): Promise<Scene[]> {
 }
 
 export async function changeEndTime(minuteChange: number) {
-  const slot = await getSlot();
+  const { slot } = await getData();
 
   if (!slot) {
     return revalidatePath("/panel");

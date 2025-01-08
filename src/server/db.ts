@@ -2,6 +2,9 @@ import fs from "fs";
 import { DataTypes } from "../types";
 
 const defaultData: DataTypes = {
+  panel: {
+    name: "My Moonclock",
+  },
   slot: null,
   presets: [
     {
@@ -42,9 +45,9 @@ function loadPersistedData(): Partial<DataTypes> {
   }
 }
 
-export function get<T>(key: keyof DataTypes): T {
+export function getData(): DataTypes {
   const db = loadPersistedData();
-  return JSON.parse(JSON.stringify(db[key]));
+  return JSON.parse(JSON.stringify(db));
 }
 
 export function set<T>(key: keyof DataTypes, value: T) {

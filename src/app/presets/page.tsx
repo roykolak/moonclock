@@ -1,12 +1,13 @@
 import App from "../../components/App";
-import { getScenes, getPresets } from "../../server/actions";
+import { getScenes } from "../../server/actions";
 import { PresetsList } from "../../components/PresetsList";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
+import { getData } from "@/server/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const presets = await getPresets();
+  const { presets } = await getData();
   const scenes = await getScenes();
 
   const formattedEndTimes = presets.map((p) => getFriendlyEndTime(p));
