@@ -14,12 +14,13 @@ import {
 } from "@mantine/core";
 import { changeEndTime, setSlot } from "../server/actions";
 import Display from "./Display";
-import { Preset, Scene, Slot } from "../types";
+import { Panel as PanelType, Preset, Scene, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
 
 interface PanelProps {
+  panel: PanelType;
   slot: Slot | null;
   presets: Preset[];
   scenes: Scene[];
@@ -28,6 +29,7 @@ interface PanelProps {
 }
 
 export default function Panel({
+  panel,
   slot,
   formattedEndTime,
   formattedLastHeartbeat,
@@ -53,6 +55,7 @@ export default function Panel({
             const endDate = getEndDate(values);
 
             setSlot({
+              name: "Custom",
               sceneName: values.sceneName,
               endTime: endDate ? endDate.toJSON() : null,
             });
@@ -70,7 +73,7 @@ export default function Panel({
       >
         <Card.Section withBorder inheritPadding py="xs">
           <Group justify="space-between">
-            <Text fw={700}>Winnie&apos;s Room</Text>
+            <Text fw={700}>{panel.name}</Text>
             {slot && (
               <Button
                 variant="light"
@@ -106,6 +109,7 @@ export default function Panel({
                     onClick={() => {
                       const endDate = getEndDate(preset);
                       setSlot({
+                        name: preset.name,
                         endTime: endDate?.toJSON() || null,
                         sceneName: preset.sceneName,
                       });
@@ -130,7 +134,7 @@ export default function Panel({
               <Box>
                 <Stack gap={4}>
                   <Center>
-                    <Text>Showing {slot.sceneName} until...</Text>
+                    <Text>{slot.name} until...</Text>
                   </Center>
                   <Badge
                     color="gray"

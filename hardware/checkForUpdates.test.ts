@@ -1,8 +1,7 @@
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert";
-import { get, writeDb } from "@/server/db";
-import { Slot } from "@/types";
+import { getData, writeDb } from "@/server/db";
 import { checkForUpdates, setCurrentSlot } from "./checkForUpdates";
 import timekeeper from "timekeeper";
 
@@ -16,11 +15,12 @@ describe("checkForUpdates", () => {
     date.setMinutes(date.getMinutes() - 1);
 
     const slot = {
+      name: "bedtime",
       endTime: date.toJSON(),
       sceneName: "moon",
     };
 
-    writeDb({ slot, presets: [] });
+    writeDb({ slot, presets: [], panel: { name: "moonclock" } });
 
     await checkForUpdates();
 
@@ -37,17 +37,18 @@ describe("checkForUpdates", () => {
       date.setHours(date.getHours() + 1);
 
       const slot = {
+        name: "bedtime",
         endTime: date.toJSON(),
         sceneName: "moon",
       };
 
-      writeDb({ slot, presets: [] });
+      writeDb({ slot, presets: [], panel: { name: "moonclock" } });
 
       setCurrentSlot(null);
 
       const updates = await checkForUpdates();
 
-      assert.equal(get<Slot>("slot")?.sceneName, "moon");
+      assert.equal((await getData())?.slot?.sceneName, "moon");
       assert.equal(updates.length, 2);
     });
   });
@@ -59,17 +60,18 @@ describe("checkForUpdates", () => {
         date.setHours(date.getHours() + 1);
 
         const slot = {
+          name: "bedtime",
           endTime: date.toJSON(),
           sceneName: "moon",
         };
 
-        writeDb({ slot, presets: [] });
+        writeDb({ slot, presets: [], panel: { name: "moonclock" } });
 
         setCurrentSlot(slot);
 
         const updates = await checkForUpdates();
 
-        assert.equal(get<Slot>("slot")?.sceneName, "moon");
+        assert.equal((await getData())?.slot?.sceneName, "moon");
         assert.equal(updates.length, 0);
       });
     });
@@ -80,15 +82,16 @@ describe("checkForUpdates", () => {
         date.setMinutes(date.getMinutes() - 1);
 
         const slot = {
+          name: "bedtime",
           endTime: date.toJSON(),
           sceneName: "moon",
         };
 
-        writeDb({ slot, presets: [] });
+        writeDb({ slot, presets: [], panel: { name: "moonclock" } });
 
         const updates = await checkForUpdates();
 
-        assert.equal(get("slot"), null);
+        assert.equal((await getData())?.slot, null);
         assert.equal(updates.length, 1);
       });
     });

@@ -1,4 +1,5 @@
 export interface DataTypes {
+  panel: Panel;
   slot: Slot | null;
   presets: Preset[];
 }
@@ -6,6 +7,11 @@ export interface DataTypes {
 export interface Slot {
   endTime: string | null;
   sceneName: string;
+  name: string;
+}
+
+export interface Panel {
+  name: string;
 }
 
 export interface Time {
