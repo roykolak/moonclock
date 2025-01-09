@@ -55,12 +55,14 @@ function Dot({
   onClick,
   onMouseOver,
   matrix,
+  showGrid,
 }: {
   y: number;
   x: number;
   onClick: () => void;
   onMouseOver: any;
   matrix: any;
+  showGrid: boolean;
 }) {
   return (
     <div
@@ -74,19 +76,22 @@ function Dot({
         display: "inline-block",
         borderRadius: 3,
         boxShadow: "1px 1px 1px #333",
+        border: showGrid && (x === 15 || y === 15) ? "1px solid #aaa" : "none",
       }}
     ></div>
   );
 }
 
-export default function Display({
+export function TouchDisplay({
   activeColor,
   matrix,
   setMatrix,
+  showGrid,
 }: {
   activeColor: string | null;
   matrix: any;
   setMatrix: any;
+  showGrid: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [mouseDown, setMouseDown] = useState(false);
@@ -140,6 +145,7 @@ export default function Display({
                         [`${x}:${y}`]: activeColor,
                       });
                     }}
+                    showGrid={showGrid}
                     onMouseOver={() => {
                       if (!mouseDown) return;
                       setMatrix({

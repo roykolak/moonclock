@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Button,
-  Flex,
+  Checkbox,
   Group,
   Modal,
   Select,
@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import Display from "./display";
+import { TouchDisplay } from "./TouchDisplay";
 import { Scene } from "@/types";
 import { setScene } from "@/server/actions";
 
@@ -29,8 +29,8 @@ function Color({
     <>
       <div
         style={{
-          width: "20px",
-          height: "20px",
+          width: "25px",
+          height: "25px",
           background: color || "#000",
           border: color === activeColor ? "2px solid red" : "none",
         }}
@@ -48,13 +48,7 @@ function Palette({
   setActiveColor: any;
   matrix: any;
 }) {
-  const [colors, setColors] = useState([
-    null,
-    "#800080",
-    "#f4d0a9",
-    "#facc0d",
-    "#ffffff",
-  ]);
+  const [colors, setColors] = useState([null]);
 
   useEffect(() => {
     const matrixColors = new Set<string>();
@@ -65,30 +59,37 @@ function Palette({
     setColors([...(matrixColors.size === 0 ? colors : []), ...matrixColors]);
   }, [JSON.stringify(matrix)]);
   return (
-    <div style={{ display: "flex", width: "100%" }}>
-      {colors.map((color) => (
-        <Color
-          color={color}
-          setActiveColor={setActiveColor}
-          activeColor={activeColor}
-          key={color}
-        />
-      ))}
+    <Group justify="space-between" w="100%">
+      <Group gap={0}>
+        {colors.map((color) => (
+          <Color
+            color={color}
+            setActiveColor={setActiveColor}
+            activeColor={activeColor}
+            key={color}
+          />
+        ))}
+      </Group>
       <form
         onSubmit={(ev: any) => {
           ev.preventDefault();
           setColors([...colors, ev.target.elements.new_color.value]);
         }}
       >
-        <input type="color" name="new_color" />
-        <input type="submit" value="add"></input>
+        <Group gap="xs">
+          <input type="color" name="new_color" />
+          <Button type="submit" size="compact-sm" variant="light">
+            Add
+          </Button>
+        </Group>
       </form>
-    </div>
+    </Group>
   );
 }
 
 export function Editor({ scenes }: { scenes: Scene[] }) {
   const [selectedScene, setSelectedScene] = useState(scenes[0]);
+  const [showGrid, setShowGrid] = useState(false);
 
   const [activeColor, setActiveColor] = useState(null);
   const [matrix, setMatrix] = useState({});
@@ -152,27 +153,31 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
       </Modal>
 
       {matrix && selectedScene && (
-        <>
-          <Flex>
-            <Palette
-              activeColor={activeColor}
-              setActiveColor={setActiveColor}
-              matrix={matrix}
-            />
-            <Button
-              onClick={() => {
-                setScene({ name: selectedScene.name, coordinates: matrix });
-              }}
-            >
-              Save
-            </Button>
-          </Flex>
-          <Display
+        <Stack>
+          <Palette
+            activeColor={activeColor}
+            setActiveColor={setActiveColor}
+            matrix={matrix}
+          />
+          <TouchDisplay
             activeColor={activeColor}
             matrix={matrix}
             setMatrix={setMatrix}
+            showGrid={showGrid}
           />
-        </>
+          <Checkbox
+            checked={showGrid}
+            onChange={() => setShowGrid((v) => !v)}
+            label="Show grid lines"
+          ></Checkbox>
+          <Button
+            onClick={() => {
+              setScene({ name: selectedScene.name, coordinates: matrix });
+            }}
+          >
+            Save Scene
+          </Button>
+        </Stack>
       )}
     </Stack>
   );
