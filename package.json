@@ -27,7 +27,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "rpi-led-matrix": "^1.14.0",
-    "canvas": "^2.11.2"
+    "canvas": "^3.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
