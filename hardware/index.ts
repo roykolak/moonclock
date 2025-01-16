@@ -1,7 +1,7 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
 import { checkForNewDisplayConfig } from "./checkForUpdates";
-import { createDisplayEngine, Pixel } from "../shared/display-engine";
+import { createDisplayEngine, Pixel } from "../src/display-engine";
 
 const program = new Command();
 

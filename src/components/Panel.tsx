@@ -17,7 +17,7 @@ import { Panel as PanelType, Preset, PresetField, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
-import { Macro } from "../../shared/display-engine";
+import { Macro } from "../display-engine";
 import { SlotPreview } from "./SlotPreview";
 
 interface PanelProps {

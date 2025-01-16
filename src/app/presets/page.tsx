@@ -2,7 +2,7 @@ import App from "../../components/App";
 import { PresetsList } from "../../components/PresetsList";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 import { getData } from "@/server/db";
-import { Macro } from "../../../shared/display-engine";
+import { Macro } from "../../display-engine";
 import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
 
 export const dynamic = "force-dynamic";

@@ -8,7 +8,7 @@ import { PresetForm } from "./PresetForm";
 import { useState } from "react";
 import { showNotification } from "@mantine/notifications";
 import { setPresets } from "@/server/actions";
-import { Macro } from "../../shared/display-engine";
+import { Macro } from "../display-engine";
 
 interface PresetsListProps {
   presets: Preset[];

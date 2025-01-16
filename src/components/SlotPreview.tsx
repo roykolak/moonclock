@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { createDisplayEngine, Macro } from "../../shared/display-engine";
+import { createDisplayEngine, Macro } from "../display-engine";
 import { createCanvas } from "canvas";
 import { SceneName } from "@/types";
 
