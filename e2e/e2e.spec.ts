@@ -53,6 +53,9 @@ test.describe("Test", () => {
 
     await expect(page.getByText("Custom Preset")).toBeVisible();
 
+    await page.getByTestId("for-time-select").click();
+    await page.getByRole("option", { name: "Forever", exact: true }).click();
+
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByTestId("preset-form").waitFor({ state: "detached" });
@@ -72,16 +75,13 @@ test.describe("Test", () => {
 
     await page.getByRole("link", { name: "Presets" }).click();
 
-    await expect(page.getByTestId("preset-item")).toHaveCount(2);
+    await expect(page.getByTestId("preset-item")).toHaveCount(3);
 
     // Create Preset
 
     await page.getByRole("button", { name: "New Preset" }).click();
 
     await page.getByTestId("preset-name").fill("Custom preset");
-
-    await page.getByTestId("scene-select").click();
-    await page.getByRole("option", { name: "moon" }).click();
 
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "30 minutes", exact: true }).click();
@@ -90,7 +90,7 @@ test.describe("Test", () => {
 
     await page.getByTestId("preset-form").waitFor({ state: "detached" });
 
-    const newPreset = page.getByTestId("preset-item").nth(2);
+    const newPreset = page.getByTestId("preset-item").nth(3);
 
     await expect(newPreset).toBeVisible();
 
@@ -126,7 +126,7 @@ test.describe("Test", () => {
 
     await page.getByTestId("preset-form").waitFor({ state: "detached" });
 
-    await expect(page.getByTestId("preset-item")).toHaveCount(2);
+    await expect(page.getByTestId("preset-item")).toHaveCount(3);
   });
 
   test("updating settings", async ({ page }) => {
@@ -143,5 +143,34 @@ test.describe("Test", () => {
     await page.goto("http://localhost:3000/panel");
 
     await expect(page.getByText("New Moonclock")).toBeVisible();
+  });
+
+  test.skip("creating, editting, and saving a new scene", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
+    await page.getByRole("link", { name: "Composer" }).click();
+
+    await page.getByTestId("edit-scene-select").click();
+    await page.getByRole("option", { name: "New scene" }).click();
+
+    await page.getByTestId("new-scene-name").fill("cool-scene");
+
+    await page.getByRole("button", { name: "Create" }).click();
+
+    await page.getByTestId("color-0").click();
+    await page.getByTestId("dot_0_1").click();
+    await page.getByTestId("color-1").click();
+    await page.getByTestId("dot_1_10").click();
+
+    await page.getByRole("button", { name: "Save Scene" }).click();
+
+    await wait(1000);
+
+    const coordinates = JSON.parse(
+      readFileSync(`./scenes/cool-scene.json`).toString()
+    );
+
+    expect(Object.keys(coordinates)).toEqual(["0:1", "1:10"]);
+    expect(Object.values(coordinates)).toEqual(["#89CFF0", "#facc0d"]);
   });
 });

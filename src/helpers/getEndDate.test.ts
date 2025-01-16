@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from "node:test";
 import { getEndDate } from "./getEndDate";
-import { Preset } from "@/types";
+import { Preset, SceneName } from "@/types";
 import timekeeper from "timekeeper";
 import assert from "node:assert";
 
@@ -14,7 +14,7 @@ describe("getEndDate", () => {
       const preset: Preset = {
         name: "test preset",
         mode: "for",
-        sceneName: "bunny",
+        sceneName: SceneName.Bunny,
         forTime: "2:15",
         untilDay: "0",
         untilHour: "0",
@@ -31,7 +31,7 @@ describe("getEndDate", () => {
       const preset: Preset = {
         name: "test preset",
         mode: "until",
-        sceneName: "bunny",
+        sceneName: SceneName.Bunny,
         forTime: "",
         untilDay: "1",
         untilHour: "6",

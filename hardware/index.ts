@@ -1,7 +1,7 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
-import { Coordinates } from "../src/types";
-import { checkForUpdates } from "./checkForUpdates";
+import { checkForNewDisplayConfig } from "./checkForUpdates";
+import { createDisplayEngine, Pixel } from "../src/display-engine";
 
 const program = new Command();
 
@@ -19,7 +19,18 @@ program.parse(process.argv);
 
 const options = program.opts();
 
-const updateQueue: Coordinates[] = [];
+const updateQueue: Pixel[][] = [];
+
+function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
+  const hexValues = [...rgba]
+    .filter((_number, index) => !forceRemoveAlpha || index !== 3)
+    .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
+    .map((number) => number.toString(16));
+
+  return hexValues
+    .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
+    .join("");
+}
 
 if (!options.emulate) {
   console.log("Starting Hardware...");
@@ -40,17 +51,17 @@ if (!options.emulate) {
     if (options.debug && updateQueue.length > 0) {
       console.log("Queue:", updateQueue.length);
     }
-    const coordinates = updateQueue.shift();
-
-    for (const coordinate in coordinates) {
-      const [x, y] = coordinate.split(":");
-      const hex = coordinates[coordinate]?.replace("#", "") || "000000";
-      matrix
-        .brightness(parseInt(options.brightness, 10))
-        .fgColor(parseInt(hex, 16))
-        .setPixel(parseInt(x, 10), parseInt(y, 10));
+    const pixelUpdates = updateQueue.shift();
+    if (pixelUpdates) {
+      for (const pixel of pixelUpdates) {
+        matrix
+          .brightness(parseInt(options.brightness, 10))
+          .fgColor(
+            parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
+          )
+          .setPixel(pixel.x, pixel.y);
+      }
     }
-
     setTimeout(() => matrix.sync(), 0);
   });
   matrix.sync();
@@ -58,8 +69,17 @@ if (!options.emulate) {
   console.log("Skipping hardware...");
 }
 
+const engine = createDisplayEngine({
+  dimensions: { width: 32, height: 32 },
+  onPixelsChange: (pixels) => {
+    updateQueue.push(pixels);
+  },
+});
+
 setInterval(async () => {
-  for (const update of await checkForUpdates()) {
-    updateQueue.push(update);
+  const displayConfig = await checkForNewDisplayConfig();
+
+  if (displayConfig) {
+    engine.render(displayConfig);
   }
 }, 2000);

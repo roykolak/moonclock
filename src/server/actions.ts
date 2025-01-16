@@ -2,7 +2,7 @@
 
 import fs from "fs";
 import { revalidatePath } from "next/cache";
-import { Panel, Preset, Scene, Slot } from "../types";
+import { Panel, Preset, Slot } from "../types";
 import { getData, set } from "./db";
 
 export async function setPanel(panel: Panel | null) {
@@ -26,21 +26,6 @@ export async function getLastHeartbeat() {
 export async function setPresets(presets: Preset[]) {
   set("presets", presets);
   revalidatePath("/presets");
-}
-
-export async function setScene({ name, coordinates }: Scene) {
-  const fileName = `./scenes/${name}.json`;
-  fs.writeFileSync(fileName, JSON.stringify(coordinates, null, 2));
-}
-
-export async function getScenes(): Promise<Scene[]> {
-  return fs.readdirSync("./scenes").map((file) => {
-    const name = file.split(".")[0];
-    const coordinates = JSON.parse(
-      fs.readFileSync(`./scenes/${name}.json`).toString()
-    );
-    return { name, coordinates };
-  });
 }
 
 export async function changeEndTime(minuteChange: number) {

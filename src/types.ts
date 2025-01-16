@@ -6,8 +6,7 @@ export interface DataTypes {
 
 export interface Slot {
   endTime: string | null;
-  sceneName: string;
-  name: string;
+  preset: Preset;
 }
 
 export interface Panel {
@@ -29,9 +28,15 @@ export enum PresetField {
   ForTime = "forTime",
 }
 
+export enum SceneName {
+  Bunny = "bunny",
+  Moon = "moon",
+  Countdown = "countdown",
+}
+
 export interface Preset {
   [PresetField.Name]: string;
-  [PresetField.SceneName]: string;
+  [PresetField.SceneName]: SceneName;
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;
   [PresetField.UntilHour]: string;

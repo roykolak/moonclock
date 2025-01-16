@@ -13,17 +13,18 @@ import {
   Text,
 } from "@mantine/core";
 import { changeEndTime, setSlot } from "../server/actions";
-import Display from "./Display";
-import { Panel as PanelType, Preset, Scene, Slot } from "../types";
+import { Panel as PanelType, Preset, PresetField, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
+import { Macro } from "../display-engine";
+import { SlotPreview } from "./SlotPreview";
 
 interface PanelProps {
   panel: PanelType;
   slot: Slot | null;
   presets: Preset[];
-  scenes: Scene[];
+  displayConfig: Macro[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
 }
@@ -33,12 +34,10 @@ export default function Panel({
   slot,
   formattedEndTime,
   formattedLastHeartbeat,
-  scenes,
+  displayConfig,
   presets,
 }: PanelProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
-
-  const scene = scenes.find(({ name }) => name === slot?.sceneName);
 
   return (
     <>
@@ -48,15 +47,13 @@ export default function Panel({
         onClose={presetModalHandlers.close}
       >
         <PresetForm
-          scenes={scenes}
           presets={presets}
           showName={false}
           onSubmit={(values) => {
             const endDate = getEndDate(values);
 
             setSlot({
-              name: "Custom",
-              sceneName: values.sceneName,
+              preset: { ...values, name: "Custom" },
               endTime: endDate ? endDate.toJSON() : null,
             });
 
@@ -90,9 +87,12 @@ export default function Panel({
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <Display scene={scene} />
+            <SlotPreview
+              scene={slot?.preset[PresetField.SceneName]}
+              displayConfig={displayConfig}
+            />
 
-            {!slot && (
+            {!slot?.preset && (
               <Stack
                 style={{
                   position: "absolute",
@@ -109,9 +109,8 @@ export default function Panel({
                     onClick={() => {
                       const endDate = getEndDate(preset);
                       setSlot({
-                        name: preset.name,
+                        preset: preset,
                         endTime: endDate?.toJSON() || null,
-                        sceneName: preset.sceneName,
                       });
                     }}
                   >
@@ -129,12 +128,12 @@ export default function Panel({
             )}
           </div>
 
-          {slot && (
+          {slot?.preset && (
             <Flex p="lg">
               <Box>
                 <Stack gap={4}>
                   <Center>
-                    <Text>{slot.name} until...</Text>
+                    <Text>{slot.preset.name} until...</Text>
                   </Center>
                   <Badge
                     color="gray"

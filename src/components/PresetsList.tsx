@@ -1,23 +1,24 @@
 "use client";
 
 import { Button, Modal, Stack } from "@mantine/core";
-import { Preset, Scene } from "../types";
+import { Preset } from "../types";
 import { PresetItem } from "./PresetItem";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { useState } from "react";
 import { showNotification } from "@mantine/notifications";
 import { setPresets } from "@/server/actions";
+import { Macro } from "../display-engine";
 
 interface PresetsListProps {
   presets: Preset[];
-  scenes: Scene[];
+  displayConfigs: Macro[][];
   formattedEndTimes: string[];
 }
 
 export function PresetsList({
   presets,
-  scenes,
+  displayConfigs,
   formattedEndTimes,
 }: PresetsListProps) {
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
@@ -35,7 +36,6 @@ export function PresetsList({
       >
         <PresetForm
           presets={presets}
-          scenes={scenes}
           id={selectedPresetId}
           onDelete={() => {
             if (selectedPresetId === null) return;
@@ -74,9 +74,7 @@ export function PresetsList({
             preset={preset}
             index={i}
             formattedEndTime={formattedEndTimes[i]}
-            scene={
-              scenes.find(({ name }) => name === preset.sceneName) as Scene
-            }
+            displayConfig={displayConfigs[i]}
             onClick={(index) => {
               setSelectedPresetId(index);
               presetModalHandlers.open();
