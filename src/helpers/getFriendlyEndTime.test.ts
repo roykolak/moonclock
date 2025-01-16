@@ -1,5 +1,5 @@
 import { beforeEach, describe, it } from "node:test";
-import { Preset } from "@/types";
+import { Preset, SceneName } from "@/types";
 import timekeeper from "timekeeper";
 import assert from "node:assert";
 import { getFriendlyEndTime } from "./getFriendlyEndTime";
@@ -15,7 +15,7 @@ describe("getFriendlyEndTime", () => {
         const preset: Preset = {
           name: "test preset",
           mode: "for",
-          sceneName: "bunny",
+          sceneName: SceneName.Bunny,
           forTime: "0:0",
           untilDay: "0",
           untilHour: "0",
@@ -31,7 +31,7 @@ describe("getFriendlyEndTime", () => {
         const preset: Preset = {
           name: "test preset",
           mode: "for",
-          sceneName: "bunny",
+          sceneName: SceneName.Bunny,
           forTime: "0:15",
           untilDay: "0",
           untilHour: "0",
@@ -47,7 +47,7 @@ describe("getFriendlyEndTime", () => {
         const preset: Preset = {
           name: "test preset",
           mode: "for",
-          sceneName: "bunny",
+          sceneName: SceneName.Bunny,
           forTime: "2:00",
           untilDay: "0",
           untilHour: "0",
@@ -63,7 +63,7 @@ describe("getFriendlyEndTime", () => {
         const preset: Preset = {
           name: "test preset",
           mode: "for",
-          sceneName: "bunny",
+          sceneName: SceneName.Bunny,
           forTime: "2:23",
           untilDay: "0",
           untilHour: "0",
@@ -80,7 +80,7 @@ describe("getFriendlyEndTime", () => {
       const preset: Preset = {
         name: "test preset",
         mode: "until",
-        sceneName: "bunny",
+        sceneName: SceneName.Bunny,
         forTime: "",
         untilDay: "1",
         untilHour: "6",

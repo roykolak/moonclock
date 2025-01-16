@@ -1,27 +1,16 @@
 import { getData, set } from "@/server/db";
-import { Coordinates, Slot } from "@/types";
+import { Macro } from "../shared/display-engine";
+import { PresetField, Slot } from "@/types";
 import fs from "fs";
+import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
 
-const resetCoordinates: Coordinates = {};
-
-for (let x = 0; x < 32; x++) {
-  for (let y = 0; y < 32; y++) {
-    resetCoordinates[`${x}:${y}`] = "#000000";
-  }
+export function setDisplayedSlot(slot: Slot | null) {
+  displayedSlot = slot;
 }
 
-async function getSceneCoordinates(name: string) {
-  const file = fs.readFileSync(`./scenes/${name}.json`).toString();
-  return JSON.parse(file) as Coordinates;
-}
+let displayedSlot: Slot | null = null;
 
-export function setCurrentSlot(slot: Slot | null) {
-  currentSlot = slot;
-}
-
-let currentSlot: Slot | null = null;
-
-export async function checkForUpdates(): Promise<Coordinates[]> {
+export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
@@ -33,36 +22,34 @@ export async function checkForUpdates(): Promise<Coordinates[]> {
       slot?.endTime !== null &&
       new Date().getTime() > new Date(slot.endTime).getTime()
     ) {
-      console.log(`[CLEAR] ${slot.sceneName} has expired`);
+      console.log(`[CLEAR] ${slot.preset.name} has expired`);
       await set("slot", null);
 
-      return [resetCoordinates];
+      return [];
     }
 
-    const activeSceneName = slot?.sceneName || "nothing";
-    const currentSceneName = currentSlot?.sceneName || "nothing";
-
-    const activeCoordinates = await getSceneCoordinates(activeSceneName);
-    const currentCoordinates = await getSceneCoordinates(currentSceneName);
-
-    if (
-      JSON.stringify(currentCoordinates) !== JSON.stringify(activeCoordinates)
-    ) {
+    if (slot?.preset.sceneName !== displayedSlot?.preset.sceneName) {
       console.log(
-        `[UPDATE] Rerendering ${activeSceneName} until ${slot?.endTime}`
+        `[UPDATE] Rerendering ${slot?.preset[PresetField.Name]} until ${
+          slot?.endTime
+        }`
       );
 
-      setCurrentSlot(slot);
+      setDisplayedSlot(slot);
 
-      return [resetCoordinates, activeCoordinates];
-    } else if (currentSlot?.endTime !== slot?.endTime) {
+      return transformSlotToDisplayConfig(slot.preset);
+    } else if (displayedSlot?.endTime !== slot?.endTime) {
       console.log(
-        `[UPDATE] ${activeSceneName} endTime changed to ${slot.endTime}`
+        `[UPDATE] ${slot?.preset[PresetField.Name]} endTime changed to ${
+          slot.endTime
+        }`
       );
+
+      setDisplayedSlot(slot);
     }
   } catch (e) {
     console.log("Error!", e);
   }
 
-  return [];
+  return null;
 }

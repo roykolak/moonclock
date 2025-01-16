@@ -1,13 +1,14 @@
 "use client";
 
 import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
-import { Preset, Scene } from "../types";
-import Display from "./Display";
+import { Preset, PresetField } from "../types";
+import { SlotPreview } from "./SlotPreview";
+import { Macro } from "../../shared/display-engine";
 
 interface PresetItemProps {
   preset: Preset;
   formattedEndTime: string;
-  scene: Scene;
+  displayConfig: Macro[];
   index: number;
   onClick: (index: number) => void;
 }
@@ -16,7 +17,7 @@ export function PresetItem({
   index,
   preset,
   formattedEndTime,
-  scene,
+  displayConfig,
   onClick,
 }: PresetItemProps) {
   return (
@@ -24,7 +25,10 @@ export function PresetItem({
       <Group justify="space-between">
         <Flex align="center" gap="sm">
           <Box w="46">
-            <Display scene={scene} />
+            <SlotPreview
+              scene={preset[PresetField.SceneName]}
+              displayConfig={displayConfig}
+            />
           </Box>
           <Box>
             <Text fw="bold">{preset.name}</Text>

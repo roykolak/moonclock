@@ -26,7 +26,8 @@
     "next": "15.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "rpi-led-matrix": "^1.14.0"
+    "rpi-led-matrix": "^1.14.0",
+    "canvas": "^2.11.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

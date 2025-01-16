@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Box,
   Button,
   Flex,
   Group,
@@ -11,15 +10,13 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { Preset, PresetField, Scene } from "../types";
+import { Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
-import Display from "./Display";
 import { IconTrash } from "@tabler/icons-react";
 
 interface PresetFormProps {
   id?: number | null;
-  scenes: Scene[];
   presets: Preset[];
   showName?: boolean;
   onSubmit: (value: Preset) => void;
@@ -27,7 +24,6 @@ interface PresetFormProps {
 }
 
 export function PresetForm({
-  scenes,
   presets,
   id,
   showName = true,
@@ -38,11 +34,11 @@ export function PresetForm({
     initialValues: {
       mode: "for",
       name: "",
-      sceneName: scenes[0].name,
+      sceneName: SceneName.Moon,
       untilMinute: "0",
       untilDay: "0",
       untilHour: "0",
-      forTime: "0:00",
+      forTime: "0:05",
     },
   });
 
@@ -77,20 +73,16 @@ export function PresetForm({
             variant="filled"
             style={{ flex: 1 }}
             label="Scene name"
-            data={scenes?.map(({ name }) => ({
-              label: name,
-              value: name,
-            }))}
+            data={[
+              { label: "Moon", value: SceneName.Moon },
+              { label: "Bunny", value: SceneName.Bunny },
+              { label: "Minute countdown", value: SceneName.Countdown },
+            ]}
             data-testid="scene-select"
             required
             key={form.key(PresetField.SceneName)}
             {...form.getInputProps(PresetField.SceneName)}
           />
-          <Box w="36" mt={24}>
-            <Display
-              scene={scenes.find((s) => s.name === form.values.sceneName)}
-            />
-          </Box>
         </Group>
         <SegmentedControl
           fullWidth
@@ -103,13 +95,13 @@ export function PresetForm({
             <Text>Show for...</Text>
             <Select
               data={[
-                { label: "Forever", value: "0:00" },
                 { label: "5 minutes", value: "0:05" },
                 { label: "15 minutes", value: "0:15" },
                 { label: "30 minutes", value: "0:30" },
                 { label: "1 hour", value: "1:00" },
                 { label: "1 hour 30 minutes", value: "1:30" },
                 { label: "2 hours", value: "2:00" },
+                { label: "Forever", value: "0:00" },
               ]}
               data-testid="for-time-select"
               key={form.key(PresetField.ForTime)}

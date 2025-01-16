@@ -1,5 +1,5 @@
 import fs from "fs";
-import { DataTypes } from "../types";
+import { DataTypes, SceneName } from "../types";
 
 const defaultData: DataTypes = {
   panel: {
@@ -9,7 +9,7 @@ const defaultData: DataTypes = {
   presets: [
     {
       name: "Sleep Mode",
-      sceneName: "moon",
+      sceneName: SceneName.Moon,
       mode: "until",
       untilDay: "1",
       untilHour: "7",
@@ -18,12 +18,21 @@ const defaultData: DataTypes = {
     },
     {
       name: "Nap Mode",
-      sceneName: "bunny",
+      sceneName: SceneName.Bunny,
       mode: "for",
       untilDay: "0",
       untilHour: "0",
       untilMinute: "0",
       forTime: "2:00",
+    },
+    {
+      name: "Timeout",
+      sceneName: SceneName.Countdown,
+      mode: "for",
+      untilDay: "0",
+      untilHour: "0",
+      untilMinute: "0",
+      forTime: "0:05",
     },
   ],
 };
