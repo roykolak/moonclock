@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Modal, Stack } from "@mantine/core";
-import { Preset, Scene } from "../types";
+import { Preset } from "../types";
 import { PresetItem } from "./PresetItem";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";

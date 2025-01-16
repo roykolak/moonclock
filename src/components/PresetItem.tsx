@@ -2,8 +2,8 @@
 
 import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
 import { Preset, PresetField } from "../types";
-import { SlotPreview } from "./SlotPreview";
 import { Macro } from "../../shared/display-engine";
+import { SlotPreview } from "./SlotPreview";
 
 interface PresetItemProps {
   preset: Preset;
