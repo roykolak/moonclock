@@ -3,7 +3,7 @@
 import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
 import { Preset, PresetField } from "../types";
 import { SlotPreview } from "./SlotPreview";
-import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
+import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
 
 interface PresetItemProps {
   preset: Preset;
@@ -18,7 +18,7 @@ export function PresetItem({
   formattedEndTime,
   onClick,
 }: PresetItemProps) {
-  const displayConfig = transformSlotToDisplayConfig(preset);
+  const displayConfig = transformPresetToDisplayConfig(preset);
   return (
     <Card key={preset.name} padding="xs" data-testid="preset-item">
       <Group justify="space-between">

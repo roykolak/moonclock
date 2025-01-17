@@ -4,7 +4,7 @@ import { getEndDate } from "@/helpers/getEndDate";
 
 const coordinateScenes = ["bunny", "moon"];
 
-export function transformSlotToDisplayConfig(preset: Preset | null): Macro[] {
+export function transformPresetToDisplayConfig(preset: Preset | null): Macro[] {
   if (!preset) return [];
 
   const sceneName = preset[PresetField.SceneName];

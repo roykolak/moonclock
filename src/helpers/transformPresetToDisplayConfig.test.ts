@@ -2,9 +2,9 @@ import { beforeEach, describe, it } from "node:test";
 import { Preset, SceneName } from "@/types";
 import timekeeper from "timekeeper";
 import assert from "node:assert";
-import { transformSlotToDisplayConfig } from "./transformSlotToDisplayConfig";
+import { transformPresetToDisplayConfig } from "./transformPresetToDisplayConfig";
 
-describe("transformSlotToDisplayConfig", () => {
+describe("transformPresetToDisplayConfig", () => {
   beforeEach(() => {
     timekeeper.freeze(new Date(1735994402614));
   });
@@ -20,7 +20,7 @@ describe("transformSlotToDisplayConfig", () => {
       untilMinute: "0",
     };
 
-    const displayConfig = transformSlotToDisplayConfig(preset);
+    const displayConfig = transformPresetToDisplayConfig(preset);
 
     assert.equal(displayConfig.length, 1);
     assert.equal(displayConfig[0].macroName, "countdown");
@@ -38,7 +38,7 @@ describe("transformSlotToDisplayConfig", () => {
       untilMinute: "0",
     };
 
-    const displayConfig = transformSlotToDisplayConfig(preset);
+    const displayConfig = transformPresetToDisplayConfig(preset);
 
     assert.deepEqual(displayConfig, [
       {
@@ -61,7 +61,7 @@ describe("transformSlotToDisplayConfig", () => {
       untilMinute: "0",
     };
 
-    const displayConfig = transformSlotToDisplayConfig(preset);
+    const displayConfig = transformPresetToDisplayConfig(preset);
 
     assert.deepEqual(displayConfig, [
       {

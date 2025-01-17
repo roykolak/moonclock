@@ -18,7 +18,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
 import { SlotPreview } from "./SlotPreview";
-import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
+import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
 
 interface PanelProps {
   panel: PanelType;
@@ -37,7 +37,7 @@ export default function Panel({
 }: PanelProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
 
-  const displayConfig = transformSlotToDisplayConfig(slot?.preset || null);
+  const displayConfig = transformPresetToDisplayConfig(slot?.preset || null);
 
   return (
     <>
