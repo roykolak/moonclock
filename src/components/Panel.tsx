@@ -17,14 +17,13 @@ import { Panel as PanelType, Preset, PresetField, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
-import { Macro } from "../display-engine";
 import { SlotPreview } from "./SlotPreview";
+import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
 
 interface PanelProps {
   panel: PanelType;
   slot: Slot | null;
   presets: Preset[];
-  displayConfig: Macro[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
 }
@@ -34,10 +33,11 @@ export default function Panel({
   slot,
   formattedEndTime,
   formattedLastHeartbeat,
-  displayConfig,
   presets,
 }: PanelProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
+
+  const displayConfig = transformSlotToDisplayConfig(slot?.preset || null);
 
   return (
     <>

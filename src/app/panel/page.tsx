@@ -3,7 +3,6 @@ import { getLastHeartbeat } from "../../server/actions";
 import Panel from "../../components/Panel";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
-import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +13,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
   const { slot, panel, presets } = await getData();
-
-  const displayConfig = transformSlotToDisplayConfig(slot?.preset || null);
 
   const lastHeartBeat = await getLastHeartbeat();
 
@@ -44,7 +41,6 @@ export default async function Page() {
       <Panel
         panel={panel}
         slot={slot}
-        displayConfig={displayConfig}
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
         presets={presets}

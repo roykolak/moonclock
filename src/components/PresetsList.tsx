@@ -8,19 +8,13 @@ import { PresetForm } from "./PresetForm";
 import { useState } from "react";
 import { showNotification } from "@mantine/notifications";
 import { setPresets } from "@/server/actions";
-import { Macro } from "../display-engine";
 
 interface PresetsListProps {
   presets: Preset[];
-  displayConfigs: Macro[][];
   formattedEndTimes: string[];
 }
 
-export function PresetsList({
-  presets,
-  displayConfigs,
-  formattedEndTimes,
-}: PresetsListProps) {
+export function PresetsList({ presets, formattedEndTimes }: PresetsListProps) {
   const [selectedPresetId, setSelectedPresetId] = useState<number | null>(null);
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
 
@@ -74,7 +68,6 @@ export function PresetsList({
             preset={preset}
             index={i}
             formattedEndTime={formattedEndTimes[i]}
-            displayConfig={displayConfigs[i]}
             onClick={(index) => {
               setSelectedPresetId(index);
               presetModalHandlers.open();

@@ -15,17 +15,17 @@ export async function setSlot(slot: Slot | null) {
   revalidatePath("/panel");
 }
 
+export async function setPresets(presets: Preset[]) {
+  set("presets", presets);
+  revalidatePath("/presets");
+}
+
 export async function getLastHeartbeat() {
   try {
     return fs.readFileSync(`./hardware/lastHeartbeat.txt`).toString();
   } catch {
     return null;
   }
-}
-
-export async function setPresets(presets: Preset[]) {
-  set("presets", presets);
-  revalidatePath("/presets");
 }
 
 export async function changeEndTime(minuteChange: number) {
