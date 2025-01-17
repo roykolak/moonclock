@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Box,
   Button,
   Flex,
   Group,
@@ -14,6 +15,8 @@ import { Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import { IconTrash } from "@tabler/icons-react";
+import { SlotPreview } from "./SlotPreview";
+import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
 
 interface PresetFormProps {
   id?: number | null;
@@ -53,6 +56,12 @@ export function PresetForm({
       onSubmit={form.onSubmit((values) => onSubmit(values))}
       data-testid="preset-form"
     >
+      <Box w="50%" m="auto" mb="md">
+        <SlotPreview
+          scene={form.values[PresetField.SceneName]}
+          displayConfig={transformPresetToDisplayConfig(form.values)}
+        />
+      </Box>
       <Stack>
         {showName && (
           <TextInput

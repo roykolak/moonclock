@@ -2,7 +2,7 @@ import { getData, set } from "@/server/db";
 import { Macro } from "../src/display-engine";
 import { PresetField, Slot } from "@/types";
 import fs from "fs";
-import { transformSlotToDisplayConfig } from "@/helpers/transformSlotToDisplayConfig";
+import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
 
 export function setDisplayedSlot(slot: Slot | null) {
   displayedSlot = slot;
@@ -37,7 +37,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
 
       setDisplayedSlot(slot);
 
-      return transformSlotToDisplayConfig(slot.preset);
+      return transformPresetToDisplayConfig(slot.preset);
     } else if (displayedSlot?.endTime !== slot?.endTime) {
       console.log(
         `[UPDATE] ${slot?.preset[PresetField.Name]} endTime changed to ${
