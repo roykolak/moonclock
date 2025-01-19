@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { unlinkSync } from "fs";
+import { readFileSync, unlinkSync } from "fs";
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 test.describe("Test", () => {
   test.beforeEach(() => {
@@ -145,7 +149,7 @@ test.describe("Test", () => {
     await expect(page.getByText("New Moonclock")).toBeVisible();
   });
 
-  test.skip("creating, editting, and saving a new scene", async ({ page }) => {
+  test("creating, editting, and saving a new scene", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
     await page.getByRole("link", { name: "Composer" }).click();
@@ -158,16 +162,16 @@ test.describe("Test", () => {
     await page.getByRole("button", { name: "Create" }).click();
 
     await page.getByTestId("color-0").click();
-    await page.getByTestId("dot_0_1").click();
+    await page.getByTestId("dot-0-1").click();
     await page.getByTestId("color-1").click();
-    await page.getByTestId("dot_1_10").click();
+    await page.getByTestId("dot-1-10").click();
 
     await page.getByRole("button", { name: "Save Scene" }).click();
 
     await wait(1000);
 
     const coordinates = JSON.parse(
-      readFileSync(`./scenes/cool-scene.json`).toString()
+      readFileSync(`./custom_scenes/cool-scene.json`).toString()
     );
 
     expect(Object.keys(coordinates)).toEqual(["0:1", "1:10"]);

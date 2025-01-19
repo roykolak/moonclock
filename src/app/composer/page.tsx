@@ -1,13 +1,13 @@
 import App from "../../components/App";
-import { getScenes } from "../../server/actions";
+import { getCustomScenes } from "../../server/actions";
 import { Editor } from "./../../components/Editor";
 
 export default async function Page() {
-  // const scenes = await getScenes();
+  const customScenes = await getCustomScenes();
 
   return (
     <App>
-      <Editor scenes={[]} />
+      <Editor customScenes={customScenes} />
     </App>
   );
 }

@@ -69,6 +69,7 @@ function Dot({
       data-coordinates={`${x}:${y}`}
       onClick={onClick}
       onMouseOver={onMouseOver}
+      data-testid={`dot-${x}-${y}`}
       style={{
         backgroundColor: matrix[`${x}:${y}`] || "#000",
         height: "90%",

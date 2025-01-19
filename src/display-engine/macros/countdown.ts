@@ -1,5 +1,7 @@
 import { syncFromCanvas } from "../canvas";
-import { MacroCountdownConfig, MacroFn } from "../types";
+import { MacroFn } from "../types";
+
+const colors = ["#6aa84f", "#fa6a31", "#2e7fc8", "#ffc332", "#218787"];
 
 export const startCountdown: MacroFn = async ({
   macroConfig,
@@ -17,7 +19,9 @@ export const startCountdown: MacroFn = async ({
 
   const interval = setInterval(() => {
     const minutes = Math.floor(
-      (config.endDate.getTime() - new Date().getTime()) / (1000 * 60) + 1
+      (new Date(config.endDate).getTime() - new Date().getTime()) /
+        (1000 * 60) +
+        1
     );
 
     const textMetrics = ctx.measureText(`${minutes}`);
@@ -27,7 +31,7 @@ export const startCountdown: MacroFn = async ({
 
     ctx.clearRect(0, 0, config.width, config.height);
 
-    ctx.fillStyle = "#6aa84f";
+    ctx.fillStyle = colors[minutes - 1];
     ctx.fillRect(0, 0, dimensions.width, dimensions.height);
 
     ctx.textBaseline = "top";

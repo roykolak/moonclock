@@ -13,17 +13,19 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { TouchDisplay } from "./TouchDisplay";
-import { Scene } from "@/types";
-import { setScene } from "@/server/actions";
+import { setCustomSceneData } from "@/server/actions";
+import { CustomScene } from "@/types";
 
 function Color({
   color,
   setActiveColor,
   activeColor,
+  index,
 }: {
   color: string | null;
   setActiveColor: (color: string | null) => void;
   activeColor: string | null;
+  index: number;
 }) {
   return (
     <>
@@ -34,6 +36,7 @@ function Color({
           background: color || "#000",
           border: color === activeColor ? "2px solid red" : "none",
         }}
+        data-testid={`color-${index}`}
         onClick={() => setActiveColor(color)}
       ></div>
     </>
@@ -48,7 +51,7 @@ function Palette({
   setActiveColor: any;
   matrix: any;
 }) {
-  const [colors, setColors] = useState([null]);
+  const [colors, setColors] = useState(["#89CFF0", "#facc0d"]);
 
   useEffect(() => {
     const matrixColors = new Set<string>();
@@ -56,17 +59,20 @@ function Palette({
     for (const coordinate in matrix) {
       matrixColors.add(matrix[coordinate]);
     }
-    setColors([...(matrixColors.size === 0 ? colors : []), ...matrixColors]);
+
+    setColors([...colors, ...matrixColors]);
   }, [JSON.stringify(matrix)]);
+
   return (
     <Group justify="space-between" w="100%">
       <Group gap={0}>
-        {colors.map((color) => (
+        {colors.map((color, i) => (
           <Color
             color={color}
             setActiveColor={setActiveColor}
             activeColor={activeColor}
             key={color}
+            index={i}
           />
         ))}
       </Group>
@@ -87,8 +93,8 @@ function Palette({
   );
 }
 
-export function Editor({ scenes }: { scenes: Scene[] }) {
-  const [selectedScene, setSelectedScene] = useState(scenes[0]);
+export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
+  const [selectedScene, setSelectedScene] = useState(customScenes[0]);
   const [showGrid, setShowGrid] = useState(false);
 
   const [activeColor, setActiveColor] = useState(null);
@@ -112,10 +118,11 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
         placeholder="Select a scene..."
         variant="filled"
         style={{ flex: 1 }}
-        value={selectedScene.name}
+        value={selectedScene?.name}
+        data-testid="edit-scene-select"
         data={[
           { label: "New scene", value: "new-scene" },
-          ...scenes?.map(({ name }) => ({
+          ...customScenes?.map(({ name }) => ({
             label: name,
             value: name,
           })),
@@ -125,7 +132,9 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
             return open();
           }
 
-          const newSelectedScene = scenes.find(({ name }) => name === value);
+          const newSelectedScene = customScenes.find(
+            ({ name }) => name === value
+          );
 
           if (newSelectedScene) {
             setSelectedScene(newSelectedScene);
@@ -136,13 +145,14 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
         <form
           onSubmit={form.onSubmit(async ({ name }) => {
             const newScene = { name, coordinates: {} };
-            await setScene(newScene);
+            await setCustomSceneData(newScene);
             setSelectedScene(newScene);
             close();
           })}
         >
           <TextInput
             label="Scene Name"
+            data-testid="new-scene-name"
             key={form.key("name")}
             {...form.getInputProps("name")}
           />
@@ -172,7 +182,10 @@ export function Editor({ scenes }: { scenes: Scene[] }) {
           ></Checkbox>
           <Button
             onClick={() => {
-              setScene({ name: selectedScene.name, coordinates: matrix });
+              setCustomSceneData({
+                name: selectedScene.name,
+                coordinates: matrix,
+              });
             }}
           >
             Save Scene

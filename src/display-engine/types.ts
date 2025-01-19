@@ -12,7 +12,7 @@ export enum MacroName {
   Ripple = "ripple",
   Custom = "custom",
   Coordinates = "coordinates",
-  Scene = "scene",
+  Moon = "moon",
   Countdown = "countdown",
 }
 export interface Gradient {
@@ -96,7 +96,7 @@ export interface MacroImageConfig {
 }
 
 export interface MacroCountdownConfig {
-  endDate: Date;
+  endDate: string;
 }
 
 export interface MacroCoordinatesConfig {
@@ -105,10 +105,8 @@ export interface MacroCoordinatesConfig {
   };
 }
 
-export type SceneName = "moon" | "bunny" | "nothing";
-
-export interface MacroSceneConfig {
-  sceneName: SceneName;
+export interface MacroMoonConfig {
+  optional?: any;
 }
 
 export type MacroConfig =
@@ -120,7 +118,7 @@ export type MacroConfig =
   | MacroImageConfig
   | MacroCustomConfig
   | MacroCoordinatesConfig
-  | MacroSceneConfig
+  | MacroMoonConfig
   | MacroCountdownConfig;
 
 export interface Macro {

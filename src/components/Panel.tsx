@@ -12,13 +12,13 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { changeEndTime, setSlot } from "../server/actions";
-import { Panel as PanelType, Preset, PresetField, Slot } from "../types";
+import { setSlot } from "../server/actions";
+import { changeEndTime } from "../server/changeEndTime";
+import { Panel as PanelType, Preset, Slot } from "../types";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
-import { SlotPreview } from "./SlotPreview";
-import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
+import { PresetPreview } from "./PresetPreview";
 
 interface PanelProps {
   panel: PanelType;
@@ -36,8 +36,6 @@ export default function Panel({
   presets,
 }: PanelProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
-
-  const displayConfig = transformPresetToDisplayConfig(slot?.preset || null);
 
   return (
     <>
@@ -87,10 +85,7 @@ export default function Panel({
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <SlotPreview
-              scene={slot?.preset[PresetField.SceneName]}
-              displayConfig={displayConfig}
-            />
+            <PresetPreview preset={slot?.preset} />
 
             {!slot?.preset && (
               <Stack

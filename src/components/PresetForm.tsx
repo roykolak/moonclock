@@ -15,8 +15,8 @@ import { Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 import { IconTrash } from "@tabler/icons-react";
-import { SlotPreview } from "./SlotPreview";
-import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
+import { PresetPreview } from "./PresetPreview";
+import useSWR from "swr";
 
 interface PresetFormProps {
   id?: number | null;
@@ -25,6 +25,8 @@ interface PresetFormProps {
   onSubmit: (value: Preset) => void;
   onDelete?: () => void;
 }
+
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export function PresetForm({
   presets,
@@ -37,13 +39,14 @@ export function PresetForm({
     initialValues: {
       mode: "for",
       name: "",
-      sceneName: SceneName.Moon,
+      scenes: [{ sceneName: SceneName.Moon }],
       untilMinute: "0",
       untilDay: "0",
       untilHour: "0",
       forTime: "0:05",
     },
   });
+  const { data: scenes } = useSWR("/api/sceneNames", fetcher);
 
   useEffect(() => {
     if (editting) form.setValues(presets[id]);
@@ -57,10 +60,7 @@ export function PresetForm({
       data-testid="preset-form"
     >
       <Box w="50%" m="auto" mb="md">
-        <SlotPreview
-          scene={form.values[PresetField.SceneName]}
-          displayConfig={transformPresetToDisplayConfig(form.values)}
-        />
+        <PresetPreview preset={form.values} />
       </Box>
       <Stack>
         {showName && (
@@ -82,15 +82,14 @@ export function PresetForm({
             variant="filled"
             style={{ flex: 1 }}
             label="Scene name"
-            data={[
-              { label: "Moon", value: SceneName.Moon },
-              { label: "Bunny", value: SceneName.Bunny },
-              { label: "Minute countdown", value: SceneName.Countdown },
-            ]}
+            data={scenes?.map((scene) => ({
+              label: scene,
+              value: scene,
+            }))}
             data-testid="scene-select"
             required
-            key={form.key(PresetField.SceneName)}
-            {...form.getInputProps(PresetField.SceneName)}
+            key={form.key(`${PresetField.Scenes}.0.sceneName`)}
+            {...form.getInputProps(`${PresetField.Scenes}.0.sceneName`)}
           />
         </Group>
         <SegmentedControl

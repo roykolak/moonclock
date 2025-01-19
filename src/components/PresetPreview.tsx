@@ -3,20 +3,28 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createDisplayEngine, Macro } from "../display-engine";
 import { createCanvas } from "canvas";
-import { SceneName } from "@/types";
+import { Preset, PresetField } from "@/types";
+import { transformPresetToDisplayMacros } from "@/server/transformPresetToDisplayMacros";
 
 const dimensions = { height: 32, width: 32 };
 
 interface DisplayProps {
-  scene: SceneName | undefined;
-  displayConfig: Macro[] | undefined;
+  preset?: Preset;
 }
 
-export function SlotPreview({ scene, displayConfig }: DisplayProps) {
+export function PresetPreview({ preset }: DisplayProps) {
   const [imageData, setImageData] = useState<string | null>();
 
   const [engine, setEngine] = useState<any>();
   const [stop, setStop] = useState<any>();
+
+  const [displayConfig, setDisplayConfig] = useState<Macro[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      setDisplayConfig(await transformPresetToDisplayMacros(preset || null));
+    })();
+  }, [preset]);
 
   useEffect(() => {
     const canvas = createCanvas(dimensions.width, dimensions.height);
@@ -51,7 +59,6 @@ export function SlotPreview({ scene, displayConfig }: DisplayProps) {
 
   const renderDisplay = useCallback(() => {
     if (!engine) return;
-    console.log("useCallback", displayConfig);
     const halt = engine?.render(displayConfig);
     setStop(() => halt);
   }, [engine, JSON.stringify(displayConfig), setStop]);
@@ -67,9 +74,8 @@ export function SlotPreview({ scene, displayConfig }: DisplayProps) {
     >
       {imageData && (
         <img
-          alt={`${scene} scene`}
+          alt={`${preset?.[PresetField.Scenes][0].sceneName} scene`}
           src={imageData}
-          width="100%"
           style={{ imageRendering: "pixelated" }}
         />
       )}

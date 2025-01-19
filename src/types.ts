@@ -1,3 +1,5 @@
+import { MacroName } from "./display-engine";
+
 export interface DataTypes {
   panel: Panel;
   slot: Slot | null;
@@ -20,7 +22,7 @@ export interface Time {
 
 export enum PresetField {
   Name = "name",
-  SceneName = "sceneName",
+  Scenes = "scenes",
   Mode = "mode",
   UntilDay = "untilDay",
   UntilHour = "untilHour",
@@ -29,14 +31,14 @@ export enum PresetField {
 }
 
 export enum SceneName {
-  Bunny = "bunny",
   Moon = "moon",
   Countdown = "countdown",
+  Twinkle = "twinkle",
 }
 
 export interface Preset {
   [PresetField.Name]: string;
-  [PresetField.SceneName]: SceneName;
+  scenes: SceneConfig[];
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;
   [PresetField.UntilHour]: string;
@@ -44,7 +46,11 @@ export interface Preset {
   [PresetField.ForTime]: string;
 }
 
-export interface Scene {
+export interface SceneConfig {
+  sceneName: string;
+}
+
+export interface CustomScene {
   name: string;
   coordinates: Coordinates;
 }

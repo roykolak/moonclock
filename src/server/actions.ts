@@ -3,7 +3,7 @@
 import fs from "fs";
 import { revalidatePath } from "next/cache";
 import { Panel, Preset, Slot } from "../types";
-import { getData, set } from "./db";
+import { set } from "./db";
 
 export async function setPanel(panel: Panel | null) {
   set("panel", panel);
@@ -20,27 +20,31 @@ export async function setPresets(presets: Preset[]) {
   revalidatePath("/presets");
 }
 
+export async function getCustomScenes() {
+  return fs.readdirSync("./custom_scenes").map((file) => {
+    const name = file.split(".")[0];
+    const coordinates = JSON.parse(
+      fs.readFileSync(`./custom_scenes/${name}.json`).toString()
+    );
+    return { name, coordinates };
+  });
+}
+
+export async function setCustomSceneData({
+  name,
+  coordinates,
+}: {
+  name: string;
+  coordinates: { [k: string]: string };
+}) {
+  const fileName = `./custom_scenes/${name}.json`;
+  fs.writeFileSync(fileName, JSON.stringify(coordinates, null, 2));
+}
+
 export async function getLastHeartbeat() {
   try {
     return fs.readFileSync(`./hardware/lastHeartbeat.txt`).toString();
   } catch {
     return null;
   }
-}
-
-export async function changeEndTime(minuteChange: number) {
-  const { slot } = await getData();
-
-  if (!slot) {
-    return revalidatePath("/panel");
-  }
-
-  if (slot.endTime === null) return;
-
-  const newEnd = new Date(slot.endTime);
-  newEnd.setMinutes(newEnd.getMinutes() + minuteChange);
-
-  slot.endTime = newEnd.toJSON();
-
-  await setSlot(slot);
 }
