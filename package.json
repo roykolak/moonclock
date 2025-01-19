@@ -22,12 +22,13 @@
     "@mantine/hooks": "^7.15.1",
     "@mantine/notifications": "^7.15.2",
     "@tabler/icons-react": "^3.24.0",
+    "canvas": "2.11.2",
     "commander": "^12.1.0",
     "next": "15.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "rpi-led-matrix": "^1.14.0",
-    "canvas": "2.11.2"
+    "swr": "^2.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

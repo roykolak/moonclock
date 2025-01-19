@@ -10,7 +10,7 @@ export const startTwinkle: MacroFn = async ({
   updatePixels,
 }) => {
   const config = {
-    color: "#FFF",
+    color: "#FFFFFF",
     speed: 100,
     width: dimensions.width,
     height: dimensions.height,

@@ -46,7 +46,7 @@ describe.only("checkForUpdates", () => {
         endTime: date.toJSON(),
         preset: {
           name: "bedtime",
-          sceneName: SceneName.Moon,
+          scenes: [{ sceneName: SceneName.Moon }],
         } as Preset,
       };
 
@@ -56,13 +56,11 @@ describe.only("checkForUpdates", () => {
 
       const displayConfig = await checkForNewDisplayConfig();
 
-      assert.equal((await getData())?.slot?.preset.sceneName, "moon");
+      assert.equal((await getData())?.slot?.preset.scenes[0].sceneName, "moon");
       assert.deepEqual(displayConfig, [
         {
-          macroConfig: {
-            sceneName: "moon",
-          },
-          macroName: "scene",
+          macroConfig: {},
+          macroName: "moon",
         },
       ]);
     });

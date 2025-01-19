@@ -1,9 +1,8 @@
 "use client";
 
 import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
-import { Preset, PresetField } from "../types";
-import { SlotPreview } from "./SlotPreview";
-import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
+import { Preset } from "../types";
+import { PresetPreview } from "./PresetPreview";
 
 interface PresetItemProps {
   preset: Preset;
@@ -18,16 +17,12 @@ export function PresetItem({
   formattedEndTime,
   onClick,
 }: PresetItemProps) {
-  const displayConfig = transformPresetToDisplayConfig(preset);
   return (
     <Card key={preset.name} padding="xs" data-testid="preset-item">
       <Group justify="space-between">
         <Flex align="center" gap="sm">
           <Box w="46">
-            <SlotPreview
-              scene={preset[PresetField.SceneName]}
-              displayConfig={displayConfig}
-            />
+            <PresetPreview preset={preset} />
           </Box>
           <Box>
             <Text fw="bold">{preset.name}</Text>

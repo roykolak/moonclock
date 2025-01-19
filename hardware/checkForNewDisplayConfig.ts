@@ -2,7 +2,7 @@ import { getData, set } from "@/server/db";
 import { Macro } from "../src/display-engine";
 import { PresetField, Slot } from "@/types";
 import fs from "fs";
-import { transformPresetToDisplayConfig } from "@/helpers/transformPresetToDisplayConfig";
+import { transformPresetToDisplayMacros } from "@/server/transformPresetToDisplayMacros";
 
 export function setDisplayedSlot(slot: Slot | null) {
   displayedSlot = slot;
@@ -28,7 +28,10 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
       return [];
     }
 
-    if (slot?.preset.sceneName !== displayedSlot?.preset.sceneName) {
+    if (
+      slot?.preset.scenes[0].sceneName !==
+      displayedSlot?.preset.scenes[0].sceneName
+    ) {
       console.log(
         `[UPDATE] Rerendering ${slot?.preset[PresetField.Name]} until ${
           slot?.endTime
@@ -37,7 +40,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
 
       setDisplayedSlot(slot);
 
-      return transformPresetToDisplayConfig(slot.preset);
+      return transformPresetToDisplayMacros(slot.preset);
     } else if (displayedSlot?.endTime !== slot?.endTime) {
       console.log(
         `[UPDATE] ${slot?.preset[PresetField.Name]} endTime changed to ${

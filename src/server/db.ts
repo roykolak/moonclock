@@ -9,7 +9,7 @@ const defaultData: DataTypes = {
   presets: [
     {
       name: "Sleep Mode",
-      sceneName: SceneName.Moon,
+      scenes: [{ sceneName: SceneName.Moon }],
       mode: "until",
       untilDay: "1",
       untilHour: "7",
@@ -18,7 +18,7 @@ const defaultData: DataTypes = {
     },
     {
       name: "Nap Mode",
-      sceneName: SceneName.Bunny,
+      scenes: [{ sceneName: SceneName.Bunny }],
       mode: "for",
       untilDay: "0",
       untilHour: "0",
@@ -27,7 +27,7 @@ const defaultData: DataTypes = {
     },
     {
       name: "Timeout",
-      sceneName: SceneName.Countdown,
+      scenes: [{ sceneName: SceneName.Countdown }],
       mode: "for",
       untilDay: "0",
       untilHour: "0",

@@ -1,41 +1,28 @@
-import { bunny } from "../scenes/bunny";
 import { moon } from "../scenes/moon";
-import { nothing } from "../scenes/nothing";
-import {
-  MacroCoordinatesConfig,
-  MacroFn,
-  MacroSceneConfig,
-  SceneName,
-} from "../types";
+import { MacroCoordinatesConfig, MacroFn } from "../types";
 import { startCoordinates } from "./coordinates";
 
-export const startScene: MacroFn = async ({
-  macroConfig,
+export const startMoon: MacroFn = async ({
   dimensions,
   ctx,
   index,
   updatePixels,
 }) => {
-  const config = {
-    sceneName: "moon", // default
-    ...macroConfig,
-  } as MacroSceneConfig;
-
   const coordinatesConfig: MacroCoordinatesConfig = {
-    coordinates: getSceneCoordinates(config.sceneName),
+    coordinates: moon,
   };
 
   let frame = 0;
 
   const interval = setInterval(() => {
     const rgba = new Uint8ClampedArray([255, 255, 255, 255]);
-    if (frame === 2 && config.sceneName === "moon") {
+    if (frame === 2) {
       updatePixels([{ y: 6, x: 5, rgba }], index);
-    } else if (frame === 15 && config.sceneName === "moon") {
+    } else if (frame === 15) {
       updatePixels([{ y: 9, x: 15, rgba }], index);
-    } else if (frame === 38 && config.sceneName === "moon") {
+    } else if (frame === 38) {
       updatePixels([{ y: 22, x: 30, rgba }], index);
-    } else if (frame === 40 && config.sceneName === "moon") {
+    } else if (frame === 40) {
       updatePixels([{ y: 29, x: 12, rgba }], index);
     } else {
       startCoordinates({
@@ -60,14 +47,3 @@ export const startScene: MacroFn = async ({
 
   return Promise.resolve(() => clearInterval(interval));
 };
-
-function getSceneCoordinates(scene: SceneName) {
-  if (scene === "moon") {
-    return moon;
-  } else if (scene === "bunny") {
-    return bunny;
-  } else if (scene === "nothing") {
-    return nothing;
-  }
-  return {};
-}

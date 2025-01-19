@@ -16,9 +16,9 @@ import {
   MacroImageConfig,
   MacroMarqueeConfig,
   MacroMeteorsConfig,
+  MacroMoonConfig,
   MacroName,
   MacroRippleConfig,
-  MacroSceneConfig,
   MacroTextConfig,
   MacroTwinkleConfig,
   Pixel,
@@ -29,17 +29,10 @@ import { startImage } from "./macros/image";
 import { startCustom } from "./macros/custom";
 import { buildCanvas } from "./canvas";
 import { startCoordinates } from "./macros/coordinates";
-import { startScene } from "./macros/scene";
+import { startMoon } from "./macros/moon";
 import { startCountdown } from "./macros/countdown";
 
-export type {
-  Pixel,
-  Macro,
-  SceneName,
-  MacroConfig,
-  MacroName,
-  Dimensions,
-} from "./types";
+export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
 
 export const twinkle = (macroConfig: Partial<MacroTwinkleConfig>): Macro => ({
   macroName: MacroName.Twinkle,
@@ -81,8 +74,8 @@ export const custom = (macroConfig: Partial<MacroCustomConfig>): Macro => ({
   macroConfig,
 });
 
-export const scene = (macroConfig: Partial<MacroSceneConfig>): Macro => ({
-  macroName: MacroName.Scene,
+export const moon = (macroConfig: Partial<MacroMoonConfig>): Macro => ({
+  macroName: MacroName.Moon,
   macroConfig,
 });
 
@@ -122,7 +115,7 @@ function startMacros({
       [MacroName.Meteors]: startMeteors,
       [MacroName.Custom]: startCustom,
       [MacroName.Coordinates]: startCoordinates,
-      [MacroName.Scene]: startScene,
+      [MacroName.Moon]: startMoon,
       [MacroName.Countdown]: startCountdown,
     };
 
