@@ -8,17 +8,14 @@ import {
   Center,
   Flex,
   Group,
-  Modal,
   Stack,
   Text,
 } from "@mantine/core";
-import { setSlot } from "../server/actions";
-import { changeEndTime } from "../server/changeEndTime";
+import { setSlot, changeEndTime } from "../server/actions";
 import { Panel as PanelType, Preset, Slot } from "../types";
-import { useDisclosure } from "@mantine/hooks";
-import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
+import Link from "next/link";
 
 interface PanelProps {
   panel: PanelType;
@@ -35,30 +32,8 @@ export default function Panel({
   formattedLastHeartbeat,
   presets,
 }: PanelProps) {
-  const [presetModalOpen, presetModalHandlers] = useDisclosure();
-
   return (
     <>
-      <Modal
-        title="Custom Preset"
-        opened={presetModalOpen}
-        onClose={presetModalHandlers.close}
-      >
-        <PresetForm
-          presets={presets}
-          showName={false}
-          onSubmit={(values) => {
-            const endDate = getEndDate(values);
-
-            setSlot({
-              preset: { ...values, name: "Custom" },
-              endTime: endDate ? endDate.toJSON() : null,
-            });
-
-            presetModalHandlers.close();
-          }}
-        />
-      </Modal>
       <Card
         shadow="sm"
         padding="lg"
@@ -115,7 +90,8 @@ export default function Panel({
                 <Button
                   variant="light"
                   fullWidth
-                  onClick={presetModalHandlers.open}
+                  href="/panel/custom"
+                  component={Link}
                 >
                   Custom...
                 </Button>

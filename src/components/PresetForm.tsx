@@ -10,71 +10,72 @@ import {
   Stack,
   Text,
   TextInput,
+  Title,
 } from "@mantine/core";
-import { Preset, PresetField, SceneName } from "../types";
+import { CustomScene, Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
-import { useEffect } from "react";
 import { IconTrash } from "@tabler/icons-react";
 import { PresetPreview } from "./PresetPreview";
-import useSWR from "swr";
+import { useActionState, useEffect } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { deletePreset } from "@/server/actions";
 
 interface PresetFormProps {
-  id?: number | null;
-  presets: Preset[];
-  showName?: boolean;
-  onSubmit: (value: Preset) => void;
-  onDelete?: () => void;
+  index: number | null;
+  preset?: Preset;
+  customScenes: CustomScene[];
+  title: string;
+  action: (previousState: any, formData: FormData) => Promise<string>;
 }
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
+const defaultPreset: Preset = {
+  mode: "for",
+  name: "",
+  scenes: [{ sceneName: SceneName.Moon }],
+  untilMinute: "0",
+  untilDay: "0",
+  untilHour: "0",
+  forTime: "0:05",
+};
 
 export function PresetForm({
-  presets,
-  id,
-  showName = true,
-  onSubmit,
-  onDelete,
+  index,
+  preset = defaultPreset,
+  customScenes,
+  action,
+  title,
 }: PresetFormProps) {
-  const form = useForm<Preset>({
-    initialValues: {
-      mode: "for",
-      name: "",
-      scenes: [{ sceneName: SceneName.Moon }],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-    },
-  });
-  const { data: scenes } = useSWR("/api/sceneNames", fetcher);
+  const router = useRouter();
+
+  const [message, formAction] = useActionState(action, null);
 
   useEffect(() => {
-    if (editting) form.setValues(presets[id]);
-  }, [id]);
+    if (!message) return;
+    router.back();
+  }, [message]);
 
-  const editting = id !== null && id !== undefined;
+  const form = useForm<Preset>({
+    initialValues: { ...defaultPreset, ...preset },
+  });
 
   return (
-    <form
-      onSubmit={form.onSubmit((values) => onSubmit(values))}
-      data-testid="preset-form"
-    >
+    <form action={formAction} data-testid="preset-form">
+      <Title order={2}>{title}</Title>
       <Box w="50%" m="auto" mb="md">
         <PresetPreview preset={form.values} />
       </Box>
       <Stack>
-        {showName && (
-          <TextInput
-            placeholder=""
-            variant="filled"
-            style={{ flex: 1 }}
-            label="Name"
-            required
-            data-testid="preset-name"
-            key={form.key(PresetField.Name)}
-            {...form.getInputProps(PresetField.Name)}
-          />
-        )}
+        <TextInput
+          placeholder=""
+          variant="filled"
+          style={{ flex: 1 }}
+          label="Name"
+          required
+          data-testid="preset-name"
+          key={form.key(PresetField.Name)}
+          name={PresetField.Name}
+          {...form.getInputProps(PresetField.Name)}
+        />
 
         <Group>
           <Select
@@ -82,13 +83,20 @@ export function PresetForm({
             variant="filled"
             style={{ flex: 1 }}
             label="Scene name"
-            data={scenes?.map((scene) => ({
-              label: scene,
-              value: scene,
-            }))}
+            data={[
+              {
+                group: "Built-in Scenes",
+                items: [SceneName.Moon, SceneName.Countdown, SceneName.Twinkle],
+              },
+              {
+                group: "Custom Scenes",
+                items: customScenes?.map((scene) => scene.name),
+              },
+            ]}
             data-testid="scene-select"
             required
             key={form.key(`${PresetField.Scenes}.0.sceneName`)}
+            name={`${PresetField.Scenes}.0.sceneName`}
             {...form.getInputProps(`${PresetField.Scenes}.0.sceneName`)}
           />
         </Group>
@@ -96,6 +104,7 @@ export function PresetForm({
           fullWidth
           data={["for", "until"]}
           key={form.key("mode")}
+          name={PresetField.Mode}
           {...form.getInputProps("mode")}
         />
         {form.values.mode === "for" && (
@@ -113,6 +122,7 @@ export function PresetForm({
               ]}
               data-testid="for-time-select"
               key={form.key(PresetField.ForTime)}
+              name={PresetField.ForTime}
               {...form.getInputProps(PresetField.ForTime)}
             />
           </>
@@ -136,6 +146,7 @@ export function PresetForm({
                 ]}
                 data-testid="until-hour-select"
                 key={form.key(PresetField.UntilHour)}
+                name={PresetField.UntilHour}
                 {...form.getInputProps(PresetField.UntilHour)}
               />
               <Text>:</Text>
@@ -149,6 +160,7 @@ export function PresetForm({
                 ]}
                 data-testid="until-minute-select"
                 key={form.key(PresetField.UntilMinute)}
+                name={PresetField.UntilMinute}
                 {...form.getInputProps(PresetField.UntilMinute)}
               />
             </Flex>
@@ -156,11 +168,14 @@ export function PresetForm({
         )}
 
         <Flex gap="sm" mt="lg">
-          {editting && (
+          {index !== null && (
             <Button
               color="red"
               variant="light"
-              onClick={onDelete}
+              onClick={() => {
+                deletePreset(index);
+                redirect("/presets");
+              }}
               title="Delete preset"
             >
               <IconTrash size="20" />

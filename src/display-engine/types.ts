@@ -96,6 +96,7 @@ export interface MacroImageConfig {
 }
 
 export interface MacroCountdownConfig {
+  color: string;
   endDate: string;
 }
 

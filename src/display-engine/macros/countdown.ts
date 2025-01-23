@@ -19,7 +19,7 @@ export const startCountdown: MacroFn = async ({
 
   const interval = setInterval(() => {
     const minutes = Math.floor(
-      (new Date(config.endDate).getTime() - new Date().getTime()) /
+      (new Date((config as any).endDate).getTime() - new Date().getTime()) /
         (1000 * 60) +
         1
     );

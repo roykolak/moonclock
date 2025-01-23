@@ -28,7 +28,7 @@ export function PresetPreview({ preset }: DisplayProps) {
 
   useEffect(() => {
     const canvas = createCanvas(dimensions.width, dimensions.height);
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const ctx = canvas.getContext("2d");
 
     setEngine(
       createDisplayEngine({
@@ -59,8 +59,10 @@ export function PresetPreview({ preset }: DisplayProps) {
 
   const renderDisplay = useCallback(() => {
     if (!engine) return;
+    if (stop) stop();
+
     const halt = engine?.render(displayConfig);
-    setStop(() => halt);
+    setStop(() => () => halt);
   }, [engine, JSON.stringify(displayConfig), setStop]);
 
   return (
