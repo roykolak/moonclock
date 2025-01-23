@@ -1,5 +1,3 @@
-import { MacroName } from "./display-engine";
-
 export interface DataTypes {
   panel: Panel;
   slot: Slot | null;

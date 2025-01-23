@@ -3,19 +3,18 @@
 import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
 import { Preset } from "../types";
 import { PresetPreview } from "./PresetPreview";
+import Link from "next/link";
 
 interface PresetItemProps {
   preset: Preset;
   formattedEndTime: string;
   index: number;
-  onClick: (index: number) => void;
 }
 
 export function PresetItem({
   index,
   preset,
   formattedEndTime,
-  onClick,
 }: PresetItemProps) {
   return (
     <Card key={preset.name} padding="xs" data-testid="preset-item">
@@ -32,7 +31,12 @@ export function PresetItem({
           </Box>
         </Flex>
         <Flex align="center" gap="xs">
-          <Button size="sm" variant="light" onClick={() => onClick(index)}>
+          <Button
+            size="sm"
+            variant="light"
+            href={`/presets/${index}/edit`}
+            component={Link}
+          >
             Edit
           </Button>
         </Flex>

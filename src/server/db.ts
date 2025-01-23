@@ -18,7 +18,7 @@ const defaultData: DataTypes = {
     },
     {
       name: "Nap Mode",
-      scenes: [{ sceneName: SceneName.Bunny }],
+      scenes: [{ sceneName: "bunny" }],
       mode: "for",
       untilDay: "0",
       untilHour: "0",

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import exp from "constants";
 import { readFileSync, unlinkSync } from "fs";
 
 function wait(ms) {
@@ -53,16 +54,16 @@ test.describe("Test", () => {
   test("activating a custom preset and clearing it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("button", { name: "Custom" }).click();
+    await page.getByRole("link", { name: "Custom" }).click();
 
-    await expect(page.getByText("Custom Preset")).toBeVisible();
+    await expect(page.getByText("Create Custom Preset")).toBeVisible();
+
+    await page.getByTestId("preset-name").fill("Custom preset");
 
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "Forever", exact: true }).click();
 
     await page.getByRole("button", { name: "Save" }).click();
-
-    await page.getByTestId("preset-form").waitFor({ state: "detached" });
 
     await expect(page.getByText("Custom until...")).toBeVisible();
     await expect(page.getByText("forever")).toBeVisible();
@@ -83,7 +84,9 @@ test.describe("Test", () => {
 
     // Create Preset
 
-    await page.getByRole("button", { name: "New Preset" }).click();
+    await page.getByRole("link", { name: "New Preset" }).click();
+
+    await expect(page.getByText("Create New Preset")).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Custom preset");
 
@@ -92,7 +95,9 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Save" }).click();
 
-    await page.getByTestId("preset-form").waitFor({ state: "detached" });
+    await expect(page).toHaveURL("http://localhost:3000/presets", {
+      timeout: 1000,
+    });
 
     const newPreset = page.getByTestId("preset-item").nth(3);
 
@@ -104,7 +109,9 @@ test.describe("Test", () => {
 
     // Edit Preset
 
-    await newPreset.getByRole("button", { name: "Edit" }).click();
+    await newPreset.getByRole("link", { name: "Edit" }).click();
+
+    await expect(page.getByText("Edit Preset")).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Updated custom preset");
 
@@ -116,19 +123,14 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Save" }).click();
 
-    await page.getByTestId("preset-form").waitFor({ state: "detached" });
-
-    await expect(newPreset.getByText("Updated custom preset")).toBeVisible();
     await expect(newPreset.getByText("For 1 hours & 30 mins")).toBeVisible();
     await expect(newPreset.getByAltText("bunny scene")).toBeVisible();
 
     // Delete Preset
 
-    await newPreset.getByRole("button", { name: "Edit" }).click();
+    await newPreset.getByRole("link", { name: "Edit" }).click();
 
     await page.getByTitle("Delete preset").click();
-
-    await page.getByTestId("preset-form").waitFor({ state: "detached" });
 
     await expect(page.getByTestId("preset-item")).toHaveCount(3);
   });

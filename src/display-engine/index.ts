@@ -189,9 +189,12 @@ export function createDisplayEngine({
 
             pixelStack[index] = pixelToUpdate;
 
-            const rgba = pixelStack.reduce((baseColor, pixel) => {
-              return mixColors({ newColor: pixel.rgba, baseColor });
-            }, new Uint8ClampedArray([0, 0, 0, 255]));
+            const rgba = pixelStack.reduce<Uint8ClampedArray>(
+              (baseColor, pixel) => {
+                return mixColors({ newColor: pixel.rgba, baseColor });
+              },
+              new Uint8ClampedArray([0, 0, 0, 255])
+            );
 
             pixelsToUpdate.push({
               ...pixelToUpdate,
