@@ -2,6 +2,7 @@ import { PresetForm } from "@/components/PresetForm";
 import App from "@/components/App";
 import { getData } from "@/server/db";
 import { getCustomScenes, updatePreset } from "@/server/actions";
+import { PresetDelete } from "@/components/PresetDelete";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +19,12 @@ export default async function Page({
   return (
     <App>
       <PresetForm
-        index={index}
         title="Edit Preset"
         preset={presets[index]}
         customScenes={customScenes}
         action={updatePreset.bind(null, index)}
       />
+      <PresetDelete index={index}></PresetDelete>
     </App>
   );
 }

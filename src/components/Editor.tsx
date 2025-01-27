@@ -13,7 +13,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { TouchDisplay } from "./TouchDisplay";
-import { setCustomSceneData } from "@/server/actions";
+import { updateCustomSceneData } from "@/server/actions";
 import { CustomScene } from "@/types";
 
 function Color({
@@ -56,11 +56,13 @@ function Palette({
   useEffect(() => {
     const matrixColors = new Set<string>();
 
+    if (matrix.length === 0) return;
+
     for (const coordinate in matrix) {
       matrixColors.add(matrix[coordinate]);
     }
 
-    setColors([...colors, ...matrixColors]);
+    setColors([...matrixColors]);
   }, [JSON.stringify(matrix)]);
 
   return (
@@ -145,7 +147,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
         <form
           onSubmit={form.onSubmit(async ({ name }) => {
             const newScene = { name, coordinates: {} };
-            await setCustomSceneData(newScene);
+            await updateCustomSceneData(newScene);
             setSelectedScene(newScene);
             close();
           })}
@@ -182,7 +184,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
           ></Checkbox>
           <Button
             onClick={() => {
-              setCustomSceneData({
+              updateCustomSceneData({
                 name: selectedScene.name,
                 coordinates: matrix,
               });

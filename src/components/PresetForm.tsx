@@ -14,18 +14,14 @@ import {
 } from "@mantine/core";
 import { CustomScene, Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
-import { IconTrash } from "@tabler/icons-react";
 import { PresetPreview } from "./PresetPreview";
-import { useActionState, useEffect } from "react";
-import { redirect, useRouter } from "next/navigation";
-import { deletePreset } from "@/server/actions";
 
 interface PresetFormProps {
-  index: number | null;
   preset?: Preset;
   customScenes: CustomScene[];
-  title: string;
-  action: (previousState: any, formData: FormData) => Promise<string>;
+  title?: string;
+  submitLabel?: string;
+  action: (formData: FormData) => void;
 }
 
 const defaultPreset: Preset = {
@@ -39,28 +35,19 @@ const defaultPreset: Preset = {
 };
 
 export function PresetForm({
-  index,
   preset = defaultPreset,
   customScenes,
   action,
+  submitLabel,
   title,
 }: PresetFormProps) {
-  const router = useRouter();
-
-  const [message, formAction] = useActionState(action, null);
-
-  useEffect(() => {
-    if (!message) return;
-    router.back();
-  }, [message]);
-
   const form = useForm<Preset>({
     initialValues: { ...defaultPreset, ...preset },
   });
 
   return (
-    <form action={formAction} data-testid="preset-form">
-      <Title order={2}>{title}</Title>
+    <form action={action} data-testid="preset-form">
+      {title && <Title order={2}>{title}</Title>}
       <Box w="50%" m="auto" mb="md">
         <PresetPreview preset={form.values} />
       </Box>
@@ -167,22 +154,9 @@ export function PresetForm({
           </>
         )}
 
-        <Flex gap="sm" mt="lg">
-          {index !== null && (
-            <Button
-              color="red"
-              variant="light"
-              onClick={() => {
-                deletePreset(index);
-                redirect("/presets");
-              }}
-              title="Delete preset"
-            >
-              <IconTrash size="20" />
-            </Button>
-          )}
+        <Flex mt="lg">
           <Button type="submit" fullWidth>
-            Save
+            {submitLabel || "Save"}
           </Button>
         </Flex>
       </Stack>

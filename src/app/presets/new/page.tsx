@@ -10,7 +10,6 @@ export default async function Page() {
   return (
     <App>
       <PresetForm
-        index={null}
         title="Create New Preset"
         customScenes={customScenes}
         action={createPreset}
