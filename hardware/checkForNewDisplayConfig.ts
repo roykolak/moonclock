@@ -1,4 +1,4 @@
-import { getData, set } from "@/server/db";
+import { getData, setData } from "@/server/db";
 import { Macro } from "../src/display-engine";
 import { PresetField, Slot } from "@/types";
 import fs from "fs";
@@ -23,7 +23,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
       new Date().getTime() > new Date(slot.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${slot.preset.name} has expired`);
-      await set("slot", null);
+      await setData({ slot: null });
 
       return [];
     }

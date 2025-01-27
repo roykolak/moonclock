@@ -1,7 +1,7 @@
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert";
-import { getData, writeDb } from "@/server/db";
+import { getData, setData } from "@/server/db";
 import {
   checkForNewDisplayConfig,
   setDisplayedSlot,
@@ -26,7 +26,7 @@ describe.only("checkForUpdates", () => {
       } as Preset,
     };
 
-    writeDb({ slot, presets: [], panel: { name: "moonclock" } });
+    setData({ slot, presets: [], panel: { name: "moonclock" } });
 
     await checkForNewDisplayConfig();
 
@@ -50,7 +50,7 @@ describe.only("checkForUpdates", () => {
         } as Preset,
       };
 
-      writeDb({ slot, presets: [], panel: { name: "moonclock" } });
+      setData({ slot, presets: [], panel: { name: "moonclock" } });
 
       setDisplayedSlot(null);
 
@@ -80,7 +80,7 @@ describe.only("checkForUpdates", () => {
           } as Preset,
         };
 
-        writeDb({ slot, presets: [], panel: { name: "moonclock" } });
+        setData({ slot, presets: [], panel: { name: "moonclock" } });
 
         setDisplayedSlot(slot);
 
@@ -104,7 +104,7 @@ describe.only("checkForUpdates", () => {
           } as Preset,
         };
 
-        writeDb({ slot, presets: [], panel: { name: "moonclock" } });
+        setData({ slot, presets: [], panel: { name: "moonclock" } });
 
         const displayConfig = await checkForNewDisplayConfig();
 

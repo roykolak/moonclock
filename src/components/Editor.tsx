@@ -13,7 +13,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { TouchDisplay } from "./TouchDisplay";
-import { setCustomSceneData } from "@/server/actions";
+import { updateCustomSceneData } from "@/server/actions";
 import { CustomScene } from "@/types";
 
 function Color({
@@ -42,6 +42,9 @@ function Color({
     </>
   );
 }
+
+const defaultColors = ["#89CFF0", "#facc0d"];
+
 function Palette({
   activeColor,
   setActiveColor,
@@ -51,7 +54,7 @@ function Palette({
   setActiveColor: any;
   matrix: any;
 }) {
-  const [colors, setColors] = useState(["#89CFF0", "#facc0d"]);
+  const [colors, setColors] = useState(defaultColors);
 
   useEffect(() => {
     const matrixColors = new Set<string>();
@@ -60,7 +63,7 @@ function Palette({
       matrixColors.add(matrix[coordinate]);
     }
 
-    setColors([...colors, ...matrixColors]);
+    setColors([...defaultColors, ...matrixColors]);
   }, [JSON.stringify(matrix)]);
 
   return (
@@ -145,7 +148,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
         <form
           onSubmit={form.onSubmit(async ({ name }) => {
             const newScene = { name, coordinates: {} };
-            await setCustomSceneData(newScene);
+            await updateCustomSceneData(newScene);
             setSelectedScene(newScene);
             close();
           })}
@@ -182,7 +185,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
           ></Checkbox>
           <Button
             onClick={() => {
-              setCustomSceneData({
+              updateCustomSceneData({
                 name: selectedScene.name,
                 coordinates: matrix,
               });

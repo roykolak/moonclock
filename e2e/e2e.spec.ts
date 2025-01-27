@@ -54,16 +54,18 @@ test.describe("Test", () => {
   test("activating a custom preset and clearing it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("link", { name: "Custom" }).click();
+    await page.getByRole("button", { name: "Custom" }).click();
 
-    await expect(page.getByText("Create Custom Preset")).toBeVisible();
+    await expect(page.getByText("Set custom preset")).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Custom preset");
 
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "Forever", exact: true }).click();
 
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Apply now" }).click();
+
+    await page.getByTestId("preset-form").waitFor({ state: "detached" });
 
     await expect(page.getByText("Custom until...")).toBeVisible();
     await expect(page.getByText("forever")).toBeVisible();
@@ -94,10 +96,6 @@ test.describe("Test", () => {
     await page.getByRole("option", { name: "30 minutes", exact: true }).click();
 
     await page.getByRole("button", { name: "Save" }).click();
-
-    await expect(page).toHaveURL("http://localhost:3000/presets", {
-      timeout: 1000,
-    });
 
     const newPreset = page.getByTestId("preset-item").nth(3);
 
@@ -130,7 +128,7 @@ test.describe("Test", () => {
 
     await newPreset.getByRole("link", { name: "Edit" }).click();
 
-    await page.getByTitle("Delete preset").click();
+    await page.getByRole("button", { name: "Delete preset" }).click();
 
     await expect(page.getByTestId("preset-item")).toHaveCount(3);
   });
@@ -159,7 +157,7 @@ test.describe("Test", () => {
     await page.getByTestId("edit-scene-select").click();
     await page.getByRole("option", { name: "New scene" }).click();
 
-    await page.getByTestId("new-scene-name").fill("cool-scene");
+    await page.getByTestId("new-scene-name").fill("automated-test-scene-123");
 
     await page.getByRole("button", { name: "Create" }).click();
 
@@ -173,7 +171,7 @@ test.describe("Test", () => {
     await wait(1000);
 
     const coordinates = JSON.parse(
-      readFileSync(`./custom_scenes/cool-scene.json`).toString()
+      readFileSync(`./custom_scenes/automated-test-scene-123.json`).toString()
     );
 
     expect(Object.keys(coordinates)).toEqual(["0:1", "1:10"]);

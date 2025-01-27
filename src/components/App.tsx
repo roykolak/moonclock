@@ -1,11 +1,28 @@
 "use client";
 
-import { AppShell, Burger, Divider, Group, NavLink, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  AppShell,
+  Burger,
+  Divider,
+  Group,
+  NavLink,
+  Text,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import {
+  IconAdjustmentsHorizontal,
+  IconDeviceTv,
+  IconLayersIntersect,
+  IconSpray,
+} from "@tabler/icons-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function App({ children }: { children: React.ReactNode }) {
   const [navOpened, { toggle: toggleNav }] = useDisclosure();
+
+  const pathname = usePathname();
 
   return (
     <AppShell
@@ -30,16 +47,60 @@ function App({ children }: { children: React.ReactNode }) {
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
-        <NavLink component={Link} href="/" label="Panel" />
+        <NavLink
+          component={Link}
+          href="/"
+          label="Panel"
+          active={pathname.includes("/panel")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconDeviceTv
+                style={{ width: "70%", height: "70%" }}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          }
+        />
         <NavLink
           component={Link}
           href="/presets"
           label="Presets"
           data-testid="nav-presets"
+          active={pathname.includes("/presets")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconLayersIntersect
+                style={{ width: "70%", height: "70%" }}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          }
         />
-        <NavLink component={Link} href="/composer" label="Composer" />
-        <Divider />
-        <NavLink component={Link} href="/settings" label="Settings" />
+        <NavLink
+          component={Link}
+          href="/composer"
+          label="Composer"
+          active={pathname.includes("/composer")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconSpray style={{ width: "70%", height: "70%" }} stroke={1.5} />
+            </ActionIcon>
+          }
+        />
+        <NavLink
+          component={Link}
+          href="/settings"
+          label="Settings"
+          active={pathname.includes("/settings")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconAdjustmentsHorizontal
+                style={{ width: "70%", height: "70%" }}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          }
+        />
       </AppShell.Navbar>
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>

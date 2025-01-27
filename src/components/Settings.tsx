@@ -1,6 +1,6 @@
 "use client";
 
-import { setPanel } from "@/server/actions";
+import { setPanel, updatePanel } from "@/server/actions";
 import { Panel } from "@/types";
 import { Button, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -12,15 +12,13 @@ interface SettingsProps {
 export function Settings({ panel }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
+      name: "",
       ...panel,
     },
   });
 
   return (
-    <form
-      onSubmit={form.onSubmit((values) => setPanel(values))}
-      data-testid="preset-form"
-    >
+    <form action={updatePanel} data-testid="preset-form">
       <Stack>
         <TextInput
           placeholder=""
@@ -30,6 +28,7 @@ export function Settings({ panel }: SettingsProps) {
           required
           data-testid="panel-name"
           key={form.key("name")}
+          name={"name"}
           {...form.getInputProps("name")}
         />
 

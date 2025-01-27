@@ -1,5 +1,5 @@
 import App from "../../components/App";
-import { getLastHeartbeat } from "../../server/actions";
+import { getCustomScenes, getLastHeartbeat } from "../../server/actions";
 import Panel from "../../components/Panel";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
@@ -7,14 +7,14 @@ import { getData } from "@/server/db";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { panel } = await getData();
+  const { panel } = getData();
   return { title: panel.name };
 }
 
 export default async function Page() {
-  const { slot, panel, presets } = await getData();
-
+  const { slot, panel, presets } = getData();
   const lastHeartBeat = await getLastHeartbeat();
+  const customScenes = await getCustomScenes();
 
   let formattedEndTime = null;
   let formattedLastHeartbeat = null;
@@ -44,6 +44,7 @@ export default async function Page() {
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
         presets={presets}
+        customScenes={customScenes}
       />
     </App>
   );

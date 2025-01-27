@@ -43,7 +43,7 @@ function getDatabaseName() {
     : "database.json";
 }
 
-function loadPersistedData(): Partial<DataTypes> {
+function readDb(): DataTypes {
   const dbFile = getDatabaseName();
   try {
     const file = fs.readFileSync(`./${dbFile}`).toString();
@@ -54,22 +54,15 @@ function loadPersistedData(): Partial<DataTypes> {
   }
 }
 
+function writeDb(db: DataTypes) {
+  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
+}
+
 export function getData(): DataTypes {
-  const db = loadPersistedData();
-  return JSON.parse(JSON.stringify(db));
+  return readDb();
 }
 
-export function set<T>(key: keyof DataTypes, value: T) {
-  const db = loadPersistedData();
-
-  if (JSON.stringify(db[key]) === JSON.stringify(value)) {
-    return;
-  }
-
-  db[key] = JSON.parse(JSON.stringify(value));
-  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
-}
-
-export function writeDb(db: DataTypes) {
-  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
+export function setData(data: Partial<DataTypes>) {
+  const db = readDb();
+  writeDb({ ...db, ...data });
 }

@@ -3,21 +3,26 @@
 import fs from "fs";
 import { revalidatePath } from "next/cache";
 import { Panel, Preset, PresetField, Slot } from "../types";
-import { getData, set } from "./db";
+import { getData, setData } from "./db";
 import { getEndDate } from "@/helpers/getEndDate";
+import { redirect } from "next/navigation";
 
-export async function setPanel(panel: Panel | null) {
-  set("panel", panel);
+export async function updatePanel(formData: FormData) {
+  setData({
+    panel: {
+      name: formData.get("name") as any,
+    },
+  });
   revalidatePath("/panel");
 }
 
-export async function setSlot(slot: Slot | null) {
-  set("slot", slot);
+export async function updateSlot(slot: Slot | null) {
+  setData({ slot });
   revalidatePath("/panel");
 }
 
-export async function setPresets(presets: Preset[]) {
-  set("presets", presets);
+async function setPresets(presets: Preset[]) {
+  setData({ presets });
   revalidatePath("/presets");
 }
 
@@ -31,7 +36,7 @@ export async function getCustomScenes() {
   });
 }
 
-export async function setCustomSceneData({
+export async function updateCustomSceneData({
   name,
   coordinates,
 }: {
@@ -64,43 +69,37 @@ function formDataToPreset(formData: FormData): Preset {
   };
 }
 
-export async function updatePreset(
-  index: number,
-  previousState: any,
-  formData: FormData
-) {
+export async function updatePreset(index: number, formData: FormData) {
   const { presets } = await getData();
 
   presets[index] = formDataToPreset(formData);
   await setPresets(presets);
 
-  return "Successfully updated Preset!";
+  redirect("/presets");
 }
 
-export async function createPreset(previousState: any, formData: FormData) {
-  console.log("yoo");
+export async function createPreset(formData: FormData) {
   const { presets } = await getData();
 
   const newPresets = [...presets];
   newPresets.push(formDataToPreset(formData));
   await setPresets(newPresets);
 
-  return "Successfully created Preset!";
+  redirect("/presets");
 }
 
-export async function createCustomSlottedPreset(
-  previousState: any,
-  formData: FormData
-) {
+export async function createCustomSlottedPreset(formData: FormData) {
   const preset = formDataToPreset(formData);
   const endDate = getEndDate(preset);
 
-  setSlot({
-    preset: { ...preset, name: "Custom" },
-    endTime: endDate ? endDate.toJSON() : null,
+  setData({
+    slot: {
+      preset: { ...preset, name: "Custom" },
+      endTime: endDate ? endDate.toJSON() : null,
+    },
   });
 
-  return "Successfully set custom preset!";
+  redirect("/panel");
 }
 
 export async function deletePreset(index: number) {
@@ -108,6 +107,7 @@ export async function deletePreset(index: number) {
   const newPresets = [...presets];
   newPresets.splice(index, 1);
   await setPresets(newPresets);
+  redirect("/presets");
 }
 
 export async function changeEndTime(minuteChange: number) {
@@ -124,5 +124,7 @@ export async function changeEndTime(minuteChange: number) {
 
   slot.endTime = newEnd.toJSON();
 
-  await setSlot(slot);
+  await setData({ slot });
+
+  revalidatePath("/panel");
 }

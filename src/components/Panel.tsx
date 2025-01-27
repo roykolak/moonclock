@@ -8,14 +8,20 @@ import {
   Center,
   Flex,
   Group,
+  Modal,
   Stack,
   Text,
 } from "@mantine/core";
-import { setSlot, changeEndTime } from "../server/actions";
-import { Panel as PanelType, Preset, Slot } from "../types";
+import {
+  changeEndTime,
+  createCustomSlottedPreset,
+  updateSlot,
+} from "../server/actions";
+import { CustomScene, Panel as PanelType, Preset, Slot } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
-import Link from "next/link";
+import { useDisclosure } from "@mantine/hooks";
+import { PresetForm } from "./PresetForm";
 
 interface PanelProps {
   panel: PanelType;
@@ -23,6 +29,7 @@ interface PanelProps {
   presets: Preset[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
+  customScenes: CustomScene[];
 }
 
 export default function Panel({
@@ -31,9 +38,23 @@ export default function Panel({
   formattedEndTime,
   formattedLastHeartbeat,
   presets,
+  customScenes,
 }: PanelProps) {
+  const [state, handlers] = useDisclosure();
   return (
     <>
+      <Modal
+        opened={state}
+        title={"Set custom preset"}
+        onClose={handlers.close}
+      >
+        <PresetForm
+          customScenes={customScenes}
+          preset={{ name: "Custom Preset" } as Preset}
+          action={createCustomSlottedPreset}
+          submitLabel="Apply now"
+        />
+      </Modal>
       <Card
         shadow="sm"
         padding="lg"
@@ -50,7 +71,7 @@ export default function Panel({
                 color="red"
                 size="compact-sm"
                 onClick={() => {
-                  setSlot(null);
+                  updateSlot(null);
                 }}
               >
                 Clear
@@ -78,7 +99,7 @@ export default function Panel({
                     fullWidth
                     onClick={() => {
                       const endDate = getEndDate(preset);
-                      setSlot({
+                      updateSlot({
                         preset: preset,
                         endTime: endDate?.toJSON() || null,
                       });
@@ -87,12 +108,7 @@ export default function Panel({
                     {preset.name}
                   </Button>
                 ))}
-                <Button
-                  variant="light"
-                  fullWidth
-                  href="/panel/custom"
-                  component={Link}
-                >
+                <Button variant="light" fullWidth onClick={handlers.open}>
                   Custom...
                 </Button>
               </Stack>
