@@ -42,6 +42,9 @@ function Color({
     </>
   );
 }
+
+const defaultColors = ["#89CFF0", "#facc0d"];
+
 function Palette({
   activeColor,
   setActiveColor,
@@ -51,18 +54,16 @@ function Palette({
   setActiveColor: any;
   matrix: any;
 }) {
-  const [colors, setColors] = useState(["#89CFF0", "#facc0d"]);
+  const [colors, setColors] = useState(defaultColors);
 
   useEffect(() => {
     const matrixColors = new Set<string>();
-
-    if (matrix.length === 0) return;
 
     for (const coordinate in matrix) {
       matrixColors.add(matrix[coordinate]);
     }
 
-    setColors([...matrixColors]);
+    setColors([...defaultColors, ...matrixColors]);
   }, [JSON.stringify(matrix)]);
 
   return (

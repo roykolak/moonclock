@@ -7,17 +7,21 @@ import { getData, setData } from "./db";
 import { getEndDate } from "@/helpers/getEndDate";
 import { redirect } from "next/navigation";
 
-export async function setPanel(panel: Panel) {
-  setData({ panel });
+export async function updatePanel(formData: FormData) {
+  setData({
+    panel: {
+      name: formData.get("name") as any,
+    },
+  });
   revalidatePath("/panel");
 }
 
-export async function setSlot(slot: Slot | null) {
+export async function updateSlot(slot: Slot | null) {
   setData({ slot });
   revalidatePath("/panel");
 }
 
-export async function setPresets(presets: Preset[]) {
+async function setPresets(presets: Preset[]) {
   setData({ presets });
   revalidatePath("/presets");
 }
@@ -88,9 +92,11 @@ export async function createCustomSlottedPreset(formData: FormData) {
   const preset = formDataToPreset(formData);
   const endDate = getEndDate(preset);
 
-  setSlot({
-    preset: { ...preset, name: "Custom" },
-    endTime: endDate ? endDate.toJSON() : null,
+  setData({
+    slot: {
+      preset: { ...preset, name: "Custom" },
+      endTime: endDate ? endDate.toJSON() : null,
+    },
   });
 
   redirect("/panel");
@@ -118,5 +124,7 @@ export async function changeEndTime(minuteChange: number) {
 
   slot.endTime = newEnd.toJSON();
 
-  await setSlot(slot);
+  await setData({ slot });
+
+  revalidatePath("/panel");
 }

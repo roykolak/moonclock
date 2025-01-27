@@ -13,9 +13,9 @@ import {
   Text,
 } from "@mantine/core";
 import {
-  setSlot,
   changeEndTime,
   createCustomSlottedPreset,
+  updateSlot,
 } from "../server/actions";
 import { CustomScene, Panel as PanelType, Preset, Slot } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
@@ -71,7 +71,7 @@ export default function Panel({
                 color="red"
                 size="compact-sm"
                 onClick={() => {
-                  setSlot(null);
+                  updateSlot(null);
                 }}
               >
                 Clear
@@ -99,7 +99,7 @@ export default function Panel({
                     fullWidth
                     onClick={() => {
                       const endDate = getEndDate(preset);
-                      setSlot({
+                      updateSlot({
                         preset: preset,
                         endTime: endDate?.toJSON() || null,
                       });
