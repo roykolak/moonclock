@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@mantine/core";
-import { deletePreset } from "@/server/actions";
+import { deletePreset } from "@/server/actions/presets";
 
 interface PresetFormProps {
   index: number;

@@ -4,7 +4,6 @@ import {
   ActionIcon,
   AppShell,
   Burger,
-  Divider,
   Group,
   NavLink,
   Text,

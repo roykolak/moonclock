@@ -7,10 +7,10 @@ import {
   moon,
   text,
   twinkle,
-} from "../display-engine";
+} from "../../display-engine";
 import { Preset, PresetField } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
-import { getCustomScenes } from "@/server/actions";
+import { getCustomScenes } from "@/server/queries";
 
 export async function transformPresetToDisplayMacros(
   preset: Preset | null

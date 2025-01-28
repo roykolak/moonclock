@@ -1,6 +1,6 @@
 "use client";
 
-import { setPanel, updatePanel } from "@/server/actions";
+import { updatePanel } from "@/server/actions/panel";
 import { Panel } from "@/types";
 import { Button, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -12,7 +12,6 @@ interface SettingsProps {
 export function Settings({ panel }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
-      name: "",
       ...panel,
     },
   });
