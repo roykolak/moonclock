@@ -13,7 +13,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { TouchDisplay } from "./TouchDisplay";
-import { updateCustomSceneData } from "@/server/actions";
+import { updateCustomSceneData } from "@/server/actions/customScenes";
 import { CustomScene } from "@/types";
 
 function Color({

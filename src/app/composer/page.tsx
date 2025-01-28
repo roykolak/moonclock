@@ -1,5 +1,5 @@
+import { getCustomScenes } from "@/server/queries";
 import App from "../../components/App";
-import { getCustomScenes } from "../../server/actions";
 import { Editor } from "./../../components/Editor";
 
 export default async function Page() {

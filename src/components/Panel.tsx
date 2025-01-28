@@ -12,16 +12,16 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import {
-  changeEndTime,
-  createCustomSlottedPreset,
-  updateSlot,
-} from "../server/actions";
-import { CustomScene, Panel as PanelType, Preset, Slot } from "../types";
+import { Panel as PanelType, Preset, Slot } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
+import {
+  changeEndTime,
+  createCustomSlottedPreset,
+  updateSlot,
+} from "@/server/actions/slot";
 
 interface PanelProps {
   panel: PanelType;
@@ -29,7 +29,7 @@ interface PanelProps {
   presets: Preset[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
-  customScenes: CustomScene[];
+  customSceneNames: string[];
 }
 
 export default function Panel({
@@ -38,7 +38,7 @@ export default function Panel({
   formattedEndTime,
   formattedLastHeartbeat,
   presets,
-  customScenes,
+  customSceneNames,
 }: PanelProps) {
   const [state, handlers] = useDisclosure();
   return (
@@ -49,7 +49,7 @@ export default function Panel({
         onClose={handlers.close}
       >
         <PresetForm
-          customScenes={customScenes}
+          customSceneNames={customSceneNames}
           preset={{ name: "Custom Preset" } as Preset}
           action={createCustomSlottedPreset}
           submitLabel="Apply now"

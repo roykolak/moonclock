@@ -12,13 +12,13 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { CustomScene, Preset, PresetField, SceneName } from "../types";
+import { Preset, PresetField, SceneName } from "../types";
 import { useForm } from "@mantine/form";
 import { PresetPreview } from "./PresetPreview";
 
 interface PresetFormProps {
   preset?: Preset;
-  customScenes: CustomScene[];
+  customSceneNames: string[];
   title?: string;
   submitLabel?: string;
   action: (formData: FormData) => void;
@@ -36,7 +36,7 @@ const defaultPreset: Preset = {
 
 export function PresetForm({
   preset = defaultPreset,
-  customScenes,
+  customSceneNames,
   action,
   submitLabel,
   title,
@@ -77,7 +77,7 @@ export function PresetForm({
               },
               {
                 group: "Custom Scenes",
-                items: customScenes?.map((scene) => scene.name),
+                items: customSceneNames,
               },
             ]}
             data-testid="scene-select"

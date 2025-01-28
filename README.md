@@ -36,6 +36,11 @@ Wire the panel according to the wiring chart [here](https://github.com/hzeller/r
 
 ### Installing this software
 
+sudo apt update
+sudo apt install git
+
+sudo git clone https://github.com/roykolak/moonclock.git
+
 First install the latest raspbian on your pi and join it to your network.
 
 Then install [nvm](https://github.com/nvm-sh/nvm) and Node 22.9.0
@@ -49,6 +54,13 @@ _The software that writes to the panel needs to be run with root access and the 
 
 ```
 sudo ln -s "$NVM_DIR/versions/node/$(nvm version)/bin/node" "/usr/local/bin/node"
+sudo ln -s "$NVM_DIR/versions/node/$(nvm version)/bin/npm" "/usr/local/bin/npm"
+```
+
+Install Canvas dependencies
+
+```
+sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 ```
 
 And finally run the following commands...
@@ -57,6 +69,14 @@ And finally run the following commands...
 cd /usr/local/bin/
 sudo git clone git@github.com:roykolak/moonclock.git
 cd moonclock
+```
+
+```
+
+sudo npm install
+```
+
+```
 sudo cp moonclock.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable moonclock

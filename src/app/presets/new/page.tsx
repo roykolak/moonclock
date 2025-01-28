@@ -1,17 +1,18 @@
 import { PresetForm } from "@/components/PresetForm";
 import App from "@/components/App";
-import { createPreset, getCustomScenes } from "@/server/actions";
+import { createPreset } from "@/server/actions/presets";
+import { getCustomSceneNames } from "@/server/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const customScenes = await getCustomScenes();
+  const customSceneNames = await getCustomSceneNames();
 
   return (
     <App>
       <PresetForm
         title="Create New Preset"
-        customScenes={customScenes}
+        customSceneNames={customSceneNames}
         action={createPreset}
       />
     </App>
