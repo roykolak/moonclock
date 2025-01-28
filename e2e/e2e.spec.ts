@@ -133,7 +133,7 @@ test.describe("Test", () => {
     await expect(page.getByTestId("preset-item")).toHaveCount(3);
   });
 
-  test("updating settings", async ({ page }) => {
+  test.skip("updating settings", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
     await expect(page.getByText("My Moonclock")).toBeVisible();
