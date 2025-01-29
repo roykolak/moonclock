@@ -2,22 +2,22 @@
 
 import { redirect } from "next/navigation";
 import { getData, setData } from "../db";
-import { formDataToPreset } from "../helpers";
+import { Preset } from "@/types";
 
-export async function updatePreset(index: number, formData: FormData) {
+export async function updatePreset(index: number, preset: Preset) {
   const { presets } = await getData();
 
-  presets[index] = formDataToPreset(formData);
+  presets[index] = preset;
   setData({ presets });
 
   redirect("/presets");
 }
 
-export async function createPreset(formData: FormData) {
+export async function createPreset(preset: Preset) {
   const { presets } = await getData();
 
   const newPresets = [...presets];
-  newPresets.push(formDataToPreset(formData));
+  newPresets.push(preset);
   setData({ presets: newPresets });
 
   redirect("/presets");

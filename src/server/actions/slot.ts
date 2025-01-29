@@ -2,10 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { getData, setData } from "../db";
-import { Slot } from "@/types";
+import { Preset, Slot } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
-import { redirect } from "next/navigation";
-import { formDataToPreset } from "../helpers";
 
 export async function updateSlot(slot: Slot | null) {
   setData({ slot });
@@ -31,8 +29,7 @@ export async function changeEndTime(minuteChange: number) {
   revalidatePath("/panel");
 }
 
-export async function createCustomSlottedPreset(formData: FormData) {
-  const preset = formDataToPreset(formData);
+export async function createCustomSlottedPreset(preset: Preset) {
   const endDate = getEndDate(preset);
 
   setData({
@@ -42,5 +39,5 @@ export async function createCustomSlottedPreset(formData: FormData) {
     },
   });
 
-  redirect("/panel");
+  revalidatePath("/panel");
 }

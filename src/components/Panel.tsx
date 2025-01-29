@@ -51,7 +51,10 @@ export default function Panel({
         <PresetForm
           customSceneNames={customSceneNames}
           preset={{ name: "Custom Preset" } as Preset}
-          action={createCustomSlottedPreset}
+          action={async (preset) => {
+            await createCustomSlottedPreset(preset);
+            handlers.close();
+          }}
           submitLabel="Apply now"
         />
       </Modal>
@@ -64,7 +67,9 @@ export default function Panel({
       >
         <Card.Section withBorder inheritPadding py="xs">
           <Group justify="space-between">
-            <Text fw={700}>{panel.name}</Text>
+            <Text fw={700} data-testid="panel-name">
+              {panel.name}
+            </Text>
             {slot && (
               <Button
                 variant="light"

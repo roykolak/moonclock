@@ -17,7 +17,7 @@ export function Settings({ panel }: SettingsProps) {
   });
 
   return (
-    <form action={updatePanel} data-testid="preset-form">
+    <form onSubmit={form.onSubmit(updatePanel)} data-testid="preset-form">
       <Stack>
         <TextInput
           placeholder=""
@@ -25,7 +25,7 @@ export function Settings({ panel }: SettingsProps) {
           style={{ flex: 1 }}
           label="Name"
           required
-          data-testid="panel-name"
+          data-testid="panel-name-input"
           key={form.key("name")}
           name={"name"}
           {...form.getInputProps("name")}

@@ -21,7 +21,7 @@ interface PresetFormProps {
   customSceneNames: string[];
   title?: string;
   submitLabel?: string;
-  action: (formData: FormData) => void;
+  action: (preset: Preset) => void;
 }
 
 const defaultPreset: Preset = {
@@ -46,7 +46,7 @@ export function PresetForm({
   });
 
   return (
-    <form action={action} data-testid="preset-form">
+    <form onSubmit={form.onSubmit(action)} data-testid="preset-form">
       {title && <Title order={2}>{title}</Title>}
       <Box w="50%" m="auto" mb="md">
         <PresetPreview preset={form.values} />
