@@ -11,12 +11,20 @@ You can configure an LED scene to display..
 
 I created this to help teach my toddler when bedtime and naptime are over, however the use-cases extend much farther!
 
+> Daddy, my moonclock is off!
+
+_-My daughter, every morning at **7am**!_ 😮‍💨
+
+## The webapp and Panel
+
 <p float="left">
     <img src="images/panel-empty.png" width="200" />
     <img src="images/panel-active.png" width="200" />
     <img src="images/presets.png" width="200" />
     <img src="images/composer.png" width="200" />
 </p>
+
+👉 Unfortunately **a photo doesn't capture the colors** well in the panel, but here is a real moonclock in action!
 
 <p float="left">
     <img src="images/moon-real.png" width="400" />
