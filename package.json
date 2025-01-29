@@ -13,8 +13,7 @@
     "hardware": "tsx hardware/index.ts --brightness 30",
     "start:dev": "concurrently \"npm run app:dev\" \"npm run hardware:dev\"",
     "start": "concurrently \"npm run app\" \"npm run hardware\"",
-    "test:e2e": "playwright test",
-    "test": "APP_ENV=test tsx --test"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@mantine/core": "^7.15.1",

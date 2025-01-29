@@ -133,20 +133,20 @@ test.describe("Test", () => {
     await expect(page.getByTestId("preset-item")).toHaveCount(3);
   });
 
-  test.skip("updating settings", async ({ page }) => {
+  test("updating settings", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
     await expect(page.getByText("My Moonclock")).toBeVisible();
 
     await page.getByRole("link", { name: "Settings" }).click();
 
-    await page.getByTestId("panel-name").fill("New Moonclock");
+    await page.getByTestId("panel-name-input").fill("New Moonclock");
 
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByRole("link", { name: "Panel" }).click();
 
-    await expect(page.getByText("New Moonclock")).toBeVisible();
+    await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
   });
 
   test("creating, editting, and saving a new scene", async ({ page }) => {

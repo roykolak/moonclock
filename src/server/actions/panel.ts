@@ -2,12 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { setData } from "../db";
+import { Panel } from "@/types";
 
-export async function updatePanel(formData: FormData) {
-  setData({
-    panel: {
-      name: formData.get("name") as any,
-    },
-  });
+export async function updatePanel(panel: Panel) {
+  setData({ panel });
   revalidatePath("/panel");
 }
