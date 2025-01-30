@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Flex,
-  Group,
   SegmentedControl,
   Select,
   Stack,
@@ -64,29 +63,27 @@ export function PresetForm({
           {...form.getInputProps(PresetField.Name)}
         />
 
-        <Group>
-          <Select
-            placeholder="Scene"
-            variant="filled"
-            style={{ flex: 1 }}
-            label="Scene name"
-            data={[
-              {
-                group: "Built-in Scenes",
-                items: [SceneName.Moon, SceneName.Countdown, SceneName.Twinkle],
-              },
-              {
-                group: "Custom Scenes",
-                items: customSceneNames,
-              },
-            ]}
-            data-testid="scene-select"
-            required
-            key={form.key(`${PresetField.Scenes}.0.sceneName`)}
-            name={`${PresetField.Scenes}.0.sceneName`}
-            {...form.getInputProps(`${PresetField.Scenes}.0.sceneName`)}
-          />
-        </Group>
+        <Select
+          placeholder="Scene"
+          variant="filled"
+          style={{ flex: 1 }}
+          label="Scene name"
+          data={[
+            {
+              group: "Built-in Scenes",
+              items: [SceneName.Moon, SceneName.Countdown, SceneName.Twinkle],
+            },
+            {
+              group: "Custom Scenes",
+              items: customSceneNames,
+            },
+          ]}
+          data-testid="scene-select"
+          required
+          key={form.key(`${PresetField.Scenes}.0.sceneName`)}
+          name={`${PresetField.Scenes}.0.sceneName`}
+          {...form.getInputProps(`${PresetField.Scenes}.0.sceneName`)}
+        />
         <SegmentedControl
           fullWidth
           data={["for", "until"]}

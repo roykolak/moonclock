@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import exp from "constants";
 import { readFileSync, unlinkSync } from "fs";
 
 function wait(ms: number) {
@@ -142,11 +141,15 @@ test.describe("Test", () => {
 
     await page.getByTestId("panel-name-input").fill("New Moonclock");
 
+    await page.getByTestId("default-scene-select").click();
+    await page.getByRole("option", { name: "bunny" }).click();
+
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByRole("link", { name: "Panel" }).click();
 
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
+    await expect(page.getByAltText("bunny scene")).toBeVisible();
   });
 
   test("creating, editting, and saving a new scene", async ({ page }) => {

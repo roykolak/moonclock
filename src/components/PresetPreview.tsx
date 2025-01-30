@@ -5,14 +5,19 @@ import { createDisplayEngine, Macro } from "../display-engine";
 import { createCanvas } from "canvas";
 import { Preset, PresetField } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
+import { Overlay } from "@mantine/core";
 
 const dimensions = { height: 32, width: 32 };
 
 interface DisplayProps {
   preset?: Preset;
+  isDefaultPreset?: boolean;
 }
 
-export function PresetPreview({ preset }: DisplayProps) {
+export function PresetPreview({
+  preset,
+  isDefaultPreset = false,
+}: DisplayProps) {
   const [imageData, setImageData] = useState<string | null>();
 
   const [engine, setEngine] = useState<any>();
@@ -80,6 +85,9 @@ export function PresetPreview({ preset }: DisplayProps) {
           src={imageData}
           style={{ imageRendering: "pixelated" }}
         />
+      )}
+      {isDefaultPreset && (
+        <Overlay color="#000" backgroundOpacity={0.85} zIndex={0} />
       )}
     </div>
   );

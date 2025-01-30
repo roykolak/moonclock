@@ -4,6 +4,15 @@ import { DataTypes, SceneName } from "../types";
 const defaultData: DataTypes = {
   panel: {
     name: "My Moonclock",
+    defaultPreset: {
+      name: "Default",
+      scenes: [{ sceneName: SceneName.Blank }],
+      mode: "for",
+      untilDay: "0",
+      untilHour: "0",
+      untilMinute: "00",
+      forTime: "0:00",
+    },
   },
   slot: null,
   presets: [

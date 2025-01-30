@@ -86,7 +86,10 @@ export default function Panel({
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <PresetPreview preset={slot?.preset} />
+            <PresetPreview
+              preset={slot?.preset || panel.defaultPreset}
+              isDefaultPreset={!slot?.preset}
+            />
 
             {!slot?.preset && (
               <Stack
