@@ -11,6 +11,7 @@ export interface Slot {
 
 export interface Panel {
   name: string;
+  defaultPreset: Preset;
 }
 
 export interface Time {
@@ -29,6 +30,7 @@ export enum PresetField {
 }
 
 export enum SceneName {
+  Blank = "blank",
   Moon = "moon",
   Countdown = "countdown",
   Twinkle = "twinkle",

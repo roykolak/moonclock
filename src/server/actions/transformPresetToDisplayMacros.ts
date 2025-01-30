@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  box,
   coordinates,
   countdown,
   Macro,
@@ -19,6 +20,10 @@ export async function transformPresetToDisplayMacros(
 
   return await Promise.all(
     preset[PresetField.Scenes].map(async ({ sceneName }) => {
+      if (sceneName === "blank") {
+        return box({ backgroundColor: "#000000" });
+      }
+
       if (sceneName === "moon") {
         return moon({});
       }

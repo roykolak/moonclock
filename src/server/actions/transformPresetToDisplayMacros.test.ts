@@ -48,6 +48,29 @@ describe("transformPresetToDisplayConfig", () => {
     ]);
   });
 
+  it("returns blank macro config", async () => {
+    const preset: Preset = {
+      name: "test preset",
+      mode: "for",
+      scenes: [{ sceneName: SceneName.Blank }],
+      forTime: "0:05",
+      untilDay: "0",
+      untilHour: "0",
+      untilMinute: "0",
+    };
+
+    const displayConfig = await transformPresetToDisplayMacros(preset);
+
+    assert.deepEqual(displayConfig, [
+      {
+        macroConfig: {
+          backgroundColor: "#000000",
+        },
+        macroName: "box",
+      },
+    ]);
+  });
+
   it("returns bunny macro config", async () => {
     const preset: Preset = {
       name: "test preset",

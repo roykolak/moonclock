@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Stack } from "@mantine/core";
+import { Button, Stack, Title } from "@mantine/core";
 import { Preset } from "../types";
 import { PresetItem } from "./PresetItem";
 import Link from "next/link";
@@ -13,6 +13,9 @@ interface PresetsListProps {
 export function PresetsList({ presets, formattedEndTimes }: PresetsListProps) {
   return (
     <>
+      <Title order={2} mb="md">
+        Presets
+      </Title>
       <Stack>
         {presets.map((preset, i) => (
           <PresetItem
