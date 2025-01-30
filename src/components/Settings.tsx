@@ -2,7 +2,7 @@
 
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, SceneName } from "@/types";
-import { Button, Select, Stack, TextInput } from "@mantine/core";
+import { Button, Select, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
 interface SettingsProps {
@@ -19,6 +19,9 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
 
   return (
     <form onSubmit={form.onSubmit(updatePanel)} data-testid="preset-form">
+      <Title order={2} mb="md">
+        Panel Settings
+      </Title>
       <Stack>
         <TextInput
           placeholder=""
@@ -37,6 +40,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           variant="filled"
           style={{ flex: 1 }}
           label="Default Scene"
+          description="What will be shown when nothing is active"
           data={[
             {
               group: "Built-in Scenes",
@@ -59,7 +63,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           {...form.getInputProps(`defaultPreset.scenes.0.sceneName`)}
         />
 
-        <Button type="submit" fullWidth>
+        <Button type="submit" fullWidth mt="md">
           Save
         </Button>
       </Stack>
