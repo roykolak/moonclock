@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Button,
   Checkbox,
   Group,
   Modal,
   Select,
   Stack,
+  Tabs,
+  Textarea,
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -74,7 +77,7 @@ function Palette({
             color={color}
             setActiveColor={setActiveColor}
             activeColor={activeColor}
-            key={color}
+            key={`${i}-${color}`}
             index={i}
           />
         ))}
@@ -102,6 +105,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
 
   const [activeColor, setActiveColor] = useState(null);
   const [matrix, setMatrix] = useState({});
+  const [rawMatrix, setRawMatrix] = useState("");
 
   const [opened, { open, close }] = useDisclosure();
 
@@ -166,34 +170,86 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
       </Modal>
 
       {matrix && selectedScene && (
-        <Stack>
-          <Palette
-            activeColor={activeColor}
-            setActiveColor={setActiveColor}
-            matrix={matrix}
-          />
-          <TouchDisplay
-            activeColor={activeColor}
-            matrix={matrix}
-            setMatrix={setMatrix}
-            showGrid={showGrid}
-          />
-          <Checkbox
-            checked={showGrid}
-            onChange={() => setShowGrid((v) => !v)}
-            label="Show grid lines"
-          ></Checkbox>
-          <Button
-            onClick={() => {
-              updateCustomSceneData({
-                name: selectedScene.name,
-                coordinates: matrix,
-              });
-            }}
-          >
-            Save Scene
-          </Button>
-        </Stack>
+        <Tabs
+          defaultValue="editor"
+          variant="outline"
+          onChange={(tab) => {
+            if (tab !== "raw-data") return;
+            setRawMatrix(JSON.stringify(matrix, null, 2));
+          }}
+        >
+          <Tabs.List mb="md">
+            <Tabs.Tab value="editor" data-testid="editor-tab">
+              Editor
+            </Tabs.Tab>
+            <Tabs.Tab value="raw-data" data-testid="raw-data-tab">
+              Raw Data
+            </Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="editor">
+            <Stack>
+              <Palette
+                activeColor={activeColor}
+                setActiveColor={setActiveColor}
+                matrix={matrix}
+              />
+              <TouchDisplay
+                activeColor={activeColor}
+                matrix={matrix}
+                setMatrix={setMatrix}
+                showGrid={showGrid}
+              />
+              <Checkbox
+                checked={showGrid}
+                onChange={() => setShowGrid((v) => !v)}
+                label="Show grid lines"
+              ></Checkbox>
+              <Button
+                onClick={() => {
+                  updateCustomSceneData({
+                    name: selectedScene.name,
+                    coordinates: matrix,
+                  });
+                }}
+              >
+                Save Scene
+              </Button>
+            </Stack>
+          </Tabs.Panel>
+          <Tabs.Panel value="raw-data">
+            <Alert variant="light" color="red" my="sm">
+              Raw Data Mode is only useful for importing or exporting scene
+              data... Be careful!
+            </Alert>
+            <Textarea
+              data-testid="raw-data-textarea"
+              value={rawMatrix}
+              onChange={(event) => {
+                const { value } = event.currentTarget;
+                setRawMatrix(value);
+              }}
+              rows={20}
+            ></Textarea>
+            <Button
+              mt="md"
+              fullWidth
+              onClick={() => {
+                try {
+                  const parsedRawMatrix = JSON.parse(rawMatrix);
+                  setMatrix(parsedRawMatrix);
+                  updateCustomSceneData({
+                    name: selectedScene.name,
+                    coordinates: parsedRawMatrix,
+                  });
+                } catch (e) {
+                  alert(e);
+                }
+              }}
+            >
+              Save Scene
+            </Button>
+          </Tabs.Panel>
+        </Tabs>
       )}
     </Stack>
   );
