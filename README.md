@@ -11,9 +11,10 @@ You can configure an LED scene to display..
 
 I created this to help teach my toddler when bedtime and naptime are over, however the use-cases extend much farther!
 
-> Daddy, my moonclock is off!
-
-_-My daughter, every morning at **7am**!_ 😮‍💨
+```
+"Daddy, my moonclock is off!"
+My daughter, every morning at 7am! 😮‍💨
+```
 
 ## The webapp and Panel
 
