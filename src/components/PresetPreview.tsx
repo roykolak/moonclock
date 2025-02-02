@@ -84,6 +84,7 @@ export function PresetPreview({
           alt={`${preset?.[PresetField.Scenes][0].sceneName} scene`}
           src={imageData}
           style={{ imageRendering: "pixelated" }}
+          width="100%"
         />
       )}
       {isDefaultPreset && (
