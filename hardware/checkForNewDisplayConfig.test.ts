@@ -1,7 +1,7 @@
 import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert";
-import { getData, setData } from "@/server/db";
+import { defaultData, getData, setData } from "@/server/db";
 import {
   checkForNewDisplayConfig,
   setDisplayedSlot,
@@ -9,7 +9,7 @@ import {
 import timekeeper from "timekeeper";
 import { Preset, SceneName } from "@/types";
 
-describe.only("checkForUpdates", () => {
+describe("checkForUpdates", () => {
   beforeEach(() => {
     timekeeper.freeze(new Date(1735994402614));
   });
@@ -22,11 +22,11 @@ describe.only("checkForUpdates", () => {
       endTime: date.toJSON(),
       preset: {
         name: "bedtime",
-        sceneName: SceneName.Moon,
+        scenes: [{ sceneName: SceneName.Moon }],
       } as Preset,
     };
 
-    setData({ slot, presets: [], panel: { name: "moonclock" } });
+    setData({ slot, presets: [], panel: defaultData.panel });
 
     await checkForNewDisplayConfig();
 
@@ -50,7 +50,7 @@ describe.only("checkForUpdates", () => {
         } as Preset,
       };
 
-      setData({ slot, presets: [], panel: { name: "moonclock" } });
+      setData({ slot, presets: [], panel: defaultData.panel });
 
       setDisplayedSlot(null);
 
@@ -76,17 +76,20 @@ describe.only("checkForUpdates", () => {
           endTime: date.toJSON(),
           preset: {
             name: "bedtime",
-            sceneName: SceneName.Moon,
+            scenes: [{ sceneName: SceneName.Moon }],
           } as Preset,
         };
 
-        setData({ slot, presets: [], panel: { name: "moonclock" } });
+        setData({ slot, presets: [], panel: defaultData.panel });
 
         setDisplayedSlot(slot);
 
         const displayConfig = await checkForNewDisplayConfig();
 
-        assert.equal((await getData())?.slot?.preset.sceneName, "moon");
+        assert.equal(
+          (await getData())?.slot?.preset.scenes[0].sceneName,
+          "moon"
+        );
         assert.equal(displayConfig, null);
       });
     });
@@ -100,16 +103,29 @@ describe.only("checkForUpdates", () => {
           endTime: date.toJSON(),
           preset: {
             name: "bedtime",
-            sceneName: SceneName.Moon,
+            scenes: [{ sceneName: SceneName.Moon }],
           } as Preset,
         };
 
-        setData({ slot, presets: [], panel: { name: "moonclock" } });
+        setData({
+          slot,
+          presets: [],
+          panel: defaultData.panel,
+        });
 
         const displayConfig = await checkForNewDisplayConfig();
 
+        console.log({ displayConfig });
+
         assert.equal((await getData())?.slot, null);
-        assert.deepEqual(displayConfig, []);
+        assert.deepEqual(displayConfig, [
+          {
+            macroConfig: {
+              backgroundColor: "#000000",
+            },
+            macroName: "box",
+          },
+        ]);
       });
     });
   });
