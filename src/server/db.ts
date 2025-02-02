@@ -1,7 +1,7 @@
 import fs from "fs";
 import { DataTypes, SceneName } from "../types";
 
-const defaultData: DataTypes = {
+export const defaultData: DataTypes = {
   panel: {
     name: "My Moonclock",
     defaultPreset: {

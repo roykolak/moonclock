@@ -14,7 +14,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const { slot } = await getData();
+    const { slot, panel } = await getData();
 
     if (!slot) return [];
 
@@ -23,9 +23,11 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
       new Date().getTime() > new Date(slot.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${slot.preset.name} has expired`);
-      await setData({ slot: null });
 
-      return [];
+      await setData({ slot: null });
+      setDisplayedSlot(null);
+
+      return transformPresetToDisplayMacros(panel.defaultPreset);
     }
 
     if (
