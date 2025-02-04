@@ -58,9 +58,9 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           ]}
           data-testid="default-scene-select"
           required
-          key={form.key(`defaultPreset.scenes.0.sceneName`)}
+          key={form.key(`defaultPreset.scene.layers.0.sceneName`)}
           name={`defaultScenes.0.sceneName`}
-          {...form.getInputProps(`defaultPreset.scenes.0.sceneName`)}
+          {...form.getInputProps(`defaultPreset.scene.layers.0.sceneName`)}
         />
 
         <Button type="submit" fullWidth mt="md">
