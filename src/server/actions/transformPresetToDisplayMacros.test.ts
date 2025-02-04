@@ -13,7 +13,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: SceneName.Countdown }],
+      scene: { layers: [{ sceneName: SceneName.Countdown }] },
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -31,7 +31,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: SceneName.Moon }],
+      scene: { layers: [{ sceneName: SceneName.Moon }] },
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -52,7 +52,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: SceneName.Blank }],
+      scene: { layers: [{ sceneName: SceneName.Blank }] },
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -75,7 +75,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: "bunny" }],
+      scene: { layers: [{ sceneName: "bunny" }] },
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -95,7 +95,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: "bun33ny" }],
+      scene: { layers: [{ sceneName: "Bu33y" }] },
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",

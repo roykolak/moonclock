@@ -2,10 +2,7 @@ import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert";
 import { defaultData, getData, setData } from "@/server/db";
-import {
-  checkForNewDisplayConfig,
-  setDisplayedSlot,
-} from "./checkForNewDisplayConfig";
+import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import timekeeper from "timekeeper";
 import { Preset, SceneName } from "@/types";
 
@@ -22,7 +19,7 @@ describe("checkForUpdates", () => {
       endTime: date.toJSON(),
       preset: {
         name: "bedtime",
-        scenes: [{ sceneName: SceneName.Moon }],
+        scene: { layers: [{ sceneName: SceneName.Moon }] },
       } as Preset,
     };
 
@@ -46,17 +43,23 @@ describe("checkForUpdates", () => {
         endTime: date.toJSON(),
         preset: {
           name: "bedtime",
-          scenes: [{ sceneName: SceneName.Moon }],
+          scene: { layers: [{ sceneName: SceneName.Moon }] },
         } as Preset,
       };
 
-      setData({ slot, presets: [], panel: defaultData.panel });
-
-      setDisplayedSlot(null);
+      setData({
+        slot,
+        presets: [],
+        panel: defaultData.panel,
+        currentHardwareScene: defaultData.panel.defaultPreset.scene,
+      });
 
       const displayConfig = await checkForNewDisplayConfig();
 
-      assert.equal((await getData())?.slot?.preset.scenes[0].sceneName, "moon");
+      assert.equal(
+        (await getData())?.slot?.preset.scene.layers[0].sceneName,
+        "moon"
+      );
       assert.deepEqual(displayConfig, [
         {
           macroConfig: {},
@@ -76,18 +79,21 @@ describe("checkForUpdates", () => {
           endTime: date.toJSON(),
           preset: {
             name: "bedtime",
-            scenes: [{ sceneName: SceneName.Moon }],
+            scene: { layers: [{ sceneName: SceneName.Moon }] },
           } as Preset,
         };
 
-        setData({ slot, presets: [], panel: defaultData.panel });
-
-        setDisplayedSlot(slot);
+        setData({
+          slot,
+          presets: [],
+          panel: defaultData.panel,
+          currentHardwareScene: slot.preset.scene,
+        });
 
         const displayConfig = await checkForNewDisplayConfig();
 
         assert.equal(
-          (await getData())?.slot?.preset.scenes[0].sceneName,
+          (await getData())?.slot?.preset.scene.layers[0].sceneName,
           "moon"
         );
         assert.equal(displayConfig, null);
@@ -103,7 +109,7 @@ describe("checkForUpdates", () => {
           endTime: date.toJSON(),
           preset: {
             name: "bedtime",
-            scenes: [{ sceneName: SceneName.Moon }],
+            scene: { layers: [{ sceneName: SceneName.Moon }] },
           } as Preset,
         };
 

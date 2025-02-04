@@ -2,6 +2,7 @@ export interface DataTypes {
   panel: Panel;
   slot: Slot | null;
   presets: Preset[];
+  currentHardwareScene: Scene;
 }
 
 export interface Slot {
@@ -38,7 +39,7 @@ export enum SceneName {
 
 export interface Preset {
   [PresetField.Name]: string;
-  scenes: SceneConfig[];
+  scene: Scene;
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;
   [PresetField.UntilHour]: string;
@@ -46,7 +47,11 @@ export interface Preset {
   [PresetField.ForTime]: string;
 }
 
-export interface SceneConfig {
+export interface Scene {
+  layers: SceneLayer[];
+}
+
+export interface SceneLayer {
   sceneName: string;
 }
 

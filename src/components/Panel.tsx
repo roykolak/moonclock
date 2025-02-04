@@ -12,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { Panel as PanelType, Preset, Slot } from "../types";
+import { Panel as PanelType, Preset, Scene, Slot } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
@@ -30,10 +30,12 @@ interface PanelProps {
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
   customSceneNames: string[];
+  currentHardwareScene: Scene;
 }
 
 export default function Panel({
   panel,
+  currentHardwareScene,
   slot,
   formattedEndTime,
   formattedLastHeartbeat,
@@ -41,6 +43,7 @@ export default function Panel({
   customSceneNames,
 }: PanelProps) {
   const [state, handlers] = useDisclosure();
+
   return (
     <>
       <Modal
@@ -173,7 +176,8 @@ export default function Panel({
       </Card>
       <Group justify="flex-end">
         <Text c="dimmed" size="xs" mt="sm">
-          Last checked at: {formattedLastHeartbeat}
+          hardware checked at: {formattedLastHeartbeat} (
+          {currentHardwareScene.layers[0].sceneName})
         </Text>
       </Group>
     </>

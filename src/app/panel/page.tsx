@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { slot, panel, presets } = getData();
+  const { slot, panel, presets, currentHardwareScene } = getData();
   const lastHeartBeat = await getLastHeartbeat();
   const customSceneNames = await getCustomSceneNames();
 
@@ -41,6 +41,7 @@ export default async function Page() {
       <Panel
         panel={panel}
         slot={slot}
+        currentHardwareScene={currentHardwareScene}
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
         presets={presets}

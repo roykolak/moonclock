@@ -9,17 +9,18 @@ import {
   text,
   twinkle,
 } from "../../display-engine";
-import { Preset, PresetField } from "@/types";
+import { Preset } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
 export async function transformPresetToDisplayMacros(
   preset: Preset | null
 ): Promise<Macro[]> {
+  console.log({ preset });
   if (!preset) return [];
 
   return await Promise.all(
-    preset[PresetField.Scenes].map(async ({ sceneName }) => {
+    preset.scene.layers.map(async ({ sceneName }) => {
       if (sceneName === "blank") {
         return box({ backgroundColor: "#000000" });
       }

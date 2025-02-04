@@ -1,22 +1,30 @@
 import { getData, setData } from "@/server/db";
 import { Macro } from "../src/display-engine";
-import { PresetField, Slot } from "@/types";
+import { PresetField } from "@/types";
 import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
-
-export function setDisplayedSlot(slot: Slot | null) {
-  displayedSlot = slot;
-}
-
-let displayedSlot: Slot | null = null;
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const { slot, panel } = await getData();
+    const { slot, panel, currentHardwareScene } = await getData();
 
-    if (!slot) return [];
+    if (!slot) {
+      if (
+        currentHardwareScene.layers[0].sceneName !==
+        panel.defaultPreset.scene.layers[0].sceneName
+      ) {
+        console.log(`[RERENDER] Default Preset change`);
+
+        await setData({
+          currentHardwareScene: panel.defaultPreset.scene,
+        });
+        return transformPresetToDisplayMacros(panel.defaultPreset);
+      }
+
+      return null;
+    }
 
     if (
       slot?.endTime !== null &&
@@ -24,15 +32,17 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
     ) {
       console.log(`[CLEAR] ${slot.preset.name} has expired`);
 
-      await setData({ slot: null });
-      setDisplayedSlot(null);
+      await setData({
+        slot: null,
+        currentHardwareScene: panel.defaultPreset.scene,
+      });
 
       return transformPresetToDisplayMacros(panel.defaultPreset);
     }
 
     if (
-      slot?.preset.scenes[0].sceneName !==
-      displayedSlot?.preset.scenes[0].sceneName
+      slot?.preset.scene.layers[0].sceneName !==
+      currentHardwareScene.layers[0].sceneName
     ) {
       console.log(
         `[UPDATE] Rerendering ${slot?.preset[PresetField.Name]} until ${
@@ -40,17 +50,8 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
         }`
       );
 
-      setDisplayedSlot(slot);
-
+      await setData({ currentHardwareScene: slot.preset.scene });
       return transformPresetToDisplayMacros(slot.preset);
-    } else if (displayedSlot?.endTime !== slot?.endTime) {
-      console.log(
-        `[UPDATE] ${slot?.preset[PresetField.Name]} endTime changed to ${
-          slot.endTime
-        }`
-      );
-
-      setDisplayedSlot(slot);
     }
   } catch (e) {
     console.log("Error!", e);

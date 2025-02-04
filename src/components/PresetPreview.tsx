@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createDisplayEngine, Macro } from "../display-engine";
 import { createCanvas } from "canvas";
-import { Preset, PresetField } from "@/types";
+import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { Overlay } from "@mantine/core";
 
@@ -81,7 +81,7 @@ export function PresetPreview({
     >
       {imageData && (
         <img
-          alt={`${preset?.[PresetField.Scenes][0].sceneName} scene`}
+          alt={`${preset?.scene.layers[0].sceneName} scene`}
           src={imageData}
           style={{ imageRendering: "pixelated" }}
           width="100%"
