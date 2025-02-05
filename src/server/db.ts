@@ -6,7 +6,7 @@ export const defaultData: DataTypes = {
     name: "My Moonclock",
     defaultPreset: {
       name: "Default",
-      scenes: [{ sceneName: SceneName.Blank }],
+      scene: { layers: [{ sceneName: SceneName.Blank }] },
       mode: "for",
       untilDay: "0",
       untilHour: "0",
@@ -14,11 +14,12 @@ export const defaultData: DataTypes = {
       forTime: "0:00",
     },
   },
-  slot: null,
+  scheduledPreset: null,
+  hardwareScene: { layers: [{ sceneName: SceneName.Blank }] },
   presets: [
     {
       name: "Sleep Mode",
-      scenes: [{ sceneName: SceneName.Moon }],
+      scene: { layers: [{ sceneName: SceneName.Blank }] },
       mode: "until",
       untilDay: "1",
       untilHour: "7",
@@ -27,7 +28,7 @@ export const defaultData: DataTypes = {
     },
     {
       name: "Nap Mode",
-      scenes: [{ sceneName: "bunny" }],
+      scene: { layers: [{ sceneName: "bunny" }] },
       mode: "for",
       untilDay: "0",
       untilHour: "0",
@@ -36,7 +37,7 @@ export const defaultData: DataTypes = {
     },
     {
       name: "Timeout",
-      scenes: [{ sceneName: SceneName.Countdown }],
+      scene: { layers: [{ sceneName: SceneName.Countdown }] },
       mode: "for",
       untilDay: "0",
       untilHour: "0",

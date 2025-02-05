@@ -26,7 +26,7 @@ interface PresetFormProps {
 const defaultPreset: Preset = {
   mode: "for",
   name: "",
-  scenes: [{ sceneName: SceneName.Moon }],
+  scene: { layers: [{ sceneName: SceneName.Moon }] },
   untilMinute: "0",
   untilDay: "0",
   untilHour: "0",
@@ -80,9 +80,9 @@ export function PresetForm({
           ]}
           data-testid="scene-select"
           required
-          key={form.key(`${PresetField.Scenes}.0.sceneName`)}
-          name={`${PresetField.Scenes}.0.sceneName`}
-          {...form.getInputProps(`${PresetField.Scenes}.0.sceneName`)}
+          key={form.key(`scene.layers.0.sceneName`)}
+          name={`scene.layers.0.sceneName`}
+          {...form.getInputProps(`scene.layers.0.sceneName`)}
         />
         <SegmentedControl
           fullWidth

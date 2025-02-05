@@ -12,16 +12,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { slot, panel, presets } = getData();
+  const { scheduledPreset, panel, presets, hardwareScene } = getData();
   const lastHeartBeat = await getLastHeartbeat();
   const customSceneNames = await getCustomSceneNames();
 
   let formattedEndTime = null;
   let formattedLastHeartbeat = null;
 
-  if (slot) {
-    formattedEndTime = slot.endTime
-      ? new Date(slot.endTime).toLocaleTimeString([], {
+  if (scheduledPreset) {
+    formattedEndTime = scheduledPreset.endTime
+      ? new Date(scheduledPreset.endTime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
         })
@@ -40,7 +40,8 @@ export default async function Page() {
     <App>
       <Panel
         panel={panel}
-        slot={slot}
+        scheduledPreset={scheduledPreset}
+        hardwareScene={hardwareScene}
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
         presets={presets}

@@ -1,56 +1,54 @@
 import { getData, setData } from "@/server/db";
 import { Macro } from "../src/display-engine";
-import { PresetField, Slot } from "@/types";
+import { PresetField, Scene } from "@/types";
 import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 
-export function setDisplayedSlot(slot: Slot | null) {
-  displayedSlot = slot;
+function sceneMatch(scene1: Scene, scene2: Scene) {
+  return JSON.stringify(scene1) === JSON.stringify(scene2);
 }
-
-let displayedSlot: Slot | null = null;
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const { slot, panel } = await getData();
+    const { scheduledPreset, panel, hardwareScene } = await getData();
 
-    if (!slot) return [];
+    if (!scheduledPreset) {
+      if (!sceneMatch(hardwareScene, panel.defaultPreset.scene)) {
+        console.log(`[RERENDER] Default Preset change`);
+
+        await setData({ hardwareScene: panel.defaultPreset.scene });
+
+        return transformPresetToDisplayMacros(panel.defaultPreset);
+      }
+
+      return null;
+    }
 
     if (
-      slot?.endTime !== null &&
-      new Date().getTime() > new Date(slot.endTime).getTime()
+      scheduledPreset?.endTime !== null &&
+      new Date().getTime() > new Date(scheduledPreset.endTime).getTime()
     ) {
-      console.log(`[CLEAR] ${slot.preset.name} has expired`);
+      console.log(`[CLEAR] ${scheduledPreset.preset.name} has expired`);
 
-      await setData({ slot: null });
-      setDisplayedSlot(null);
+      await setData({
+        scheduledPreset: null,
+        hardwareScene: panel.defaultPreset.scene,
+      });
 
       return transformPresetToDisplayMacros(panel.defaultPreset);
     }
 
-    if (
-      slot?.preset.scenes[0].sceneName !==
-      displayedSlot?.preset.scenes[0].sceneName
-    ) {
+    if (!sceneMatch(scheduledPreset.preset.scene, hardwareScene)) {
       console.log(
-        `[UPDATE] Rerendering ${slot?.preset[PresetField.Name]} until ${
-          slot?.endTime
-        }`
+        `[UPDATE] Rerendering ${
+          scheduledPreset?.preset[PresetField.Name]
+        } until ${scheduledPreset?.endTime}`
       );
 
-      setDisplayedSlot(slot);
-
-      return transformPresetToDisplayMacros(slot.preset);
-    } else if (displayedSlot?.endTime !== slot?.endTime) {
-      console.log(
-        `[UPDATE] ${slot?.preset[PresetField.Name]} endTime changed to ${
-          slot.endTime
-        }`
-      );
-
-      setDisplayedSlot(slot);
+      await setData({ hardwareScene: scheduledPreset.preset.scene });
+      return transformPresetToDisplayMacros(scheduledPreset.preset);
     }
   } catch (e) {
     console.log("Error!", e);

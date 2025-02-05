@@ -2,38 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import { getData, setData } from "../db";
-import { Preset, Slot } from "@/types";
+import { Preset, ScheduledPreset } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 
-export async function updateSlot(slot: Slot | null) {
-  setData({ slot });
+export async function updateScheduledPreset(
+  scheduledPreset: ScheduledPreset | null
+) {
+  setData({ scheduledPreset });
   revalidatePath("/panel");
 }
 
 export async function changeEndTime(minuteChange: number) {
-  const { slot } = await getData();
+  const { scheduledPreset } = await getData();
 
-  if (!slot) {
+  if (!scheduledPreset) {
     return revalidatePath("/panel");
   }
 
-  if (slot.endTime === null) return;
+  if (scheduledPreset.endTime === null) return;
 
-  const newEnd = new Date(slot.endTime);
+  const newEnd = new Date(scheduledPreset.endTime);
   newEnd.setMinutes(newEnd.getMinutes() + minuteChange);
 
-  slot.endTime = newEnd.toJSON();
+  scheduledPreset.endTime = newEnd.toJSON();
 
-  await setData({ slot });
+  await setData({ scheduledPreset });
 
   revalidatePath("/panel");
 }
 
-export async function createCustomSlottedPreset(preset: Preset) {
+export async function createCustomScheduledPreset(preset: Preset) {
   const endDate = getEndDate(preset);
 
   setData({
-    slot: {
+    scheduledPreset: {
       preset: { ...preset, name: "Custom" },
       endTime: endDate ? endDate.toJSON() : null,
     },
