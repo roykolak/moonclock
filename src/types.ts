@@ -1,11 +1,11 @@
 export interface DataTypes {
   panel: Panel;
-  slot: Slot | null;
+  scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
-  currentHardwareScene: Scene;
+  hardwareScene: Scene;
 }
 
-export interface Slot {
+export interface ScheduledPreset {
   endTime: string | null;
   preset: Preset;
 }

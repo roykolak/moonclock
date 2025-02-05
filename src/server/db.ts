@@ -14,8 +14,8 @@ export const defaultData: DataTypes = {
       forTime: "0:00",
     },
   },
-  slot: null,
-  currentHardwareScene: { layers: [{ sceneName: SceneName.Blank }] },
+  scheduledPreset: null,
+  hardwareScene: { layers: [{ sceneName: SceneName.Blank }] },
   presets: [
     {
       name: "Sleep Mode",

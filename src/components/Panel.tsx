@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Accordion,
   Badge,
   Box,
   Button,
@@ -12,31 +13,31 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { Panel as PanelType, Preset, Scene, Slot } from "../types";
+import { Panel as PanelType, Preset, Scene, ScheduledPreset } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import {
   changeEndTime,
-  createCustomSlottedPreset,
-  updateSlot,
-} from "@/server/actions/slot";
+  createCustomScheduledPreset,
+  updateScheduledPreset,
+} from "@/server/actions/scheduledPreset";
 
 interface PanelProps {
   panel: PanelType;
-  slot: Slot | null;
+  scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
   customSceneNames: string[];
-  currentHardwareScene: Scene;
+  hardwareScene: Scene;
 }
 
 export default function Panel({
   panel,
-  currentHardwareScene,
-  slot,
+  hardwareScene,
+  scheduledPreset,
   formattedEndTime,
   formattedLastHeartbeat,
   presets,
@@ -55,7 +56,7 @@ export default function Panel({
           customSceneNames={customSceneNames}
           preset={{ name: "Custom Preset" } as Preset}
           action={async (preset) => {
-            await createCustomSlottedPreset(preset);
+            await createCustomScheduledPreset(preset);
             handlers.close();
           }}
           submitLabel="Apply now"
@@ -73,13 +74,13 @@ export default function Panel({
             <Text fw={700} data-testid="panel-name">
               {panel.name}
             </Text>
-            {slot && (
+            {scheduledPreset && (
               <Button
                 variant="light"
                 color="red"
                 size="compact-sm"
                 onClick={() => {
-                  updateSlot(null);
+                  updateScheduledPreset(null);
                 }}
               >
                 Clear
@@ -90,11 +91,11 @@ export default function Panel({
         <Card.Section>
           <div style={{ position: "relative" }}>
             <PresetPreview
-              preset={slot?.preset || panel.defaultPreset}
-              isDefaultPreset={!slot?.preset}
+              preset={scheduledPreset?.preset || panel.defaultPreset}
+              isDefaultPreset={!scheduledPreset?.preset}
             />
 
-            {!slot?.preset && (
+            {!scheduledPreset?.preset && (
               <Stack
                 style={{
                   position: "absolute",
@@ -110,7 +111,7 @@ export default function Panel({
                     fullWidth
                     onClick={() => {
                       const endDate = getEndDate(preset);
-                      updateSlot({
+                      updateScheduledPreset({
                         preset: preset,
                         endTime: endDate?.toJSON() || null,
                       });
@@ -126,12 +127,12 @@ export default function Panel({
             )}
           </div>
 
-          {slot?.preset && (
+          {scheduledPreset?.preset && (
             <Flex p="lg">
               <Box>
                 <Stack gap={4}>
                   <Center>
-                    <Text>{slot.preset.name} until...</Text>
+                    <Text>{scheduledPreset.preset.name} until...</Text>
                   </Center>
                   <Badge
                     color="gray"
@@ -156,14 +157,14 @@ export default function Panel({
                 <Stack gap={8}>
                   <Button
                     variant="filled"
-                    disabled={slot.endTime === null}
+                    disabled={scheduledPreset.endTime === null}
                     onClick={() => changeEndTime(5)}
                   >
                     +5 min
                   </Button>
                   <Button
                     variant="filled"
-                    disabled={slot.endTime === null}
+                    disabled={scheduledPreset.endTime === null}
                     onClick={() => changeEndTime(-5)}
                   >
                     -5 min
@@ -174,12 +175,23 @@ export default function Panel({
           )}
         </Card.Section>
       </Card>
-      <Group justify="flex-end">
-        <Text c="dimmed" size="xs" mt="sm">
-          hardware checked at: {formattedLastHeartbeat} (
-          {currentHardwareScene.layers[0].sceneName})
-        </Text>
-      </Group>
+      <Accordion defaultValue="Apples" variant="filled" mt="sm">
+        <Accordion.Item key="hardware" value="hardware">
+          <Accordion.Control>
+            <Text size="xs">Debugging Info</Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <Stack justify="flex-end" gap="0">
+              <Text c="dimmed" size="xs">
+                Hardware last checked at: {formattedLastHeartbeat}
+              </Text>
+              <Text c="dimmed" size="xs">
+                Currently showing: {hardwareScene.layers[0].sceneName} scene
+              </Text>
+            </Stack>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
     </>
   );
 }

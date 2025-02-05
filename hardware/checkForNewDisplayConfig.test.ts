@@ -15,15 +15,17 @@ describe("checkForUpdates", () => {
     const date = new Date();
     date.setMinutes(date.getMinutes() - 1);
 
-    const slot = {
-      endTime: date.toJSON(),
-      preset: {
-        name: "bedtime",
-        scene: { layers: [{ sceneName: SceneName.Moon }] },
-      } as Preset,
-    };
-
-    setData({ slot, presets: [], panel: defaultData.panel });
+    setData({
+      scheduledPreset: {
+        endTime: date.toJSON(),
+        preset: {
+          name: "bedtime",
+          scene: { layers: [{ sceneName: SceneName.Moon }] },
+        } as Preset,
+      },
+      presets: [],
+      panel: defaultData.panel,
+    });
 
     await checkForNewDisplayConfig();
 
@@ -35,37 +37,32 @@ describe("checkForUpdates", () => {
   });
 
   describe("when the currentSlot is not set", () => {
-    it("sets the currentSlot and returns updates", async () => {
-      const date = new Date();
-      date.setHours(date.getHours() + 1);
+    describe("when the current hardware scene is not the same as the default scene", () => {
+      it("updates the current hardware scene", async () => {
+        const date = new Date();
+        date.setHours(date.getHours() + 1);
 
-      const slot = {
-        endTime: date.toJSON(),
-        preset: {
-          name: "bedtime",
-          scene: { layers: [{ sceneName: SceneName.Moon }] },
-        } as Preset,
-      };
+        setData({
+          scheduledPreset: null,
+          presets: [],
+          panel: defaultData.panel,
+          hardwareScene: { layers: [{ sceneName: SceneName.Moon }] },
+        });
 
-      setData({
-        slot,
-        presets: [],
-        panel: defaultData.panel,
-        currentHardwareScene: defaultData.panel.defaultPreset.scene,
+        const displayConfig = await checkForNewDisplayConfig();
+
+        const { hardwareScene } = await getData();
+
+        assert.equal(hardwareScene.layers[0].sceneName, "blank");
+        assert.deepEqual(displayConfig, [
+          {
+            macroConfig: {
+              backgroundColor: "#000000",
+            },
+            macroName: "box",
+          },
+        ]);
       });
-
-      const displayConfig = await checkForNewDisplayConfig();
-
-      assert.equal(
-        (await getData())?.slot?.preset.scene.layers[0].sceneName,
-        "moon"
-      );
-      assert.deepEqual(displayConfig, [
-        {
-          macroConfig: {},
-          macroName: "moon",
-        },
-      ]);
     });
   });
 
@@ -75,55 +72,51 @@ describe("checkForUpdates", () => {
         const date = new Date();
         date.setHours(date.getHours() + 1);
 
-        const slot = {
-          endTime: date.toJSON(),
-          preset: {
-            name: "bedtime",
-            scene: { layers: [{ sceneName: SceneName.Moon }] },
-          } as Preset,
-        };
-
         setData({
-          slot,
+          scheduledPreset: {
+            endTime: date.toJSON(),
+            preset: {
+              name: "bedtime",
+              scene: { layers: [{ sceneName: SceneName.Moon }] },
+            } as Preset,
+          },
           presets: [],
           panel: defaultData.panel,
-          currentHardwareScene: slot.preset.scene,
+          hardwareScene: { layers: [{ sceneName: SceneName.Moon }] },
         });
 
         const displayConfig = await checkForNewDisplayConfig();
 
-        assert.equal(
-          (await getData())?.slot?.preset.scene.layers[0].sceneName,
-          "moon"
-        );
+        const { scheduledPreset } = await getData();
+
+        assert.equal(scheduledPreset?.preset.scene.layers[0].sceneName, "moon");
         assert.equal(displayConfig, null);
       });
     });
 
     describe("when the endTime is in the past", () => {
-      it("clears the slot and returns a reset update", async () => {
+      it("clears the slot and sets the hardware scene to the default preset", async () => {
         const date = new Date();
         date.setMinutes(date.getMinutes() - 1);
 
-        const slot = {
-          endTime: date.toJSON(),
-          preset: {
-            name: "bedtime",
-            scene: { layers: [{ sceneName: SceneName.Moon }] },
-          } as Preset,
-        };
-
         setData({
-          slot,
+          scheduledPreset: {
+            endTime: date.toJSON(),
+            preset: {
+              name: "bedtime",
+              scene: { layers: [{ sceneName: SceneName.Moon }] },
+            } as Preset,
+          },
           presets: [],
           panel: defaultData.panel,
         });
 
         const displayConfig = await checkForNewDisplayConfig();
 
-        console.log({ displayConfig });
+        const { hardwareScene, scheduledPreset } = await getData();
 
-        assert.equal((await getData())?.slot, null);
+        assert.equal(scheduledPreset, null);
+        assert.deepEqual(hardwareScene, defaultData.panel.defaultPreset.scene);
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {
