@@ -6,9 +6,16 @@ import { Preset, ScheduledPreset } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 
 export async function updateScheduledPreset(
-  scheduledPreset: ScheduledPreset | null
+  scheduledPreset: Partial<ScheduledPreset>
 ) {
-  setData({ scheduledPreset });
+  setData({
+    scheduledPreset: {
+      updatedAt: new Date().toJSON(),
+      preset: null,
+      endTime: null,
+      ...scheduledPreset,
+    },
+  });
   revalidatePath("/panel");
 }
 
@@ -24,9 +31,13 @@ export async function changeEndTime(minuteChange: number) {
   const newEnd = new Date(scheduledPreset.endTime);
   newEnd.setMinutes(newEnd.getMinutes() + minuteChange);
 
-  scheduledPreset.endTime = newEnd.toJSON();
-
-  await setData({ scheduledPreset });
+  await setData({
+    scheduledPreset: {
+      ...scheduledPreset,
+      endTime: newEnd.toJSON(),
+      updatedAt: new Date().toJSON(),
+    },
+  });
 
   revalidatePath("/panel");
 }
@@ -38,6 +49,7 @@ export async function createCustomScheduledPreset(preset: Preset) {
     scheduledPreset: {
       preset: { ...preset, name: "Custom" },
       endTime: endDate ? endDate.toJSON() : null,
+      updatedAt: new Date().toJSON(),
     },
   });
 

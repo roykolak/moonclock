@@ -3,6 +3,8 @@ import { Command } from "commander";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
 
+console.log(`${process.env.USER} is running this script`);
+
 const program = new Command();
 
 program

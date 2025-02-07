@@ -9,38 +9,41 @@ import {
   text,
   twinkle,
 } from "../../display-engine";
-import { Preset } from "@/types";
+import { Preset, TriggerHardwareReloadScene } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
 export async function transformPresetToDisplayMacros(
   preset: Preset | null
 ): Promise<Macro[]> {
-  console.log({ preset });
   if (!preset) return [];
 
-  return await Promise.all(
-    preset.scene.layers.map(async ({ sceneName }) => {
+  const nestedMacros = await Promise.all(
+    preset.scene.layers.flatMap(async ({ sceneName }) => {
       if (sceneName === "blank") {
-        return box({ backgroundColor: "#000000" });
+        return [box({ backgroundColor: "#000000" })];
       }
 
       if (sceneName === "moon") {
-        return moon({});
+        return [moon({})];
       }
 
       if (sceneName === "countdown") {
         const endDate = getEndDate(preset);
 
         if (endDate) {
-          return countdown({ endDate: endDate.toJSON() });
+          return [countdown({ endDate: endDate.toJSON() })];
         } else {
-          return text({ text: "no\n date" });
+          return [text({ text: "no\n date" })];
         }
       }
 
       if (sceneName === "twinkle") {
-        return twinkle({});
+        return [twinkle({})];
+      }
+
+      if (sceneName === TriggerHardwareReloadScene) {
+        return [box({ backgroundColor: "#000000" })];
       }
 
       const customScenes = await getCustomScenes();
@@ -49,16 +52,20 @@ export async function transformPresetToDisplayMacros(
       );
 
       if (customScene) {
-        return coordinates({ coordinates: customScene?.coordinates });
+        return [coordinates({ coordinates: customScene?.coordinates })];
       }
 
-      return text({
-        text: "?",
-        startingColumn: 11,
-        startingRow: 8,
-        fontSize: 20,
-        color: "#888",
-      });
+      return [
+        text({
+          text: "?",
+          startingColumn: 11,
+          startingRow: 8,
+          fontSize: 20,
+          color: "#888",
+        }),
+      ];
     })
   );
+
+  return nestedMacros.flat();
 }

@@ -4,6 +4,7 @@ import { updatePanel } from "@/server/actions/panel";
 import { Panel, SceneName } from "@/types";
 import { Button, Select, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { showNotification } from "@mantine/notifications";
 
 interface SettingsProps {
   panel: Panel;
@@ -18,7 +19,13 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
   });
 
   return (
-    <form onSubmit={form.onSubmit(updatePanel)} data-testid="preset-form">
+    <form
+      onSubmit={form.onSubmit((values) => {
+        updatePanel(values);
+        showNotification({ message: "Successfully updated settings!" });
+      })}
+      data-testid="preset-form"
+    >
       <Title order={2} mb="md">
         Panel Settings
       </Title>

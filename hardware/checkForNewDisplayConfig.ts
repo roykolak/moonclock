@@ -8,17 +8,30 @@ function sceneMatch(scene1: Scene, scene2: Scene) {
   return JSON.stringify(scene1) === JSON.stringify(scene2);
 }
 
+function getSceneName(scene: Scene) {
+  return scene.layers[0].sceneName;
+}
+
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const { scheduledPreset, panel, hardwareScene } = await getData();
+    const { scheduledPreset, panel, hardware } = await getData();
 
-    if (!scheduledPreset) {
-      if (!sceneMatch(hardwareScene, panel.defaultPreset.scene)) {
-        console.log(`[RERENDER] Default Preset change`);
+    if (!scheduledPreset?.preset) {
+      if (!sceneMatch(hardware.scene, panel.defaultPreset.scene)) {
+        console.log(
+          `[RERENDER] Default Preset change (${getSceneName(
+            hardware.scene
+          )} to ${getSceneName(panel.defaultPreset.scene)})`
+        );
 
-        await setData({ hardwareScene: panel.defaultPreset.scene });
+        await setData({
+          hardware: {
+            scene: panel.defaultPreset.scene,
+            renderedAt: new Date().toJSON(),
+          },
+        });
 
         return transformPresetToDisplayMacros(panel.defaultPreset);
       }
@@ -27,27 +40,35 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
     }
 
     if (
-      scheduledPreset?.endTime !== null &&
+      scheduledPreset.endTime !== null &&
       new Date().getTime() > new Date(scheduledPreset.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${scheduledPreset.preset.name} has expired`);
 
       await setData({
         scheduledPreset: null,
-        hardwareScene: panel.defaultPreset.scene,
+        hardware: {
+          scene: panel.defaultPreset.scene,
+          renderedAt: new Date().toJSON(),
+        },
       });
 
       return transformPresetToDisplayMacros(panel.defaultPreset);
     }
 
-    if (!sceneMatch(scheduledPreset.preset.scene, hardwareScene)) {
+    if (!sceneMatch(scheduledPreset?.preset?.scene, hardware.scene)) {
       console.log(
         `[UPDATE] Rerendering ${
-          scheduledPreset?.preset[PresetField.Name]
-        } until ${scheduledPreset?.endTime}`
+          scheduledPreset.preset[PresetField.Name]
+        } until ${scheduledPreset.endTime}`
       );
 
-      await setData({ hardwareScene: scheduledPreset.preset.scene });
+      await setData({
+        hardware: {
+          scene: scheduledPreset.preset.scene,
+          renderedAt: new Date().toJSON(),
+        },
+      });
       return transformPresetToDisplayMacros(scheduledPreset.preset);
     }
   } catch (e) {

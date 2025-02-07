@@ -12,12 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { scheduledPreset, panel, presets, hardwareScene } = getData();
+  const { scheduledPreset, panel, presets, hardware } = getData();
   const lastHeartBeat = await getLastHeartbeat();
   const customSceneNames = await getCustomSceneNames();
 
   let formattedEndTime = null;
   let formattedLastHeartbeat = null;
+  let formattedHardwareRenderedAt = null;
 
   if (scheduledPreset) {
     formattedEndTime = scheduledPreset.endTime
@@ -36,14 +37,25 @@ export default async function Page() {
     });
   }
 
+  if (hardware.renderedAt) {
+    formattedHardwareRenderedAt = new Date(
+      hardware.renderedAt
+    ).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  }
+
   return (
     <App>
       <Panel
         panel={panel}
         scheduledPreset={scheduledPreset}
-        hardwareScene={hardwareScene}
+        hardwareScene={hardware.scene}
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
+        formattedHardwareRenderedAt={formattedHardwareRenderedAt}
         presets={presets}
         customSceneNames={customSceneNames}
       />

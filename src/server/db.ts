@@ -13,13 +13,20 @@ export const defaultData: DataTypes = {
       untilMinute: "00",
       forTime: "0:00",
     },
+    updatedAt: null,
   },
-  scheduledPreset: null,
-  hardwareScene: { layers: [{ sceneName: SceneName.Blank }] },
+  scheduledPreset: {
+    updatedAt: null,
+    preset: null,
+    endTime: null,
+  },
+  hardware: {
+    scene: { layers: [{ sceneName: SceneName.Blank }] },
+  },
   presets: [
     {
       name: "Sleep Mode",
-      scene: { layers: [{ sceneName: SceneName.Blank }] },
+      scene: { layers: [{ sceneName: SceneName.Moon }] },
       mode: "until",
       untilDay: "1",
       untilHour: "7",

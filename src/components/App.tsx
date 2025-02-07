@@ -2,6 +2,7 @@
 
 import {
   ActionIcon,
+  Alert,
   AppShell,
   Burger,
   Group,
@@ -12,11 +13,13 @@ import { useDisclosure } from "@mantine/hooks";
 import {
   IconAdjustmentsHorizontal,
   IconDeviceTv,
+  IconExclamationCircleFilled,
   IconLayersIntersect,
   IconSpray,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
 
 function App({ children }: { children: React.ReactNode }) {
   const [navOpened, { toggle: toggleNav }] = useDisclosure();
@@ -101,7 +104,24 @@ function App({ children }: { children: React.ReactNode }) {
           }
         />
       </AppShell.Navbar>
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        <ErrorBoundary
+          fallbackRender={({ error }) => {
+            console.log(error.stack);
+            return (
+              <Alert
+                title="There was a problem!"
+                color="red"
+                icon={<IconExclamationCircleFilled />}
+              >
+                {error.message}
+              </Alert>
+            );
+          }}
+        >
+          {children}
+        </ErrorBoundary>
+      </AppShell.Main>
     </AppShell>
   );
 }
