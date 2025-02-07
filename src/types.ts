@@ -8,18 +8,18 @@ export interface DataTypes {
 export interface ScheduledPreset {
   endTime: string | null;
   preset: Preset | null;
-  updatedAt: string | null;
+  updatedAt?: string;
 }
 
 export interface Panel {
   name: string;
   defaultPreset: Preset;
-  updatedAt: string | null;
+  updatedAt?: string;
 }
 
 export interface Hardware {
   renderedAt?: string;
-  scene: Scene;
+  preset: Preset;
 }
 
 export interface Time {

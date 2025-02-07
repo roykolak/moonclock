@@ -1,27 +1,27 @@
 import fs from "fs";
-import { DataTypes, SceneName } from "../types";
+import { DataTypes, Preset, SceneName } from "../types";
+
+const defaultPreset: Preset = {
+  name: "Default",
+  scene: { layers: [{ sceneName: SceneName.Blank }] },
+  mode: "for",
+  untilDay: "0",
+  untilHour: "0",
+  untilMinute: "00",
+  forTime: "0:00",
+};
 
 export const defaultData: DataTypes = {
   panel: {
     name: "My Moonclock",
-    defaultPreset: {
-      name: "Default",
-      scene: { layers: [{ sceneName: SceneName.Blank }] },
-      mode: "for",
-      untilDay: "0",
-      untilHour: "0",
-      untilMinute: "00",
-      forTime: "0:00",
-    },
-    updatedAt: null,
+    defaultPreset,
   },
   scheduledPreset: {
-    updatedAt: null,
     preset: null,
     endTime: null,
   },
   hardware: {
-    scene: { layers: [{ sceneName: SceneName.Blank }] },
+    preset: defaultPreset,
   },
   presets: [
     {

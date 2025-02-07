@@ -46,14 +46,19 @@ describe("checkForUpdates", () => {
           scheduledPreset: null,
           presets: [],
           panel: defaultData.panel,
-          hardwareScene: { layers: [{ sceneName: SceneName.Moon }] },
+          hardware: {
+            preset: {
+              name: "bedtime",
+              scene: { layers: [{ sceneName: SceneName.Moon }] },
+            } as Preset,
+          },
         });
 
         const displayConfig = await checkForNewDisplayConfig();
 
-        const { hardwareScene } = await getData();
+        const { hardware } = await getData();
 
-        assert.equal(hardwareScene.layers[0].sceneName, "blank");
+        assert.equal(hardware.preset?.scene.layers[0].sceneName, "blank");
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {
@@ -82,14 +87,22 @@ describe("checkForUpdates", () => {
           },
           presets: [],
           panel: defaultData.panel,
-          hardwareScene: { layers: [{ sceneName: SceneName.Moon }] },
+          hardware: {
+            preset: {
+              name: "bedtime",
+              scene: { layers: [{ sceneName: SceneName.Moon }] },
+            } as Preset,
+          },
         });
 
         const displayConfig = await checkForNewDisplayConfig();
 
         const { scheduledPreset } = await getData();
 
-        assert.equal(scheduledPreset?.preset.scene.layers[0].sceneName, "moon");
+        assert.equal(
+          scheduledPreset?.preset?.scene.layers[0].sceneName,
+          "moon"
+        );
         assert.equal(displayConfig, null);
       });
     });
@@ -113,10 +126,10 @@ describe("checkForUpdates", () => {
 
         const displayConfig = await checkForNewDisplayConfig();
 
-        const { hardwareScene, scheduledPreset } = await getData();
+        const { hardware, scheduledPreset } = await getData();
 
         assert.equal(scheduledPreset, null);
-        assert.deepEqual(hardwareScene, defaultData.panel.defaultPreset.scene);
+        assert.deepEqual(hardware.preset, defaultData.panel.defaultPreset);
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {

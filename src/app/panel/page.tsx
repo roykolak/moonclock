@@ -52,7 +52,7 @@ export default async function Page() {
       <Panel
         panel={panel}
         scheduledPreset={scheduledPreset}
-        hardwareScene={hardware.scene}
+        hardwarePreset={hardware.preset}
         formattedEndTime={formattedEndTime}
         formattedLastHeartbeat={formattedLastHeartbeat}
         formattedHardwareRenderedAt={formattedHardwareRenderedAt}

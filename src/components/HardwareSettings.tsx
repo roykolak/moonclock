@@ -1,18 +1,17 @@
 import { reloadHardwareScene } from "@/server/actions/hardwareScene";
-import { Scene } from "@/types";
+import { Preset } from "@/types";
 import { Accordion, Button, Grid, Stack, Text } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { revalidatePath } from "next/cache";
-import { useEffect, useTransition } from "react";
+import { useTransition } from "react";
 
 interface HardwareSettingsProps {
   formattedLastHeartbeat: string | null;
   formattedHardwareRenderedAt: string | null;
-  hardwareScene: Scene;
+  hardwarePreset: Preset;
 }
 
 export function HardwareSettings({
-  hardwareScene,
+  hardwarePreset,
   formattedLastHeartbeat,
   formattedHardwareRenderedAt,
 }: HardwareSettingsProps) {
@@ -36,7 +35,7 @@ export function HardwareSettings({
               </Grid.Col>
               <Grid.Col span={8}>
                 <Text c="dimmed" size="sm">
-                  {hardwareScene.layers[0].sceneName} scene
+                  {hardwarePreset.scene.layers[0].sceneName} scene
                 </Text>
               </Grid.Col>
               <Grid.Col span={4}>

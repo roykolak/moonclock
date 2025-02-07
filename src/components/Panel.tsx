@@ -12,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { Panel as PanelType, Preset, Scene, ScheduledPreset } from "../types";
+import { Panel as PanelType, Preset, ScheduledPreset } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
@@ -32,12 +32,12 @@ interface PanelProps {
   formattedLastHeartbeat: string | null;
   formattedHardwareRenderedAt: string | null;
   customSceneNames: string[];
-  hardwareScene: Scene;
+  hardwarePreset: Preset;
 }
 
 export default function Panel({
   panel,
-  hardwareScene,
+  hardwarePreset,
   scheduledPreset,
   formattedEndTime,
   formattedLastHeartbeat,
@@ -181,7 +181,7 @@ export default function Panel({
         </Card.Section>
       </Card>
       <HardwareSettings
-        hardwareScene={hardwareScene}
+        hardwarePreset={hardwarePreset}
         formattedLastHeartbeat={formattedLastHeartbeat}
         formattedHardwareRenderedAt={formattedHardwareRenderedAt}
       />
