@@ -2,17 +2,24 @@ export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
-  hardwareScene: Scene;
+  hardware: Hardware;
 }
 
 export interface ScheduledPreset {
   endTime: string | null;
-  preset: Preset;
+  preset: Preset | null;
+  updatedAt?: string;
 }
 
 export interface Panel {
   name: string;
   defaultPreset: Preset;
+  updatedAt?: string;
+}
+
+export interface Hardware {
+  renderedAt?: string;
+  preset: Preset;
 }
 
 export interface Time {
@@ -36,6 +43,8 @@ export enum SceneName {
   Countdown = "countdown",
   Twinkle = "twinkle",
 }
+
+export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
 
 export interface Preset {
   [PresetField.Name]: string;

@@ -1,54 +1,72 @@
 import { getData, setData } from "@/server/db";
 import { Macro } from "../src/display-engine";
-import { PresetField, Scene } from "@/types";
+import { Preset, PresetField } from "@/types";
 import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 
-function sceneMatch(scene1: Scene, scene2: Scene) {
-  return JSON.stringify(scene1) === JSON.stringify(scene2);
+function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
+  return JSON.stringify(preset1?.scene) === JSON.stringify(preset2?.scene);
+}
+
+function getSceneName(preset: Preset | null) {
+  return preset?.scene?.layers?.[0].sceneName;
 }
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
     fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON());
 
-    const { scheduledPreset, panel, hardwareScene } = await getData();
+    const { scheduledPreset, panel, hardware } = await getData();
 
-    if (!scheduledPreset) {
-      if (!sceneMatch(hardwareScene, panel.defaultPreset.scene)) {
-        console.log(`[RERENDER] Default Preset change`);
+    if (!scheduledPreset?.preset) {
+      if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {
+        console.log(
+          `[RERENDER] Default Preset change (${getSceneName(
+            hardware?.preset
+          )} to ${getSceneName(panel.defaultPreset)})`
+        );
 
-        await setData({ hardwareScene: panel.defaultPreset.scene });
+        const preset = panel.defaultPreset;
+        const renderedAt = new Date().toJSON();
 
-        return transformPresetToDisplayMacros(panel.defaultPreset);
+        await setData({ hardware: { preset, renderedAt } });
+
+        return transformPresetToDisplayMacros(preset);
       }
 
       return null;
     }
 
     if (
-      scheduledPreset?.endTime !== null &&
+      scheduledPreset.endTime !== null &&
       new Date().getTime() > new Date(scheduledPreset.endTime).getTime()
     ) {
       console.log(`[CLEAR] ${scheduledPreset.preset.name} has expired`);
 
+      const preset = panel.defaultPreset;
+      const renderedAt = new Date().toJSON();
+
       await setData({
         scheduledPreset: null,
-        hardwareScene: panel.defaultPreset.scene,
+        hardware: { preset, renderedAt },
       });
 
-      return transformPresetToDisplayMacros(panel.defaultPreset);
+      return transformPresetToDisplayMacros(preset);
     }
 
-    if (!sceneMatch(scheduledPreset.preset.scene, hardwareScene)) {
+    if (!sceneMatch(scheduledPreset.preset, hardware.preset)) {
       console.log(
         `[UPDATE] Rerendering ${
-          scheduledPreset?.preset[PresetField.Name]
-        } until ${scheduledPreset?.endTime}`
+          scheduledPreset.preset[PresetField.Name]
+        } until ${scheduledPreset.endTime}`
       );
 
-      await setData({ hardwareScene: scheduledPreset.preset.scene });
-      return transformPresetToDisplayMacros(scheduledPreset.preset);
+      const preset = scheduledPreset.preset;
+      const renderedAt = new Date().toJSON();
+
+      await setData({ hardware: { preset, renderedAt } });
+
+      return transformPresetToDisplayMacros(preset);
     }
   } catch (e) {
     console.log("Error!", e);

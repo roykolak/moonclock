@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Accordion,
   Badge,
   Box,
   Button,
@@ -13,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { Panel as PanelType, Preset, Scene, ScheduledPreset } from "../types";
+import { Panel as PanelType, Preset, ScheduledPreset } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
@@ -23,6 +22,7 @@ import {
   createCustomScheduledPreset,
   updateScheduledPreset,
 } from "@/server/actions/scheduledPreset";
+import { HardwareSettings } from "./HardwareSettings";
 
 interface PanelProps {
   panel: PanelType;
@@ -30,16 +30,18 @@ interface PanelProps {
   presets: Preset[];
   formattedEndTime: string | null;
   formattedLastHeartbeat: string | null;
+  formattedHardwareRenderedAt: string | null;
   customSceneNames: string[];
-  hardwareScene: Scene;
+  hardwarePreset: Preset;
 }
 
 export default function Panel({
   panel,
-  hardwareScene,
+  hardwarePreset,
   scheduledPreset,
   formattedEndTime,
   formattedLastHeartbeat,
+  formattedHardwareRenderedAt,
   presets,
   customSceneNames,
 }: PanelProps) {
@@ -80,7 +82,10 @@ export default function Panel({
                 color="red"
                 size="compact-sm"
                 onClick={() => {
-                  updateScheduledPreset(null);
+                  updateScheduledPreset({
+                    preset: null,
+                    endTime: null,
+                  });
                 }}
               >
                 Clear
@@ -175,23 +180,11 @@ export default function Panel({
           )}
         </Card.Section>
       </Card>
-      <Accordion defaultValue="Apples" variant="filled" mt="sm">
-        <Accordion.Item key="hardware" value="hardware">
-          <Accordion.Control>
-            <Text size="xs">Debugging Info</Text>
-          </Accordion.Control>
-          <Accordion.Panel>
-            <Stack justify="flex-end" gap="0">
-              <Text c="dimmed" size="xs">
-                Hardware last checked at: {formattedLastHeartbeat}
-              </Text>
-              <Text c="dimmed" size="xs">
-                Currently showing: {hardwareScene.layers[0].sceneName} scene
-              </Text>
-            </Stack>
-          </Accordion.Panel>
-        </Accordion.Item>
-      </Accordion>
+      <HardwareSettings
+        hardwarePreset={hardwarePreset}
+        formattedLastHeartbeat={formattedLastHeartbeat}
+        formattedHardwareRenderedAt={formattedHardwareRenderedAt}
+      />
     </>
   );
 }

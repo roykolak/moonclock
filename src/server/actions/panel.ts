@@ -5,6 +5,11 @@ import { setData } from "../db";
 import { Panel } from "@/types";
 
 export async function updatePanel(panel: Panel) {
-  setData({ panel });
+  setData({
+    panel: {
+      ...panel,
+      updatedAt: new Date().toJSON(),
+    },
+  });
   revalidatePath("/panel");
 }
