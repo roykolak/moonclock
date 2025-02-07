@@ -11,8 +11,14 @@ function sleep(ms: number) {
 export async function reloadHardwareScene() {
   await setData({
     hardware: {
-      scene: {
-        layers: [{ sceneName: TriggerHardwareReloadScene }],
+      preset: {
+        name: "Trigger Hardware Reload",
+        scene: { layers: [{ sceneName: TriggerHardwareReloadScene }] },
+        mode: "for",
+        untilDay: "0",
+        untilHour: "0",
+        untilMinute: "00",
+        forTime: "0:00",
       },
     },
   });

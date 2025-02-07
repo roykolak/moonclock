@@ -1,4 +1,4 @@
-import { reloadHardwareScene } from "@/server/actions/hardwareScene";
+import { reloadHardwareScene } from "@/server/actions/hardware";
 import { Preset } from "@/types";
 import { Accordion, Button, Grid, Stack, Text } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
