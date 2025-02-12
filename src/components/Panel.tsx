@@ -76,7 +76,7 @@ export default function Panel({
             <Text fw={700} data-testid="panel-name">
               {panel.name}
             </Text>
-            {scheduledPreset && (
+            {scheduledPreset?.preset && (
               <Button
                 variant="light"
                 color="red"

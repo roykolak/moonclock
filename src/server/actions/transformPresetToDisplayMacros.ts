@@ -6,10 +6,11 @@ import {
   countdown,
   Macro,
   moon,
+  ripple,
   text,
   twinkle,
 } from "../../display-engine";
-import { Preset, TriggerHardwareReloadScene } from "@/types";
+import { Preset, SceneName, TriggerHardwareReloadScene } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
@@ -19,16 +20,26 @@ export async function transformPresetToDisplayMacros(
   if (!preset) return [];
 
   const nestedMacros = await Promise.all(
-    preset.scene.layers.flatMap(async ({ sceneName }) => {
-      if (sceneName === "blank") {
+    preset.scene.layers.flatMap(async ({ sceneName, sceneConfig }) => {
+      if (sceneName === SceneName.Blank) {
         return [box({ backgroundColor: "#000000" })];
       }
 
-      if (sceneName === "moon") {
+      if (sceneName === SceneName.Moon) {
         return [moon({})];
       }
 
-      if (sceneName === "countdown") {
+      if (sceneName === SceneName.Ripple) {
+        return [
+          ripple({
+            ...sceneConfig,
+            speed: sceneConfig.speed / 10,
+            waveHeight: sceneConfig.waveHeight / 10,
+          }),
+        ];
+      }
+
+      if (sceneName === SceneName.Countdown) {
         const endDate = getEndDate(preset);
 
         if (endDate) {
@@ -38,8 +49,13 @@ export async function transformPresetToDisplayMacros(
         }
       }
 
-      if (sceneName === "twinkle") {
-        return [twinkle({})];
+      if (sceneName === SceneName.Twinkle) {
+        return [
+          twinkle({
+            ...sceneConfig,
+            speed: sceneConfig.speed * 10,
+          }),
+        ];
       }
 
       if (sceneName === TriggerHardwareReloadScene) {
