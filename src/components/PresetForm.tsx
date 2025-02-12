@@ -57,22 +57,24 @@ export function PresetForm({
   });
 
   form.watch("scene.layers.0.sceneName", ({ value }) => {
+    const fieldValue = "scene.layers.0.sceneConfig";
+
     if (value === SceneName.Twinkle) {
-      return form.setFieldValue("scene.layers.0.sceneConfig", {
+      return form.setFieldValue(fieldValue, {
         color: "#ffffff",
         speed: 50,
-      } as MacroTwinkleConfig);
+      } as Partial<MacroTwinkleConfig>);
     }
 
     if (value === SceneName.Ripple) {
-      return form.setFieldValue("scene.layers.0.sceneConfig", {
+      return form.setFieldValue(fieldValue, {
         color: "#ffffff",
         speed: 5,
-        waveHeight: 60,
-      } as MacroRippleConfig);
+        waveHeight: 6,
+      } as Partial<MacroRippleConfig>);
     }
 
-    form.setFieldValue("scene.layers.0.sceneConfig", {});
+    form.setFieldValue(fieldValue, {});
   });
 
   return (
