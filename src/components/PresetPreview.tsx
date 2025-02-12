@@ -21,7 +21,6 @@ export function PresetPreview({
   const [imageData, setImageData] = useState<string | null>();
 
   const [engine, setEngine] = useState<any>();
-  const [stop, setStop] = useState<any>();
 
   const [displayConfig, setDisplayConfig] = useState<Macro[]>([]);
 
@@ -29,7 +28,7 @@ export function PresetPreview({
     (async () => {
       setDisplayConfig(await transformPresetToDisplayMacros(preset || null));
     })();
-  }, [preset]);
+  }, [JSON.stringify(preset)]);
 
   useEffect(() => {
     const canvas = createCanvas(dimensions.width, dimensions.height);
@@ -64,11 +63,8 @@ export function PresetPreview({
 
   const renderDisplay = useCallback(() => {
     if (!engine) return;
-    if (stop) stop();
-
-    const halt = engine?.render(displayConfig);
-    setStop(() => () => halt);
-  }, [engine, JSON.stringify(displayConfig), setStop]);
+    engine?.render(displayConfig);
+  }, [engine, JSON.stringify(displayConfig)]);
 
   return (
     <div

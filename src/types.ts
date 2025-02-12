@@ -42,6 +42,7 @@ export enum SceneName {
   Moon = "moon",
   Countdown = "countdown",
   Twinkle = "twinkle",
+  Ripple = "ripple",
 }
 
 export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
@@ -62,6 +63,7 @@ export interface Scene {
 
 export interface SceneLayer {
   sceneName: string;
+  sceneConfig: any;
 }
 
 export interface CustomScene {

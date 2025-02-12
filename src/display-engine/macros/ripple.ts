@@ -43,12 +43,15 @@ export const startRipple: MacroFn = async ({
     height: dimensions.height,
     speed: 5,
     waveHeight: 5,
+    color: "#ffffff",
     ...macroConfig,
   };
 
-  const { height, width, speed, waveHeight } = config;
+  const { height, width, speed, waveHeight, color } = config;
 
   const startTime = performance.now();
+
+  let requestId: number;
 
   function drawRipple(timestamp: number) {
     const elapsedTimeUnits = (timestamp - startTime) / (240 - speed * 20);
@@ -65,7 +68,7 @@ export const startRipple: MacroFn = async ({
 
         const adjustedHeight = calculatedWaveHeight * 60 + 100 / 2;
 
-        const rgba = colorToRgba("#ffffff");
+        const rgba = colorToRgba(color);
 
         const id = ctx.createImageData(1, 1); // only do this once per page
         const d = id.data; // only do this once per page
@@ -81,7 +84,7 @@ export const startRipple: MacroFn = async ({
     updatePixels(pixels, index);
 
     if (typeof window !== "undefined") {
-      window.requestAnimationFrame(drawRipple);
+      requestId = window.requestAnimationFrame(drawRipple);
     } else {
       setImmediate(() => drawRipple(Date.now()));
     }
@@ -89,5 +92,7 @@ export const startRipple: MacroFn = async ({
 
   drawRipple(startTime);
 
-  return Promise.resolve(() => {});
+  return Promise.resolve(() => {
+    window.cancelAnimationFrame(requestId);
+  });
 };

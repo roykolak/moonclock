@@ -3,7 +3,7 @@ import { DataTypes, Preset, SceneName } from "../types";
 
 const defaultPreset: Preset = {
   name: "Default",
-  scene: { layers: [{ sceneName: SceneName.Blank }] },
+  scene: { layers: [{ sceneName: SceneName.Blank, sceneConfig: {} }] },
   mode: "for",
   untilDay: "0",
   untilHour: "0",
@@ -26,7 +26,7 @@ export const defaultData: DataTypes = {
   presets: [
     {
       name: "Sleep Mode",
-      scene: { layers: [{ sceneName: SceneName.Moon }] },
+      scene: { layers: [{ sceneName: SceneName.Moon, sceneConfig: {} }] },
       mode: "until",
       untilDay: "1",
       untilHour: "7",
@@ -35,7 +35,7 @@ export const defaultData: DataTypes = {
     },
     {
       name: "Nap Mode",
-      scene: { layers: [{ sceneName: "bunny" }] },
+      scene: { layers: [{ sceneName: "bunny", sceneConfig: {} }] },
       mode: "for",
       untilDay: "0",
       untilHour: "0",
@@ -44,7 +44,7 @@ export const defaultData: DataTypes = {
     },
     {
       name: "Timeout",
-      scene: { layers: [{ sceneName: SceneName.Countdown }] },
+      scene: { layers: [{ sceneName: SceneName.Countdown, sceneConfig: {} }] },
       mode: "for",
       untilDay: "0",
       untilHour: "0",

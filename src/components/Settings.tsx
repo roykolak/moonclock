@@ -2,7 +2,7 @@
 
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, SceneName } from "@/types";
-import { Button, Select, Stack, TextInput, Title } from "@mantine/core";
+import { Button, Group, Select, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
@@ -41,34 +41,39 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           name={"name"}
           {...form.getInputProps("name")}
         />
-
-        <Select
-          placeholder="Scene"
-          variant="filled"
-          style={{ flex: 1 }}
-          label="Default Scene"
-          description="What will be shown when nothing is active"
-          data={[
-            {
-              group: "Built-in Scenes",
-              items: [
-                SceneName.Blank,
-                SceneName.Moon,
-                SceneName.Countdown,
-                SceneName.Twinkle,
-              ],
-            },
-            {
-              group: "Custom Scenes",
-              items: customSceneNames,
-            },
-          ]}
-          data-testid="default-scene-select"
-          required
-          key={form.key(`defaultPreset.scene.layers.0.sceneName`)}
-          name={`defaultScenes.0.sceneName`}
-          {...form.getInputProps(`defaultPreset.scene.layers.0.sceneName`)}
-        />
+        {form.getValues().defaultPreset.scene.layers.map((item, index) => (
+          <Group key={index} w="100%">
+            <Select
+              placeholder="Scene"
+              variant="filled"
+              style={{ flex: 1 }}
+              label="Default Scene"
+              description="What will be shown when nothing is active"
+              data={[
+                {
+                  group: "Built-in Scenes",
+                  items: [
+                    SceneName.Blank,
+                    SceneName.Moon,
+                    SceneName.Countdown,
+                    SceneName.Twinkle,
+                  ],
+                },
+                {
+                  group: "Custom Scenes",
+                  items: customSceneNames,
+                },
+              ]}
+              data-testid="default-scene-select"
+              required
+              key={form.key(`defaultPreset.scene.layers.${index}.sceneName`)}
+              name={`defaultPreset.scene.layers.${index}.sceneName`}
+              {...form.getInputProps(
+                `defaultPreset.scene.layers.${index}.sceneName`
+              )}
+            />
+          </Group>
+        ))}
 
         <Button type="submit" fullWidth mt="md">
           Save

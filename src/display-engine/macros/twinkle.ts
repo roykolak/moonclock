@@ -11,7 +11,7 @@ export const startTwinkle: MacroFn = async ({
 }) => {
   const config = {
     color: "#FFFFFF",
-    speed: 100,
+    speed: 1000,
     width: dimensions.width,
     height: dimensions.height,
     ...macroConfig,

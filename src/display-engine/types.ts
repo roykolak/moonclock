@@ -54,6 +54,7 @@ export interface MacroRippleConfig {
   width: number;
   height: number;
   speed: number;
+  color: string;
   waveHeight: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 }
 
