@@ -34,27 +34,28 @@ export function PresetPreview({
     const canvas = createCanvas(dimensions.width, dimensions.height);
     const ctx = canvas.getContext("2d");
 
-    setEngine(
-      createDisplayEngine({
-        dimensions,
-        onPixelsChange: (pixels) => {
-          pixels.forEach((pixel) => {
-            if (!pixel.rgba) return;
+    const displayEngine = createDisplayEngine({
+      dimensions,
+      onPixelsChange: (pixels) => {
+        pixels.forEach((pixel) => {
+          if (!pixel.rgba) return;
 
-            const id = ctx.createImageData(1, 1);
-            const d = id.data;
-            d[0] = pixel.rgba[0];
-            d[1] = pixel.rgba[1];
-            d[2] = pixel.rgba[2];
-            d[3] = pixel.rgba[3];
-            ctx.putImageData(id, pixel.x, pixel.y);
-          });
+          const id = ctx.createImageData(1, 1);
+          const d = id.data;
+          d[0] = pixel.rgba[0];
+          d[1] = pixel.rgba[1];
+          d[2] = pixel.rgba[2];
+          d[3] = pixel.rgba[3];
+          ctx.putImageData(id, pixel.x, pixel.y);
+        });
 
-          const dataURL = canvas.toDataURL("image/png");
-          setImageData(dataURL);
-        },
-      })
-    );
+        const dataURL = canvas.toDataURL("image/png");
+        setImageData(dataURL);
+      },
+    });
+
+    setEngine(displayEngine);
+    return () => displayEngine.stop();
   }, []);
 
   useEffect(() => {
