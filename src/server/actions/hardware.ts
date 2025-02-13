@@ -13,7 +13,9 @@ export async function reloadHardwareScene() {
     hardware: {
       preset: {
         name: "Trigger Hardware Reload",
-        scene: { layers: [{ sceneName: TriggerHardwareReloadScene }] },
+        scene: {
+          layers: [{ sceneName: TriggerHardwareReloadScene, sceneConfig: {} }],
+        },
         mode: "for",
         untilDay: "0",
         untilHour: "0",

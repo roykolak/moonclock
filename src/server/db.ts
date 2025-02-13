@@ -72,7 +72,9 @@ function readDb(): DataTypes {
 }
 
 function writeDb(db: DataTypes) {
-  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2));
+  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2), {
+    mode: 0o776,
+  });
 }
 
 export function getData(): DataTypes {

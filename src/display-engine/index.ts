@@ -208,5 +208,8 @@ export function createDisplayEngine({
 
       return stopMacros;
     },
+    stop: async () => {
+      await stopMacros();
+    },
   };
 }
