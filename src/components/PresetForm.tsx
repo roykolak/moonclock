@@ -36,7 +36,7 @@ interface PresetFormProps {
 const defaultPreset: Preset = {
   mode: "for",
   name: "",
-  scene: { layers: [{ sceneName: SceneName.Moon, sceneConfig: {} }] },
+  scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
   untilMinute: "0",
   untilDay: "0",
   untilHour: "0",
@@ -98,7 +98,7 @@ export function PresetForm({
 
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
-          {form.getValues().scene.layers.map((item, index) => (
+          {form.getValues().scenes.map((item, index) => (
             <Group key={index} w="100%">
               <Group w="100%">
                 <Select
@@ -234,7 +234,7 @@ export function SceneConfigControls({
   form: UseFormReturnType<Preset>;
   index: number;
 }) {
-  const { sceneName } = form.getValues().scene.layers[0];
+  const { sceneName } = form.getValues().scenes[0];
 
   if (sceneName === "twinkle") {
     return (
@@ -266,26 +266,24 @@ export function SceneConfigControls({
           <Stack gap={4}>
             <Text size="sm">Speed</Text>
             <Slider
-              key={form.key(`scene.layers.${index}.sceneConfig.speed`)}
-              name={`scene.layers.${index}.sceneConfig.speed`}
-              {...form.getInputProps(`scene.layers.${index}.sceneConfig.speed`)}
+              key={form.key(`scenes.${index}.sceneConfig.speed`)}
+              name={`scenes.${index}.sceneConfig.speed`}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
             />
           </Stack>
           <Stack gap={4}>
             <Text size="sm">Wave height</Text>
             <Slider
-              key={form.key(`scene.layers.${index}.sceneConfig.waveHeight`)}
-              name={`scene.layers.${index}.sceneConfig.waveHeight`}
-              {...form.getInputProps(
-                `scene.layers.${index}.sceneConfig.waveHeight`
-              )}
+              key={form.key(`scenes.${index}.sceneConfig.waveHeight`)}
+              name={`scenes.${index}.sceneConfig.waveHeight`}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
             />
           </Stack>
           <ColorInput
             placeholder="Select a twinkle color"
-            key={form.key(`scene.layers.${index}.sceneConfig.color`)}
-            name={`scene.layers.${index}.sceneConfig.color`}
-            {...form.getInputProps(`scene.layers.${index}.sceneConfig.color`)}
+            key={form.key(`scenes.${index}.sceneConfig.color`)}
+            name={`scenes.${index}.sceneConfig.color`}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
           />
         </Stack>
       </Card>

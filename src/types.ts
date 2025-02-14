@@ -49,7 +49,7 @@ export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
 
 export interface Preset {
   [PresetField.Name]: string;
-  scene: Scene;
+  scenes: Scene[];
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;
   [PresetField.UntilHour]: string;
@@ -58,10 +58,6 @@ export interface Preset {
 }
 
 export interface Scene {
-  layers: SceneLayer[];
-}
-
-export interface SceneLayer {
   sceneName: string;
   sceneConfig: any;
 }

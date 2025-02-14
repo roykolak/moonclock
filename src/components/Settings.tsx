@@ -41,7 +41,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           name={"name"}
           {...form.getInputProps("name")}
         />
-        {form.getValues().defaultPreset.scene.layers.map((item, index) => (
+        {form.getValues().defaultPreset.scenes.map((item, index) => (
           <Group key={index} w="100%">
             <Select
               placeholder="Scene"

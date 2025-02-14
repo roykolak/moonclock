@@ -20,7 +20,7 @@ export async function transformPresetToDisplayMacros(
   if (!preset) return [];
 
   const nestedMacros = await Promise.all(
-    preset.scene.layers.flatMap(async ({ sceneName, sceneConfig }) => {
+    preset.scenes.flatMap(async ({ sceneName, sceneConfig }) => {
       if (sceneName === SceneName.Blank) {
         return [box({ backgroundColor: "#000000" })];
       }
