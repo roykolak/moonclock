@@ -66,5 +66,5 @@ export const startMarquee: MacroFn = async ({
     offset += 1;
   }, config.speed);
 
-  return Promise.resolve(() => clearInterval(interval));
+  return () => clearInterval(interval);
 };

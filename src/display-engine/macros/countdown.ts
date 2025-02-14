@@ -47,5 +47,5 @@ export const startCountdown: MacroFn = async ({
     updatePixels(pixels, index);
   }, 250);
 
-  return Promise.resolve(() => clearInterval(interval));
+  return () => clearInterval(interval);
 };

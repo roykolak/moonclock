@@ -13,5 +13,5 @@ export const startCustom: MacroFn = async ({
   const pixels = syncFromCanvas(ctx, dimensions);
   updatePixels(pixels, index);
 
-  return Promise.resolve(() => {});
+  return () => {};
 };

@@ -134,5 +134,5 @@ export const startMeteors: MacroFn = async ({
     updatePixels(pixels, index);
   }, 10);
 
-  return Promise.resolve(() => clearInterval(interval));
+  return () => clearInterval(interval);
 };

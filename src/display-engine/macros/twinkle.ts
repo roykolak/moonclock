@@ -65,7 +65,7 @@ export const startTwinkle: MacroFn = async ({
     updatePixels(pixels, index);
   }, speed);
 
-  return Promise.resolve(() => clearInterval(interval));
+  return () => clearInterval(interval);
 };
 
 function randomColorShade(shades: Uint8ClampedArray[]) {
