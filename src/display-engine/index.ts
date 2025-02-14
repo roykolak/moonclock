@@ -93,7 +93,7 @@ export const countdown = (
   macroConfig,
 });
 
-function startMacros({
+async function startMacros({
   macros,
   dimensions,
   updatePixels,
@@ -101,37 +101,40 @@ function startMacros({
   macros: Macro[];
   dimensions: Dimensions;
   updatePixels: UpdatePixels;
-}): () => Promise<void> {
-  const stops = macros.map(({ macroName, macroConfig }, index) => {
-    const { ctx } = buildCanvas(dimensions);
+}) {
+  const MacroMap: { [k in MacroName]: MacroFn } = {
+    [MacroName.Box]: startBox,
+    [MacroName.Text]: startText,
+    [MacroName.Marquee]: startMarquee,
+    [MacroName.Twinkle]: startTwinkle,
+    [MacroName.Ripple]: startRipple,
+    [MacroName.Image]: startImage,
+    [MacroName.Meteors]: startMeteors,
+    [MacroName.Custom]: startCustom,
+    [MacroName.Coordinates]: startCoordinates,
+    [MacroName.Moon]: startMoon,
+    [MacroName.Countdown]: startCountdown,
+  };
 
-    const MacroMap: { [k in MacroName]: MacroFn } = {
-      [MacroName.Box]: startBox,
-      [MacroName.Text]: startText,
-      [MacroName.Marquee]: startMarquee,
-      [MacroName.Twinkle]: startTwinkle,
-      [MacroName.Ripple]: startRipple,
-      [MacroName.Image]: startImage,
-      [MacroName.Meteors]: startMeteors,
-      [MacroName.Custom]: startCustom,
-      [MacroName.Coordinates]: startCoordinates,
-      [MacroName.Moon]: startMoon,
-      [MacroName.Countdown]: startCountdown,
-    };
+  const stops = await Promise.all(
+    macros.map(({ macroName, macroConfig }, index) => {
+      const { ctx } = buildCanvas(dimensions);
+      const macroFn = MacroMap[macroName];
 
-    const macroFn = MacroMap[macroName];
+      return macroFn({
+        macroConfig,
+        dimensions,
+        ctx,
+        index,
+        updatePixels,
+      });
+    })
+  );
 
-    return macroFn({
-      macroConfig,
-      dimensions,
-      ctx,
-      index,
-      updatePixels,
-    });
-  });
-
-  return async () => {
-    (await Promise.all(stops)).forEach((stop) => stop());
+  return () => {
+    for (const stop of stops) {
+      stop();
+    }
   };
 }
 
@@ -154,11 +157,11 @@ export function createDisplayEngine({
   dimensions: { height: number; width: number };
   onPixelsChange: PixelsChangeCallback;
 }) {
-  let stopMacros: () => Promise<void> = () => Promise.resolve();
+  let stopMacros: () => void = () => {};
 
   return {
     render: async (macros: Macro[]) => {
-      await stopMacros();
+      stopMacros();
 
       const resetPixels: Pixel[] = [];
 
@@ -176,7 +179,7 @@ export function createDisplayEngine({
 
       const pixelMap = buildPixelMap(dimensions);
 
-      stopMacros = startMacros({
+      stopMacros = await startMacros({
         macros,
         dimensions,
         updatePixels: (updatePixels, index) => {
@@ -208,8 +211,8 @@ export function createDisplayEngine({
 
       return stopMacros;
     },
-    stop: async () => {
-      await stopMacros();
+    stop: () => {
+      stopMacros();
     },
   };
 }

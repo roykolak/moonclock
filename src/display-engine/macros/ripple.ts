@@ -92,7 +92,7 @@ export const startRipple: MacroFn = async ({
 
   drawRipple(startTime);
 
-  return Promise.resolve(() => {
+  return () => {
     window.cancelAnimationFrame(requestId);
-  });
+  };
 };

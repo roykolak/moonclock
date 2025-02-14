@@ -27,5 +27,5 @@ export const startImage: MacroFn = async ({
 
   img.src = config.url;
 
-  return Promise.resolve(() => {});
+  return () => {};
 };

@@ -45,5 +45,5 @@ export const startMoon: MacroFn = async ({
     macroConfig: coordinatesConfig,
   });
 
-  return Promise.resolve(() => clearInterval(interval));
+  return () => clearInterval(interval);
 };

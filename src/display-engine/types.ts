@@ -145,7 +145,7 @@ export type InternalPixelsChangeCallback = (
   index: number
 ) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
-export type MacroStopCallback = Promise<() => void>;
+export type MacroStopCallback = () => void;
 
 export type MacroFn = ({
   macroConfig,
@@ -159,4 +159,4 @@ export type MacroFn = ({
   ctx: CanvasRenderingContext2D;
   index: number;
   updatePixels: InternalPixelsChangeCallback;
-}) => MacroStopCallback;
+}) => Promise<MacroStopCallback>;
