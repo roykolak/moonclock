@@ -20,7 +20,7 @@ export async function transformPresetToDisplayMacros(
   if (!preset) return [];
 
   const nestedMacros = await Promise.all(
-    preset.scene.layers.flatMap(async ({ sceneName, sceneConfig }) => {
+    preset.scenes.flatMap(async ({ sceneName, sceneConfig }) => {
       if (sceneName === SceneName.Blank) {
         return [box({ backgroundColor: "#000000" })];
       }
@@ -53,7 +53,8 @@ export async function transformPresetToDisplayMacros(
         return [
           twinkle({
             ...sceneConfig,
-            speed: sceneConfig.speed * 10,
+            speed: 51 - sceneConfig.speed / 2,
+            amount: sceneConfig.amount * 10,
           }),
         ];
       }

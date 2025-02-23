@@ -5,11 +5,11 @@ import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 
 function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
-  return JSON.stringify(preset1?.scene) === JSON.stringify(preset2?.scene);
+  return JSON.stringify(preset1?.scenes) === JSON.stringify(preset2?.scenes);
 }
 
 function getSceneName(preset: Preset | null) {
-  return preset?.scene?.layers?.[0].sceneName;
+  return preset?.scenes?.[0].sceneName;
 }
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {

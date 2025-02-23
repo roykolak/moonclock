@@ -44,7 +44,8 @@ test.describe("Test", () => {
     await page.getByRole("button", { name: "-5 min" }).click();
     await expect(endTime).toHaveText("7:05 AM");
 
-    await page.getByRole("button", { name: "Clear" }).click();
+    await page.getByTestId("panel-menu").click();
+    await page.getByRole("menuitem", { name: "Clear Scene" }).click();
 
     await expect(
       page.getByRole("button", { name: "Sleep Mode" })
@@ -70,7 +71,8 @@ test.describe("Test", () => {
     await expect(page.getByText("Custom until...")).toBeVisible();
     await expect(page.getByText("forever")).toBeVisible();
 
-    await page.getByRole("button", { name: "Clear" }).click();
+    await page.getByTestId("panel-menu").click();
+    await page.getByRole("menuitem", { name: "Clear Scene" }).click();
 
     await expect(
       page.getByRole("button", { name: "Sleep Mode" })
