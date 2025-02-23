@@ -1,8 +1,5 @@
-import { reloadHardwareScene } from "@/server/actions/hardware";
 import { Preset } from "@/types";
-import { Accordion, Button, Grid, Stack, Text } from "@mantine/core";
-import { showNotification } from "@mantine/notifications";
-import { useTransition } from "react";
+import { Accordion, Grid, Stack, Text } from "@mantine/core";
 
 interface HardwareSettingsProps {
   formattedLastHeartbeat: string | null;
@@ -15,14 +12,12 @@ export function HardwareSettings({
   formattedLastHeartbeat,
   formattedHardwareRenderedAt,
 }: HardwareSettingsProps) {
-  const [isPending, startTransition] = useTransition();
-
   return (
     <Accordion defaultValue="Apples" variant="filled" mt="xs">
       <Accordion.Item key="hardware" value="hardware">
         <Accordion.Control>
           <Text size="sm" c="dimmed">
-            Hardware Settings
+            Hardware Details
           </Text>
         </Accordion.Control>
         <Accordion.Panel>
@@ -59,19 +54,6 @@ export function HardwareSettings({
                 </Text>
               </Grid.Col>
             </Grid>
-            <Button
-              size="xs"
-              variant="light"
-              loading={isPending}
-              onClick={async () => {
-                startTransition(async () => {
-                  await reloadHardwareScene();
-                  showNotification({ message: "Hardware Scene reloaded!" });
-                });
-              }}
-            >
-              Reload Hardware Display
-            </Button>
           </Stack>
         </Accordion.Panel>
       </Accordion.Item>

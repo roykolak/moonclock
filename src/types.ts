@@ -14,6 +14,7 @@ export interface ScheduledPreset {
 export interface Panel {
   name: string;
   defaultPreset: Preset;
+  timeAdjustmentAmount: string;
   updatedAt?: string;
 }
 

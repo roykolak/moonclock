@@ -40,6 +40,43 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           key={form.key("name")}
           {...form.getInputProps("name")}
         />
+        <Select
+          placeholder="Time increment"
+          variant="filled"
+          style={{ flex: 1 }}
+          label="Time increment"
+          description="Adjust +/- controls for time amounts"
+          data={[
+            {
+              label: "1 minute",
+              value: "1",
+            },
+            {
+              label: "5 minutes",
+              value: "5",
+            },
+            {
+              label: "10 minutes",
+              value: "10",
+            },
+            {
+              label: "20 minutes",
+              value: "20",
+            },
+            {
+              label: "30 minutes",
+              value: "30",
+            },
+            {
+              label: "1 hour",
+              value: "60",
+            },
+          ]}
+          data-testid="time-adjustment-select"
+          required
+          key={form.key(`timeAdjustmentAmount`)}
+          {...form.getInputProps(`timeAdjustmentAmount`)}
+        />
         {form.getValues().defaultPreset.scenes.map((item, index) => (
           <Group key={index} w="100%">
             <Select

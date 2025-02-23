@@ -28,6 +28,7 @@ import { HardwareSettings } from "./HardwareSettings";
 import { IconDots } from "@tabler/icons-react";
 import { reloadHardwareScene } from "@/server/actions/hardware";
 import { showNotification } from "@mantine/notifications";
+import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 
 interface PanelProps {
   panel: PanelType;
@@ -51,6 +52,8 @@ export default function Panel({
   customSceneNames,
 }: PanelProps) {
   const [state, handlers] = useDisclosure();
+
+  const timeAdjustment = parseInt(panel.timeAdjustmentAmount, 10);
 
   return (
     <>
@@ -107,7 +110,7 @@ export default function Panel({
                 <Menu.Item
                   onClick={async () => {
                     showNotification({
-                      message: "Hardware Scene reloading!",
+                      message: "Hardware Scene reloading...",
                     });
                     await reloadHardwareScene();
                   }}
@@ -188,16 +191,18 @@ export default function Panel({
                   <Button
                     variant="filled"
                     disabled={scheduledPreset.endTime === null}
-                    onClick={() => changeEndTime(5)}
+                    onClick={() => {
+                      changeEndTime(timeAdjustment);
+                    }}
                   >
-                    +5 min
+                    {getFriendlyTimeAdjustmentAmount(timeAdjustment)}
                   </Button>
                   <Button
                     variant="filled"
                     disabled={scheduledPreset.endTime === null}
-                    onClick={() => changeEndTime(-5)}
+                    onClick={() => changeEndTime(-timeAdjustment)}
                   >
-                    -5 min
+                    {getFriendlyTimeAdjustmentAmount(-timeAdjustment)}
                   </Button>
                 </Stack>
               </Flex>
