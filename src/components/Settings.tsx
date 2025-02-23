@@ -38,7 +38,6 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           required
           data-testid="panel-name-input"
           key={form.key("name")}
-          name={"name"}
           {...form.getInputProps("name")}
         />
         {form.getValues().defaultPreset.scenes.map((item, index) => (
@@ -66,11 +65,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
               ]}
               data-testid="default-scene-select"
               required
-              key={form.key(`defaultPreset.scene.layers.${index}.sceneName`)}
-              name={`defaultPreset.scene.layers.${index}.sceneName`}
-              {...form.getInputProps(
-                `defaultPreset.scene.layers.${index}.sceneName`
-              )}
+              key={form.key(`defaultPreset.scenes.${index}.sceneName`)}
+              {...form.getInputProps(`defaultPreset.scenes.${index}.sceneName`)}
             />
           </Group>
         ))}

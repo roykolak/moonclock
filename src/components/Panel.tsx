@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ActionIcon,
   Badge,
   Box,
   Button,
@@ -8,6 +9,7 @@ import {
   Center,
   Flex,
   Group,
+  Menu,
   Modal,
   Stack,
   Text,
@@ -23,6 +25,9 @@ import {
   updateScheduledPreset,
 } from "@/server/actions/scheduledPreset";
 import { HardwareSettings } from "./HardwareSettings";
+import { IconDots } from "@tabler/icons-react";
+import { reloadHardwareScene } from "@/server/actions/hardware";
+import { showNotification } from "@mantine/notifications";
 
 interface PanelProps {
   panel: PanelType;
@@ -76,21 +81,41 @@ export default function Panel({
             <Text fw={700} data-testid="panel-name">
               {panel.name}
             </Text>
-            {scheduledPreset?.preset && (
-              <Button
-                variant="light"
-                color="red"
-                size="compact-sm"
-                onClick={() => {
-                  updateScheduledPreset({
-                    preset: null,
-                    endTime: null,
-                  });
-                }}
-              >
-                Clear
-              </Button>
-            )}
+            <Menu withinPortal position="bottom-end" shadow="sm">
+              <Menu.Target>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  data-testid="panel-menu"
+                >
+                  <IconDots size={16} />
+                </ActionIcon>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Item
+                  disabled={!scheduledPreset?.preset}
+                  onClick={() => {
+                    updateScheduledPreset({
+                      preset: null,
+                      endTime: null,
+                    });
+                  }}
+                >
+                  Clear Scene
+                </Menu.Item>
+                <Menu.Item
+                  onClick={async () => {
+                    showNotification({
+                      message: "Hardware Scene reloading!",
+                    });
+                    await reloadHardwareScene();
+                  }}
+                >
+                  Reload Hardware
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Card.Section>
         <Card.Section>

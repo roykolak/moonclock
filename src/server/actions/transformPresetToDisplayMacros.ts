@@ -53,7 +53,8 @@ export async function transformPresetToDisplayMacros(
         return [
           twinkle({
             ...sceneConfig,
-            speed: sceneConfig.speed * 10,
+            speed: 51 - sceneConfig.speed / 2,
+            amount: sceneConfig.amount * 10,
           }),
         ];
       }

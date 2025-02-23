@@ -20,7 +20,7 @@ describe("checkForUpdates", () => {
         endTime: date.toJSON(),
         preset: {
           name: "bedtime",
-          scene: { layers: [{ sceneName: SceneName.Moon }] },
+          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
         } as Preset,
       },
       presets: [],
@@ -49,7 +49,7 @@ describe("checkForUpdates", () => {
           hardware: {
             preset: {
               name: "bedtime",
-              scene: { layers: [{ sceneName: SceneName.Moon }] },
+              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
             } as Preset,
           },
         });
@@ -58,7 +58,7 @@ describe("checkForUpdates", () => {
 
         const { hardware } = await getData();
 
-        assert.equal(hardware.preset?.scene.layers[0].sceneName, "blank");
+        assert.equal(hardware.preset?.scenes[0].sceneName, "blank");
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {
@@ -82,7 +82,7 @@ describe("checkForUpdates", () => {
             endTime: date.toJSON(),
             preset: {
               name: "bedtime",
-              scene: { layers: [{ sceneName: SceneName.Moon }] },
+              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
             } as Preset,
           },
           presets: [],
@@ -90,7 +90,7 @@ describe("checkForUpdates", () => {
           hardware: {
             preset: {
               name: "bedtime",
-              scene: { layers: [{ sceneName: SceneName.Moon }] },
+              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
             } as Preset,
           },
         });
@@ -99,10 +99,7 @@ describe("checkForUpdates", () => {
 
         const { scheduledPreset } = await getData();
 
-        assert.equal(
-          scheduledPreset?.preset?.scene.layers[0].sceneName,
-          "moon"
-        );
+        assert.equal(scheduledPreset?.preset?.scenes[0].sceneName, "moon");
         assert.equal(displayConfig, null);
       });
     });
@@ -117,7 +114,7 @@ describe("checkForUpdates", () => {
             endTime: date.toJSON(),
             preset: {
               name: "bedtime",
-              scene: { layers: [{ sceneName: SceneName.Moon }] },
+              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
             } as Preset,
           },
           presets: [],
