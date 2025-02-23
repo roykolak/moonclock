@@ -147,12 +147,20 @@ test.describe("Test", () => {
     await page.getByTestId("default-scene-select").click();
     await page.getByRole("option", { name: "bunny" }).click();
 
+    await page.getByTestId("time-adjustment-select").click();
+    await page.getByRole("option", { name: "1 hour" }).click();
+
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByRole("link", { name: "Panel" }).click();
 
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
     await expect(page.getByAltText("bunny scene")).toBeVisible();
+
+    await page.getByRole("button", { name: "Sleep Mode" }).click();
+
+    await expect(page.getByRole("button", { name: "+1 hour" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "-1 hour" })).toBeVisible();
   });
 
   test("creating, editting, and saving a new scene", async ({ page }) => {

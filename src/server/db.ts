@@ -14,6 +14,7 @@ const defaultPreset: Preset = {
 export const defaultData: DataTypes = {
   panel: {
     name: "My Moonclock",
+    timeAdjustmentAmount: "5",
     defaultPreset,
   },
   scheduledPreset: {
