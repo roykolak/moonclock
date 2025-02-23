@@ -11,12 +11,12 @@ const TOTAL_PIXELS = 4;
 const SEQUENCE_DURATION = TOTAL_PIXELS * DELAY_BETWEEN_PIXELS + PULSE_DURATION;
 const TOTAL_CYCLE_DURATION = SEQUENCE_DURATION + SEQUENCE_DELAY;
 
-function shuffle(unshuffled: any[]) {
-  return unshuffled
-    .map((value) => ({ ...value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
-}
+// function shuffle(unshuffled: any[]) {
+//   return unshuffled
+//     .map((value) => ({ ...value, sort: Math.random() }))
+//     .sort((a, b) => a.sort - b.sort)
+//     .map(({ value }) => value);
+// }
 
 export const startMoon: MacroFn = async ({
   dimensions,
