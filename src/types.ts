@@ -16,6 +16,7 @@ export interface Panel {
   defaultPreset: Preset;
   timeAdjustmentAmount: string;
   updatedAt?: string;
+  brightness: string;
 }
 
 export interface Hardware {
@@ -36,6 +37,7 @@ export enum PresetField {
   UntilHour = "untilHour",
   UntilMinute = "untilMinute",
   ForTime = "forTime",
+  TimeAdjustmentAmount = "timeAdjustmentAmount",
 }
 
 export enum SceneName {
@@ -56,6 +58,7 @@ export interface Preset {
   [PresetField.UntilHour]: string;
   [PresetField.UntilMinute]: string;
   [PresetField.ForTime]: string;
+  [PresetField.TimeAdjustmentAmount]?: string;
 }
 
 export interface Scene {

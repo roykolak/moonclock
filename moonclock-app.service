@@ -10,6 +10,6 @@ Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=sudo npm run start
+ExecStart=sudo npm run app
 [Install]
 WantedBy=default.target

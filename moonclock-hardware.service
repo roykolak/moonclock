@@ -1,0 +1,16 @@
+[Unit]
+Description=Moonclock
+After=network.target
+Wants=network.target
+[Service]
+User=root
+Group=root
+Type=simple
+Restart=always
+RestartSec=5
+RuntimeMaxSec=1d
+TimeoutStopSec=600
+WorkingDirectory=/usr/local/bin/moonclock
+ExecStart=sudo npm run hardware
+[Install]
+WantedBy=default.target

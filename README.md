@@ -107,10 +107,19 @@ sudo npm run app:build
 Finally, install Moonclock as a service...
 
 ```
-sudo cp moonclock.service /etc/systemd/system/
+sudo cp moonclock-app.service /etc/systemd/system/
+sudo cp moonclock-hardware.service /etc/systemd/system/
+sudo cp moonclock-hardware.path /etc/systemd/system/
+
 sudo systemctl daemon-reload
-sudo systemctl enable moonclock
-sudo systemctl start moonclock
+
+sudo systemctl enable moonclock-app
+sudo systemctl enable moonclock-hardware
+sudo systemctl enable moonclock-hardware.path
+
+sudo systemctl start moonclock-app
+sudo systemctl start moonclock-hardware
+sudo systemctl start moonclock-hardware.path
 ```
 
 Your raspberry pi should now be running and serving your moonclock!

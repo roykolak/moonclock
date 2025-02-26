@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Accordion,
   ActionIcon,
   Box,
   Button,
@@ -210,8 +211,10 @@ export function PresetForm({
             />
           </Flex>
         )}
+        <Divider />
+        <AdvancedSettings form={form} />
 
-        <Flex mt="lg">
+        <Flex mt="xs">
           <Button type="submit" fullWidth>
             {submitLabel || "Save"}
           </Button>
@@ -296,5 +299,41 @@ export function SceneConfigControls({
         No scene options available
       </Text>
     </Card>
+  );
+}
+
+export function AdvancedSettings({
+  form,
+}: {
+  form: UseFormReturnType<Preset>;
+}) {
+  return (
+    <Accordion defaultValue="Apples" variant="filled">
+      <Accordion.Item key="hardware" value="hardware">
+        <Accordion.Control>
+          <Text size="sm" c="dimmed">
+            Advanced Settings
+          </Text>
+        </Accordion.Control>
+        <Accordion.Panel>
+          <Stack>
+            <Select
+              label="Time adjustment interval"
+              description="Configure a custom time adjustment interval in the UI"
+              placeholder="Select..."
+              data={[
+                { label: "00", value: "00" },
+                { label: "15", value: "15" },
+                { label: "30", value: "30" },
+                { label: "45", value: "45" },
+              ]}
+              data-testid="time-adjustment-select"
+              key={form.key(PresetField.TimeAdjustmentAmount)}
+              {...form.getInputProps(PresetField.TimeAdjustmentAmount)}
+            />
+          </Stack>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
   );
 }

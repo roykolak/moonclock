@@ -16,6 +16,7 @@ export const defaultData: DataTypes = {
     name: "My Moonclock",
     timeAdjustmentAmount: "5",
     defaultPreset,
+    brightness: "30",
   },
   scheduledPreset: {
     preset: null,
