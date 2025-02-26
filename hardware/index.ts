@@ -2,8 +2,9 @@ import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { Command } from "commander";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
+import { getData } from "@/server/db";
 
-console.log(`${process.env.USER} is running this script`);
+const { panel } = await getData();
 
 const program = new Command();
 
@@ -57,7 +58,7 @@ if (!options.emulate) {
     if (pixelUpdates) {
       for (const pixel of pixelUpdates) {
         matrix
-          .brightness(parseInt(options.brightness, 10))
+          .brightness(parseInt(panel.brightness, 10))
           .fgColor(
             parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
           )

@@ -3,10 +3,7 @@
 import { TriggerHardwareReloadScene } from "@/types";
 import { setData } from "../db";
 import { revalidatePath } from "next/cache";
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { reloadHardware } from "../utils";
 
 export async function reloadHardwareScene() {
   await setData({
@@ -23,7 +20,6 @@ export async function reloadHardwareScene() {
     },
   });
 
-  await sleep(3000);
-
+  reloadHardware();
   revalidatePath("/panel");
 }

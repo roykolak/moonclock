@@ -5,18 +5,18 @@ import { startCoordinates } from "./coordinates";
 const PULSE_DURATION = 1;
 const DELAY_BETWEEN_PIXELS = 1;
 const MAX_ALPHA = 255;
-const SEQUENCE_DELAY = 2.0;
+const SEQUENCE_DELAY = 5.0;
 
 const TOTAL_PIXELS = 4;
 const SEQUENCE_DURATION = TOTAL_PIXELS * DELAY_BETWEEN_PIXELS + PULSE_DURATION;
 const TOTAL_CYCLE_DURATION = SEQUENCE_DURATION + SEQUENCE_DELAY;
 
-// function shuffle(unshuffled: any[]) {
-//   return unshuffled
-//     .map((value) => ({ ...value, sort: Math.random() }))
-//     .sort((a, b) => a.sort - b.sort)
-//     .map(({ value }) => value);
-// }
+function shuffle(unshuffled: any[]) {
+  return unshuffled
+    .map((value) => ({ ...value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map((value) => value);
+}
 
 export const startMoon: MacroFn = async ({
   dimensions,
@@ -28,12 +28,12 @@ export const startMoon: MacroFn = async ({
     coordinates: moon,
   };
 
-  const twinkleStars = [
+  let twinkleStars = shuffle([
     { y: 6, x: 5, startTime: 0, alpha: 0 },
     { y: 9, x: 15, startTime: 0, alpha: 0 },
     { y: 22, x: 30, startTime: 0, alpha: 0 },
     { y: 29, x: 12, startTime: 0, alpha: 0 },
-  ];
+  ]);
 
   for (let i = 0; i < twinkleStars.length; i++) {
     twinkleStars[i] = {
@@ -55,6 +55,11 @@ export const startMoon: MacroFn = async ({
   });
 
   function runMoon(currentTime: number) {
+    if (accumulator > TOTAL_CYCLE_DURATION) {
+      accumulator = 0;
+      twinkleStars = shuffle(twinkleStars);
+    }
+
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
     accumulator += deltaTime;

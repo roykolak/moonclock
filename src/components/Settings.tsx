@@ -2,7 +2,16 @@
 
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, SceneName } from "@/types";
-import { Button, Group, Select, Stack, TextInput, Title } from "@mantine/core";
+import {
+  Button,
+  Group,
+  Select,
+  Slider,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
@@ -107,6 +116,15 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
             />
           </Group>
         ))}
+
+        <Stack gap={4}>
+          <Text size="sm">Display Brightness</Text>
+          <Slider
+            label={null}
+            key={form.key(`brightness`)}
+            {...form.getInputProps(`brightness`)}
+          />
+        </Stack>
 
         <Button type="submit" fullWidth mt="md">
           Save

@@ -14,7 +14,12 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { Panel as PanelType, Preset, ScheduledPreset } from "../types";
+import {
+  Panel as PanelType,
+  Preset,
+  PresetField,
+  ScheduledPreset,
+} from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
@@ -53,7 +58,11 @@ export default function Panel({
 }: PanelProps) {
   const [state, handlers] = useDisclosure();
 
-  const timeAdjustment = parseInt(panel.timeAdjustmentAmount, 10);
+  const timeAdjustment = parseInt(
+    scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
+      panel.timeAdjustmentAmount,
+    10
+  );
 
   return (
     <>
