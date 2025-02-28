@@ -3,8 +3,9 @@ import { Command } from "commander";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
 import { getData } from "@/server/db";
+import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 
-const { panel } = await getData();
+const { panel, hardware } = await getData();
 
 const program = new Command();
 
@@ -13,10 +14,7 @@ program
   .description("Power a hardware LED board")
   .version("0.1.0");
 
-program
-  .option("--brightness <number>")
-  .option("--debug <boolean>")
-  .option("--emulate <boolean>");
+program.option("--debug <boolean>").option("--emulate <boolean>");
 
 program.parse(process.argv);
 
@@ -58,7 +56,7 @@ if (!options.emulate) {
     if (pixelUpdates) {
       for (const pixel of pixelUpdates) {
         matrix
-          .brightness(parseInt(panel.brightness, 10))
+          .brightness(panel.brightness)
           .fgColor(
             parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
           )
@@ -78,6 +76,8 @@ const engine = createDisplayEngine({
     updateQueue.push(pixels);
   },
 });
+
+engine.render(await transformPresetToDisplayMacros(hardware.preset));
 
 setInterval(async () => {
   const displayConfig = await checkForNewDisplayConfig();

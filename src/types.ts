@@ -16,7 +16,7 @@ export interface Panel {
   defaultPreset: Preset;
   timeAdjustmentAmount: string;
   updatedAt?: string;
-  brightness: string;
+  brightness: number;
 }
 
 export interface Hardware {

@@ -1,9 +1,0 @@
-[Unit]
-Description=Monitor database.json and restart moon-hardware
-
-[Path]
-PathModified=/usr/local/bin/moonclock/restart-hardware
-Unit=moonclock-hardware.service
-
-[Install]
-WantedBy=default.target

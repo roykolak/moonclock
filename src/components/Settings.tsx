@@ -4,6 +4,7 @@ import { updatePanel } from "@/server/actions/panel";
 import { Panel, SceneName } from "@/types";
 import {
   Button,
+  Divider,
   Group,
   Select,
   Slider,
@@ -116,6 +117,11 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
             />
           </Group>
         ))}
+        <Divider />
+
+        <Title order={5} mt="md">
+          Hardware Settings
+        </Title>
 
         <Stack gap={4}>
           <Text size="sm">Display Brightness</Text>

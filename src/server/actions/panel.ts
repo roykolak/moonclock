@@ -1,17 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { setData } from "../db";
+import { getData, setData } from "../db";
 import { Panel } from "@/types";
 import { reloadHardware } from "../utils";
 
-export async function updatePanel(panel: Panel) {
+function hardwareReloadNeeded(newPanel: Panel, oldPanel: Panel) {
+  return newPanel.brightness !== oldPanel.brightness;
+}
+
+export async function updatePanel(newPanel: Panel) {
+  const { panel: oldPanel } = getData();
+
   setData({
     panel: {
-      ...panel,
+      ...newPanel,
       updatedAt: new Date().toJSON(),
     },
   });
+
   revalidatePath("/panel");
-  reloadHardware();
+
+  if (hardwareReloadNeeded(newPanel, oldPanel)) {
+    reloadHardware();
+  }
 }
