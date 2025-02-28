@@ -1,0 +1,12 @@
+[Unit]
+Description=moonclock-hardware restarter
+After=network.target
+StartLimitIntervalSec=10
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart moonclock-hardware.service
+
+[Install]
+WantedBy=default.target
