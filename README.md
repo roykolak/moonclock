@@ -122,3 +122,9 @@ You can view logs with the following commands:
 ```
 ./scripts/log.sh
 ```
+
+Also you can trigger a restart of the hardware process with:
+
+```
+touch restart-hardware
+```

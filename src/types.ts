@@ -1,3 +1,5 @@
+import Panel from "./components/Panel";
+
 export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
@@ -12,11 +14,17 @@ export interface ScheduledPreset {
 }
 
 export interface Panel {
-  name: string;
-  defaultPreset: Preset;
-  timeAdjustmentAmount: string;
+  [PanelField.Name]: string;
+  [PanelField.TimeAdjustmentAmount]: string;
+  [PanelField.Brightness]: number;
   updatedAt?: string;
-  brightness: number;
+  defaultPreset: Preset;
+}
+
+export enum PanelField {
+  Name = "name",
+  TimeAdjustmentAmount = "timeAdjustmentAmount",
+  Brightness = "brightness",
 }
 
 export interface Hardware {
@@ -52,13 +60,13 @@ export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
 
 export interface Preset {
   [PresetField.Name]: string;
-  scenes: Scene[];
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;
   [PresetField.UntilHour]: string;
   [PresetField.UntilMinute]: string;
   [PresetField.ForTime]: string;
   [PresetField.TimeAdjustmentAmount]?: string;
+  scenes: Scene[];
 }
 
 export interface Scene {

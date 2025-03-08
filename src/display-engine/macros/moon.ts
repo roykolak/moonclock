@@ -11,6 +11,15 @@ const TOTAL_PIXELS = 4;
 const SEQUENCE_DURATION = TOTAL_PIXELS * DELAY_BETWEEN_PIXELS + PULSE_DURATION;
 const TOTAL_CYCLE_DURATION = SEQUENCE_DURATION + SEQUENCE_DELAY;
 
+const GLOW_RGB = [15, 10, 222];
+
+const TWINKLE_STARS = [
+  { y: 6, x: 5 },
+  { y: 9, x: 15 },
+  { y: 22, x: 30 },
+  { y: 29, x: 12 },
+];
+
 function shuffle(unshuffled: any[]) {
   return unshuffled
     .map((value) => ({ ...value, sort: Math.random() }))
@@ -28,20 +37,7 @@ export const startMoon: MacroFn = async ({
     coordinates: moon,
   };
 
-  let twinkleStars = shuffle([
-    { y: 6, x: 5, startTime: 0, alpha: 0 },
-    { y: 9, x: 15, startTime: 0, alpha: 0 },
-    { y: 22, x: 30, startTime: 0, alpha: 0 },
-    { y: 29, x: 12, startTime: 0, alpha: 0 },
-  ]);
-
-  for (let i = 0; i < twinkleStars.length; i++) {
-    twinkleStars[i] = {
-      ...twinkleStars[i],
-      startTime: i * DELAY_BETWEEN_PIXELS,
-      alpha: 0,
-    };
-  }
+  let twinkleStars = shuffle(TWINKLE_STARS);
 
   let lastTime = 0;
   let accumulator = 0;
@@ -57,7 +53,7 @@ export const startMoon: MacroFn = async ({
   function runMoon(currentTime: number) {
     if (accumulator > TOTAL_CYCLE_DURATION) {
       accumulator = 0;
-      twinkleStars = shuffle(twinkleStars);
+      twinkleStars = shuffle(TWINKLE_STARS);
     }
 
     const deltaTime = (currentTime - lastTime) / 1000;
@@ -90,30 +86,34 @@ export const startMoon: MacroFn = async ({
       } else {
         const alpha =
           Math.sin((pixelTime / PULSE_DURATION) * Math.PI) * MAX_ALPHA;
-        const rgba = new Uint8ClampedArray([255, 255, 255, alpha]);
+
         const star = twinkleStars[i];
+
+        const starRgba = new Uint8ClampedArray([255, 255, 255, alpha]);
+        const glowRgba = new Uint8ClampedArray([...GLOW_RGB, alpha / 2]);
+
         updatePixels(
           [
-            { ...star, rgba },
+            { ...star, rgba: starRgba },
             {
               ...star,
               y: star.y + 1,
-              rgba: new Uint8ClampedArray([255, 255, 255, alpha / 4]),
+              rgba: glowRgba,
             },
             {
               ...star,
               y: star.y - 1,
-              rgba: new Uint8ClampedArray([255, 255, 255, alpha / 4]),
+              rgba: glowRgba,
             },
             {
               ...star,
               x: star.x + 1,
-              rgba: new Uint8ClampedArray([255, 255, 255, alpha / 4]),
+              rgba: glowRgba,
             },
             {
               ...star,
               x: star.x - 1,
-              rgba: new Uint8ClampedArray([255, 255, 255, alpha / 4]),
+              rgba: glowRgba,
             },
           ],
           index + 1
@@ -124,7 +124,7 @@ export const startMoon: MacroFn = async ({
     if (typeof window !== "undefined") {
       requestId = window.requestAnimationFrame(runMoon);
     } else {
-      setImmediate(() => runMoon(startTime));
+      requestId = setImmediate(() => runMoon(startTime));
     }
   }
 
@@ -136,11 +136,17 @@ export const startMoon: MacroFn = async ({
     macroConfig: coordinatesConfig,
   });
 
-  let requestId: number;
+  let requestId: NodeJS.Immediate | number;
 
   const startTime = performance.now();
 
   runMoon(startTime);
 
-  return () => window.cancelAnimationFrame(requestId);
+  return () => {
+    if (typeof window !== "undefined") {
+      window.cancelAnimationFrame(requestId as number);
+    } else {
+      clearImmediate(requestId as NodeJS.Immediate);
+    }
+  };
 };

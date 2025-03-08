@@ -1,7 +1,7 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { Panel, SceneName } from "@/types";
+import { Panel, PanelField, SceneName } from "@/types";
 import {
   Button,
   Divider,
@@ -47,8 +47,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           label="Name"
           required
           data-testid="panel-name-input"
-          key={form.key("name")}
-          {...form.getInputProps("name")}
+          key={form.key(PanelField.Name)}
+          {...form.getInputProps(PanelField.Name)}
         />
         <Select
           placeholder="Time increment"
@@ -84,8 +84,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           ]}
           data-testid="time-adjustment-select"
           required
-          key={form.key(`timeAdjustmentAmount`)}
-          {...form.getInputProps(`timeAdjustmentAmount`)}
+          key={form.key(PanelField.TimeAdjustmentAmount)}
+          {...form.getInputProps(PanelField.TimeAdjustmentAmount)}
         />
         {form.getValues().defaultPreset.scenes.map((item, index) => (
           <Group key={index} w="100%">
@@ -127,8 +127,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           <Text size="sm">Display Brightness</Text>
           <Slider
             label={null}
-            key={form.key(`brightness`)}
-            {...form.getInputProps(`brightness`)}
+            key={form.key(PanelField.Brightness)}
+            {...form.getInputProps(PanelField.Brightness)}
           />
         </Stack>
 
