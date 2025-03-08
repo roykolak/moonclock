@@ -121,7 +121,8 @@ export type MacroConfig =
   | MacroCustomConfig
   | MacroCoordinatesConfig
   | MacroMoonConfig
-  | MacroCountdownConfig;
+  | MacroCountdownConfig
+  | any;
 
 export interface Macro {
   macroName: MacroName;
