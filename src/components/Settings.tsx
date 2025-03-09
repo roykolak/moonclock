@@ -132,6 +132,40 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           />
         </Stack>
 
+        <Stack gap={4}>
+          <Stack gap={0}>
+            <Text size="sm">LED PWN LSB nanoseconds</Text>
+            <Text c="dimmed" size="xs">
+              Higher values will provide better image quality * (more accurate
+              color, less ghosting) at the expense of frame rate.
+            </Text>
+          </Stack>
+          <Slider
+            label={null}
+            max={1000}
+            key={form.key(PanelField.PwnLsbNanoseconds)}
+            {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
+          />
+        </Stack>
+
+        <Stack gap={4}>
+          <Stack gap={0}>
+            <Text size="sm">GPIO Slowdown</Text>
+            <Text c="dimmed" size="xs">
+              If you have a Raspberry Pi with a slower processor * (Model A, A+,
+              B+, Zero), then a value of 0 (zero) might work and is desirable. A
+              Raspberry Pi 3 or Pi4 might even need higher values for the panels
+              to be.
+            </Text>
+          </Stack>
+          <Slider
+            max={4}
+            min={0}
+            key={form.key(PanelField.GpioSlowdown)}
+            {...form.getInputProps(PanelField.GpioSlowdown)}
+          />
+        </Stack>
+
         <Button type="submit" fullWidth mt="md">
           Save
         </Button>

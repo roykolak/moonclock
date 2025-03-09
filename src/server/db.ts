@@ -17,6 +17,8 @@ export const defaultData: DataTypes = {
     timeAdjustmentAmount: "5",
     defaultPreset,
     brightness: 30,
+    pwnLsbNanoseconds: 130,
+    gpioSlowdown: 1,
   },
   scheduledPreset: {
     preset: null,

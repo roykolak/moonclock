@@ -4,6 +4,7 @@ import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
+import { PanelField } from "@/types";
 
 const { panel, hardware } = await getData();
 
@@ -42,10 +43,11 @@ if (!options.emulate) {
       cols: 32,
       chainLength: 1,
       hardwareMapping: GpioMapping.Regular,
+      pwmLsbNanoseconds: panel[PanelField.PwnLsbNanoseconds],
     },
     {
       ...LedMatrix.defaultRuntimeOptions(),
-      gpioSlowdown: 2,
+      gpioSlowdown: panel[PanelField.GpioSlowdown],
     }
   );
   matrix.afterSync(() => {
@@ -56,7 +58,7 @@ if (!options.emulate) {
     if (pixelUpdates) {
       for (const pixel of pixelUpdates) {
         matrix
-          .brightness(panel.brightness)
+          .brightness(panel[PanelField.Brightness])
           .fgColor(
             parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
           )
