@@ -17,6 +17,8 @@ export interface Panel {
   [PanelField.Name]: string;
   [PanelField.TimeAdjustmentAmount]: string;
   [PanelField.Brightness]: number;
+  [PanelField.PwnLsbNanoseconds]: number;
+  [PanelField.GpioSlowdown]: 0 | 1 | 2 | 3 | 4;
   updatedAt?: string;
   defaultPreset: Preset;
 }
@@ -25,6 +27,8 @@ export enum PanelField {
   Name = "name",
   TimeAdjustmentAmount = "timeAdjustmentAmount",
   Brightness = "brightness",
+  PwnLsbNanoseconds = "pwnLsbNanoseconds",
+  GpioSlowdown = "gpioSlowdown",
 }
 
 export interface Hardware {
