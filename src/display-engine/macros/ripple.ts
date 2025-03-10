@@ -51,7 +51,7 @@ export const startRipple: MacroFn = async ({
 
   const startTime = performance.now();
 
-  let requestId: number;
+  let requestId: number | NodeJS.Immediate;
 
   function drawRipple(timestamp: number) {
     const elapsedTimeUnits = (timestamp - startTime) / (240 - speed * 20);
@@ -86,13 +86,17 @@ export const startRipple: MacroFn = async ({
     if (typeof window !== "undefined") {
       requestId = window.requestAnimationFrame(drawRipple);
     } else {
-      setImmediate(() => drawRipple(Date.now()));
+      requestId = setImmediate(() => drawRipple(Date.now()));
     }
   }
 
   drawRipple(startTime);
 
   return () => {
-    window.cancelAnimationFrame(requestId);
+    if (typeof window !== "undefined") {
+      window.cancelAnimationFrame(requestId as number);
+    } else {
+      clearImmediate(requestId as NodeJS.Immediate);
+    }
   };
 };

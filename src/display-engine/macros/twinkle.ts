@@ -20,7 +20,7 @@ export const startTwinkle: MacroFn = async ({
 
   const { color, speed, amount, height, width } = config;
 
-  let requestId: number;
+  let requestId: number | NodeJS.Immediate;
 
   const twinklingCoordinates: any[] = [];
 
@@ -75,11 +75,17 @@ export const startTwinkle: MacroFn = async ({
     if (typeof window !== "undefined") {
       requestId = window.requestAnimationFrame(drawTwinkle);
     } else {
-      setImmediate(() => drawTwinkle());
+      requestId = setImmediate(() => drawTwinkle());
     }
   }
 
   drawTwinkle();
 
-  return () => window.cancelAnimationFrame(requestId);
+  return () => {
+    if (typeof window !== "undefined") {
+      window.cancelAnimationFrame(requestId as number);
+    } else {
+      clearImmediate(requestId as NodeJS.Immediate);
+    }
+  };
 };
