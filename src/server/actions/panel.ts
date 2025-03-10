@@ -2,11 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { getData, setData } from "../db";
-import { Panel } from "@/types";
+import { Panel, PanelField } from "@/types";
 import { reloadHardware } from "../utils";
 
 function hardwareReloadNeeded(newPanel: Panel, oldPanel: Panel) {
-  return newPanel.brightness !== oldPanel.brightness;
+  return (
+    newPanel[PanelField.Brightness] !== oldPanel[PanelField.Brightness] ||
+    newPanel[PanelField.GpioSlowdown] !== oldPanel[PanelField.GpioSlowdown] ||
+    newPanel[PanelField.PwnLsbNanoseconds] !==
+      oldPanel[PanelField.PwnLsbNanoseconds]
+  );
 }
 
 export async function updatePanel(newPanel: Panel) {
