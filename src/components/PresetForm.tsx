@@ -322,10 +322,12 @@ export function AdvancedSettings({
               description="Configure a custom time adjustment interval in the UI"
               placeholder="Select..."
               data={[
-                { label: "00", value: "00" },
-                { label: "15", value: "15" },
-                { label: "30", value: "30" },
-                { label: "45", value: "45" },
+                { label: "1 minute", value: "1" },
+                { label: "5 minutes", value: "5" },
+                { label: "10 minutes", value: "10" },
+                { label: "20 minutes", value: "20" },
+                { label: "30 minutes", value: "30" },
+                { label: "1 hour", value: "60" },
               ]}
               data-testid="time-adjustment-select"
               key={form.key(PresetField.TimeAdjustmentAmount)}

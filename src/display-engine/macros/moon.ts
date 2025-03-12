@@ -1,3 +1,4 @@
+import { getAnimationFrame, stopAnimationFrame } from "../animation";
 import { moon } from "../scenes/moon";
 import { MacroCoordinatesConfig, MacroFn } from "../types";
 import { startCoordinates } from "./coordinates";
@@ -36,6 +37,8 @@ export const startMoon: MacroFn = async ({
   const coordinatesConfig: MacroCoordinatesConfig = {
     coordinates: moon,
   };
+
+  let timeoutId: NodeJS.Timeout;
 
   let twinkleStars = shuffle(TWINKLE_STARS);
 
@@ -120,12 +123,7 @@ export const startMoon: MacroFn = async ({
         );
       }
     }
-
-    if (typeof window !== "undefined") {
-      requestId = window.requestAnimationFrame(runMoon);
-    } else {
-      requestId = setImmediate(() => runMoon(startTime));
-    }
+    timeoutId = getAnimationFrame(runMoon);
   }
 
   startCoordinates({
@@ -136,17 +134,11 @@ export const startMoon: MacroFn = async ({
     macroConfig: coordinatesConfig,
   });
 
-  let requestId: NodeJS.Immediate | number;
-
   const startTime = performance.now();
 
   runMoon(startTime);
 
   return () => {
-    if (typeof window !== "undefined") {
-      window.cancelAnimationFrame(requestId as number);
-    } else {
-      clearImmediate(requestId as NodeJS.Immediate);
-    }
+    stopAnimationFrame(timeoutId);
   };
 };
