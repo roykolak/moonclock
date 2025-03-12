@@ -1,8 +1,8 @@
-import fs from "fs";
+import { exec } from "child_process";
 
 export function reloadHardware() {
   log("Triggering hardware restart");
-  fs.closeSync(fs.openSync("restart-hardware", "w"));
+  exec("systemctl restart hardware");
 }
 
 function log(message: string) {

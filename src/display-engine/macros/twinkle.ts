@@ -1,3 +1,4 @@
+import { getAnimationFrame, stopAnimationFrame } from "../animation";
 import { syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 import { colorToRgba } from "./ripple";
@@ -20,7 +21,7 @@ export const startTwinkle: MacroFn = async ({
 
   const { color, speed, amount, height, width } = config;
 
-  let requestId: number | NodeJS.Immediate;
+  let timeoutId: NodeJS.Timeout;
 
   const twinklingCoordinates: any[] = [];
 
@@ -72,20 +73,12 @@ export const startTwinkle: MacroFn = async ({
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
 
-    if (typeof window !== "undefined") {
-      requestId = window.requestAnimationFrame(drawTwinkle);
-    } else {
-      requestId = setImmediate(() => drawTwinkle());
-    }
+    timeoutId = getAnimationFrame(drawTwinkle);
   }
 
   drawTwinkle();
 
   return () => {
-    if (typeof window !== "undefined") {
-      window.cancelAnimationFrame(requestId as number);
-    } else {
-      clearImmediate(requestId as NodeJS.Immediate);
-    }
+    stopAnimationFrame(timeoutId);
   };
 };

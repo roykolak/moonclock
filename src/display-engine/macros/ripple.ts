@@ -1,3 +1,4 @@
+import { getAnimationFrame, stopAnimationFrame } from "../animation";
 import { syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 
@@ -49,9 +50,10 @@ export const startRipple: MacroFn = async ({
 
   const { height, width, speed, waveHeight, color } = config;
 
-  const startTime = performance.now();
+  let timeoutId: NodeJS.Timeout;
 
-  let requestId: number | NodeJS.Immediate;
+  const pixelimageData = ctx.createImageData(1, 1);
+  const imageData = pixelimageData.data;
 
   function drawRipple(timestamp: number) {
     const elapsedTimeUnits = (timestamp - startTime) / (240 - speed * 20);
@@ -70,33 +72,26 @@ export const startRipple: MacroFn = async ({
 
         const rgba = colorToRgba(color);
 
-        const id = ctx.createImageData(1, 1); // only do this once per page
-        const d = id.data; // only do this once per page
-        d[0] = rgba?.r as number;
-        d[1] = rgba?.g as number;
-        d[2] = rgba?.b as number;
-        d[3] = (adjustedHeight / 100) * (rgba?.a as number);
-        ctx.putImageData(id, x, y);
+        imageData[0] = rgba?.r as number;
+        imageData[1] = rgba?.g as number;
+        imageData[2] = rgba?.b as number;
+        imageData[3] = (adjustedHeight / 100) * (rgba?.a as number);
+
+        ctx.putImageData(pixelimageData, x, y);
       }
     }
 
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
 
-    if (typeof window !== "undefined") {
-      requestId = window.requestAnimationFrame(drawRipple);
-    } else {
-      requestId = setImmediate(() => drawRipple(Date.now()));
-    }
+    timeoutId = getAnimationFrame(drawRipple);
   }
+
+  const startTime = performance.now();
 
   drawRipple(startTime);
 
   return () => {
-    if (typeof window !== "undefined") {
-      window.cancelAnimationFrame(requestId as number);
-    } else {
-      clearImmediate(requestId as NodeJS.Immediate);
-    }
+    stopAnimationFrame(timeoutId);
   };
 };

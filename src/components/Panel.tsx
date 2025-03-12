@@ -56,7 +56,7 @@ export default function Panel({
   presets,
   customSceneNames,
 }: PanelProps) {
-  const [state, handlers] = useDisclosure();
+  const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
 
   const timeAdjustment = parseInt(
     scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
@@ -67,16 +67,16 @@ export default function Panel({
   return (
     <>
       <Modal
-        opened={state}
+        opened={customPresetModalOpen}
         title={"Set custom preset"}
-        onClose={handlers.close}
+        onClose={customPresetModalHandlers.close}
       >
         <PresetForm
           customSceneNames={customSceneNames}
           preset={{ name: "Custom Preset" } as Preset}
           action={async (preset) => {
             await createCustomScheduledPreset(preset);
-            handlers.close();
+            customPresetModalHandlers.close();
           }}
           submitLabel="Apply now"
         />
@@ -162,7 +162,11 @@ export default function Panel({
                     {preset.name}
                   </Button>
                 ))}
-                <Button variant="light" fullWidth onClick={handlers.open}>
+                <Button
+                  variant="light"
+                  fullWidth
+                  onClick={customPresetModalHandlers.open}
+                >
                   Custom...
                 </Button>
               </Stack>

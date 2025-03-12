@@ -3,6 +3,7 @@
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, PanelField, SceneName } from "@/types";
 import {
+  Accordion,
   Button,
   Divider,
   Group,
@@ -57,30 +58,12 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           label="Time increment"
           description="Adjust +/- controls for time amounts"
           data={[
-            {
-              label: "1 minute",
-              value: "1",
-            },
-            {
-              label: "5 minutes",
-              value: "5",
-            },
-            {
-              label: "10 minutes",
-              value: "10",
-            },
-            {
-              label: "20 minutes",
-              value: "20",
-            },
-            {
-              label: "30 minutes",
-              value: "30",
-            },
-            {
-              label: "1 hour",
-              value: "60",
-            },
+            { label: "1 minute", value: "1" },
+            { label: "5 minutes", value: "5" },
+            { label: "10 minutes", value: "10" },
+            { label: "20 minutes", value: "20" },
+            { label: "30 minutes", value: "30" },
+            { label: "1 hour", value: "60" },
           ]}
           data-testid="time-adjustment-select"
           required
@@ -132,39 +115,53 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           />
         </Stack>
 
-        <Stack gap={4}>
-          <Stack gap={0}>
-            <Text size="sm">LED PWN LSB nanoseconds</Text>
-            <Text c="dimmed" size="xs">
-              Higher values will provide better image quality * (more accurate
-              color, less ghosting) at the expense of frame rate.
-            </Text>
-          </Stack>
-          <Slider
-            label={null}
-            max={1000}
-            key={form.key(PanelField.PwnLsbNanoseconds)}
-            {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
-          />
-        </Stack>
+        <Accordion defaultValue="advanced" variant="separated" mt="md">
+          <Accordion.Item key="hardware" value="advanced">
+            <Accordion.Control>
+              <Text size="sm" c="dimmed">
+                Advanced Settings
+              </Text>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="lg">
+                <Stack gap={4}>
+                  <Stack gap={0}>
+                    <Text size="sm">LED PWN LSB nanoseconds</Text>
+                    <Text c="dimmed" size="xs">
+                      Higher values will provide better image quality (more
+                      accurate color, less ghosting) at the expense of frame
+                      rate.
+                    </Text>
+                  </Stack>
+                  <Slider
+                    label={null}
+                    max={1000}
+                    key={form.key(PanelField.PwnLsbNanoseconds)}
+                    {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
+                  />
+                </Stack>
 
-        <Stack gap={4}>
-          <Stack gap={0}>
-            <Text size="sm">GPIO Slowdown</Text>
-            <Text c="dimmed" size="xs">
-              If you have a Raspberry Pi with a slower processor * (Model A, A+,
-              B+, Zero), then a value of 0 (zero) might work and is desirable. A
-              Raspberry Pi 3 or Pi4 might even need higher values for the panels
-              to be.
-            </Text>
-          </Stack>
-          <Slider
-            max={4}
-            min={0}
-            key={form.key(PanelField.GpioSlowdown)}
-            {...form.getInputProps(PanelField.GpioSlowdown)}
-          />
-        </Stack>
+                <Stack gap={4}>
+                  <Stack gap={0}>
+                    <Text size="sm">GPIO Slowdown</Text>
+                    <Text c="dimmed" size="xs">
+                      If you have a Raspberry Pi with a slower processor (Model
+                      A, A+, B+, Zero), then a value of 0 (zero) might work and
+                      is desirable. A Raspberry Pi 3 or Pi4 might even need
+                      higher values for the panels to be.
+                    </Text>
+                  </Stack>
+                  <Slider
+                    max={4}
+                    min={0}
+                    key={form.key(PanelField.GpioSlowdown)}
+                    {...form.getInputProps(PanelField.GpioSlowdown)}
+                  />
+                </Stack>
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
 
         <Button type="submit" fullWidth mt="md">
           Save
