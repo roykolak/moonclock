@@ -5,12 +5,15 @@ import { getData, setData } from "../db";
 import { Panel, PanelField } from "@/types";
 import { reloadHardware } from "../utils";
 
+const propsThatReloadHardware = [
+  PanelField.Brightness,
+  PanelField.GpioSlowdown,
+  PanelField.PwnLsbNanoseconds,
+];
+
 function hardwareReloadNeeded(newPanel: Panel, oldPanel: Panel) {
-  return (
-    newPanel[PanelField.Brightness] !== oldPanel[PanelField.Brightness] ||
-    newPanel[PanelField.GpioSlowdown] !== oldPanel[PanelField.GpioSlowdown] ||
-    newPanel[PanelField.PwnLsbNanoseconds] !==
-      oldPanel[PanelField.PwnLsbNanoseconds]
+  return propsThatReloadHardware.some(
+    (prop) => newPanel[prop] !== oldPanel[prop]
   );
 }
 
