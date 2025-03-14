@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Check if an argument was provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 [start|stop|logs]"
+    exit 1
+fi
+
+case "$1" in
+    logs)
+        journalctl -f -u moonclock-app -u moonclock-hardware
+        ;;
+    start)
+        systemctl start moonclock-app
+        systemctl start moonclock-hardware
+        ;;
+    stop)
+        systemctl stop moonclock-app
+        systemctl stop moonclock-hardware
+        ;;
+    *)
+        echo "Invalid option."
+        exit 1
+        ;;
+esac
