@@ -107,24 +107,29 @@ sudo npm run app:build
 Finally, install Moonclock as a service...
 
 ```
-./scripts/install.sh
-./scripts/start.sh
+./install.sh
 ```
 
 Your raspberry pi should now be running and serving your moonclock!
 
 Your moonclock will automatically start after any pi restarts.
 
+To start Moonclock immediate run...
+
+```
+mc start
+```
+
 ## Debugging
 
 You can view logs with the following commands:
 
 ```
-./scripts/log.sh
+mc logs
 ```
 
 Also you can trigger a restart of the hardware process with:
 
 ```
-touch restart-hardware
+mc restart
 ```
