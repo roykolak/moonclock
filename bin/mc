@@ -2,7 +2,7 @@
 
 # Check if an argument was provided
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 [start|stop|logs]"
+    echo "Usage: $0 [start|stop|restart|logs]"
     exit 1
 fi
 
@@ -10,11 +10,18 @@ case "$1" in
     logs)
         journalctl -f -u moonclock-app -u moonclock-hardware
         ;;
+    restart)
+        echo "Restarting Moonclock app & hardware client"
+        systemctl restart moonclock-app
+        systemctl restart moonclock-hardware
+        ;;
     start)
+        echo "Starting Moonclock app & hardware client"
         systemctl start moonclock-app
         systemctl start moonclock-hardware
         ;;
     stop)
+        echo "Stopping Moonclock app & hardware client"
         systemctl stop moonclock-app
         systemctl stop moonclock-hardware
         ;;

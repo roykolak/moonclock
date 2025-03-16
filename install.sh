@@ -9,4 +9,5 @@ sudo systemctl enable moonclock-app
 sudo systemctl enable moonclock-hardware
 
 CURRENT_DIR=$(pwd)
-echo 'export PATH="$CURRENT_DIR/bin:$PATH"' >> ~/.bashrc
+
+sudo ln -s "$CURRENT_DIR/bin/mc" /usr/local/bin/mc
