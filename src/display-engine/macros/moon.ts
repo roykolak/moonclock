@@ -39,6 +39,7 @@ export const startMoon: MacroFn = async ({
   };
 
   let timeoutId: NodeJS.Timeout;
+  let running = true;
 
   let twinkleStars = shuffle(TWINKLE_STARS);
 
@@ -65,6 +66,8 @@ export const startMoon: MacroFn = async ({
 
     const sequenceTime = accumulator % TOTAL_CYCLE_DURATION;
 
+    const pixels = [];
+
     for (let i = 0; i < TOTAL_PIXELS; i++) {
       const pixelStartTime = i * DELAY_BETWEEN_PIXELS;
       const pixelTime = sequenceTime - pixelStartTime;
@@ -76,15 +79,12 @@ export const startMoon: MacroFn = async ({
       ) {
         const rgba = new Uint8ClampedArray([255, 255, 255, 0]);
         const star = twinkleStars[i];
-        updatePixels(
-          [
-            { ...star, rgba },
-            { ...star, y: star.y + 1, rgba },
-            { ...star, y: star.y - 1, rgba },
-            { ...star, x: star.x + 1, rgba },
-            { ...star, x: star.x - 1, rgba },
-          ],
-          index + 1
+        pixels.push(
+          { ...star, rgba },
+          { ...star, y: star.y + 1, rgba },
+          { ...star, y: star.y - 1, rgba },
+          { ...star, x: star.x + 1, rgba },
+          { ...star, x: star.x - 1, rgba }
         );
       } else {
         const alpha =
@@ -95,50 +95,44 @@ export const startMoon: MacroFn = async ({
         const starRgba = new Uint8ClampedArray([255, 255, 255, alpha]);
         const glowRgba = new Uint8ClampedArray([...GLOW_RGB, alpha / 2]);
 
-        updatePixels(
-          [
-            { ...star, rgba: starRgba },
-            {
-              ...star,
-              y: star.y + 1,
-              rgba: glowRgba,
-            },
-            {
-              ...star,
-              y: star.y - 1,
-              rgba: glowRgba,
-            },
-            {
-              ...star,
-              x: star.x + 1,
-              rgba: glowRgba,
-            },
-            {
-              ...star,
-              x: star.x - 1,
-              rgba: glowRgba,
-            },
-          ],
-          index + 1
+        pixels.push(
+          { ...star, rgba: starRgba },
+          {
+            ...star,
+            y: star.y + 1,
+            rgba: glowRgba,
+          },
+          {
+            ...star,
+            y: star.y - 1,
+            rgba: glowRgba,
+          },
+          {
+            ...star,
+            x: star.x + 1,
+            rgba: glowRgba,
+          },
+          {
+            ...star,
+            x: star.x - 1,
+            rgba: glowRgba,
+          }
         );
       }
     }
-    timeoutId = getAnimationFrame(runMoon);
-  }
 
-  startCoordinates({
-    dimensions,
-    ctx,
-    index,
-    updatePixels,
-    macroConfig: coordinatesConfig,
-  });
+    if (running) {
+      updatePixels(pixels, index + 1);
+      timeoutId = getAnimationFrame(runMoon);
+    }
+  }
 
   const startTime = performance.now();
 
   runMoon(startTime);
 
   return () => {
+    running = false;
     stopAnimationFrame(timeoutId);
   };
 };
