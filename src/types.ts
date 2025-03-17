@@ -19,6 +19,7 @@ export interface Panel {
   [PanelField.Brightness]: number;
   [PanelField.PwnLsbNanoseconds]: number;
   [PanelField.GpioSlowdown]: 0 | 1 | 2 | 3 | 4;
+  [PanelField.PwmBits]: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
   updatedAt?: string;
   defaultPreset: Preset;
 }
@@ -29,6 +30,7 @@ export enum PanelField {
   Brightness = "brightness",
   PwnLsbNanoseconds = "pwnLsbNanoseconds",
   GpioSlowdown = "gpioSlowdown",
+  PwmBits = "pwmBits",
 }
 
 export interface Hardware {
