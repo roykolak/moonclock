@@ -9,6 +9,7 @@ const propsThatReloadHardware = [
   PanelField.Brightness,
   PanelField.GpioSlowdown,
   PanelField.PwnLsbNanoseconds,
+  PanelField.PwmBits,
 ];
 
 function hardwareReloadNeeded(newPanel: Panel, oldPanel: Panel) {

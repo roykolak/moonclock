@@ -44,6 +44,7 @@ if (!options.emulate) {
       chainLength: 1,
       hardwareMapping: GpioMapping.Regular,
       pwmLsbNanoseconds: panel[PanelField.PwnLsbNanoseconds],
+      pwmBits: panel[PanelField.PwmBits],
     },
     {
       ...LedMatrix.defaultRuntimeOptions(),

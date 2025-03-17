@@ -134,7 +134,6 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                     </Text>
                   </Stack>
                   <Slider
-                    label={null}
                     max={1000}
                     key={form.key(PanelField.PwnLsbNanoseconds)}
                     {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
@@ -156,6 +155,22 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                     min={0}
                     key={form.key(PanelField.GpioSlowdown)}
                     {...form.getInputProps(PanelField.GpioSlowdown)}
+                  />
+                </Stack>
+
+                <Stack gap={4}>
+                  <Stack gap={0}>
+                    <Text size="sm">PWN Bits</Text>
+                    <Text c="dimmed" size="xs">
+                      Lower values will increase performance at the expense of
+                      color precision.
+                    </Text>
+                  </Stack>
+                  <Slider
+                    max={11}
+                    min={1}
+                    key={form.key(PanelField.PwmBits)}
+                    {...form.getInputProps(PanelField.PwmBits)}
                   />
                 </Stack>
               </Stack>
