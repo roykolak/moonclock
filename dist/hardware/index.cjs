@@ -2140,7 +2140,7 @@ var startMarquee = async ({
       }
     }
     offset += 1;
-  }, config.speed);
+  }, 100 - config.speed);
   return () => clearInterval(interval);
 };
 
@@ -3680,6 +3680,10 @@ var text = (macroConfig) => ({
   macroName: "text" /* Text */,
   macroConfig
 });
+var marquee = (macroConfig) => ({
+  macroName: "marquee" /* Marquee */,
+  macroConfig
+});
 var ripple = (macroConfig) => ({
   macroName: "ripple" /* Ripple */,
   macroConfig
@@ -3852,6 +3856,14 @@ async function transformPresetToDisplayMacros(preset) {
             ...sceneConfig,
             speed: sceneConfig.speed / 10,
             waveHeight: sceneConfig.waveHeight / 10
+          })
+        ];
+      }
+      if (sceneName === "marquee" /* Marquee */) {
+        return [
+          marquee({
+            ...sceneConfig,
+            direction: "horizontal"
           })
         ];
       }
