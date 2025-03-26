@@ -5,6 +5,7 @@ import {
   coordinates,
   countdown,
   Macro,
+  marquee,
   moon,
   ripple,
   text,
@@ -35,6 +36,15 @@ export async function transformPresetToDisplayMacros(
             ...sceneConfig,
             speed: sceneConfig.speed / 10,
             waveHeight: sceneConfig.waveHeight / 10,
+          }),
+        ];
+      }
+
+      if (sceneName === SceneName.Marquee) {
+        return [
+          marquee({
+            ...sceneConfig,
+            direction: "horizontal",
           }),
         ];
       }
