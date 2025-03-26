@@ -3819,6 +3819,9 @@ var import_fs2 = __toESM(require("fs"), 1);
 function customScenesPath() {
   return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
 }
+function heartBeatFile() {
+  return process.env.NODE_ENV === "production" ? "../../hardware/lastHeartbeat.txt" : "./hardware/lastHeartbeat.txt";
+}
 
 // src/server/queries.ts
 async function getCustomScenes() {
@@ -3902,7 +3905,7 @@ function getSceneName(preset) {
 }
 async function checkForNewDisplayConfig() {
   try {
-    import_fs3.default.writeFileSync("./hardware/lastHeartbeat.txt", (/* @__PURE__ */ new Date()).toJSON(), {
+    import_fs3.default.writeFileSync(heartBeatFile(), (/* @__PURE__ */ new Date()).toJSON(), {
       mode: 510
     });
     const { scheduledPreset, panel, hardware } = await getData();

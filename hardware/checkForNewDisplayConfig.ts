@@ -3,6 +3,7 @@ import { Macro } from "../src/display-engine";
 import { Preset, PresetField } from "@/types";
 import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
+import { heartBeatFile } from "@/server/utils";
 
 function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
   return JSON.stringify(preset1?.scenes) === JSON.stringify(preset2?.scenes);
@@ -14,7 +15,7 @@ function getSceneName(preset: Preset | null) {
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
-    fs.writeFileSync("./hardware/lastHeartbeat.txt", new Date().toJSON(), {
+    fs.writeFileSync(heartBeatFile(), new Date().toJSON(), {
       mode: 0o776,
     });
 

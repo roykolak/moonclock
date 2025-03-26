@@ -14,3 +14,9 @@ export function customScenesPath() {
     ? "../../custom_scenes"
     : "./custom_scenes";
 }
+
+export function heartBeatFile() {
+  return process.env.NODE_ENV === "production"
+    ? "../../hardware/lastHeartbeat.txt"
+    : "./hardware/lastHeartbeat.txt";
+}
