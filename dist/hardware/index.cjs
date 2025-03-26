@@ -3814,11 +3814,19 @@ function getEndDate(preset) {
 
 // src/server/queries.ts
 var import_fs2 = __toESM(require("fs"), 1);
+
+// src/server/utils.ts
+function customScenesPath() {
+  return process.env.NODE_ENV ? "./custom_scenes" : "../../custom_scenes";
+}
+
+// src/server/queries.ts
 async function getCustomScenes() {
-  return import_fs2.default.readdirSync("./custom_scenes").map((file) => {
+  customScenesPath();
+  return import_fs2.default.readdirSync(customScenesPath()).map((file) => {
     const name = file.split(".")[0];
     const coordinates2 = JSON.parse(
-      import_fs2.default.readFileSync(`./custom_scenes/${name}.json`).toString()
+      import_fs2.default.readFileSync(`${customScenesPath()}/${name}.json`).toString()
     );
     return { name, coordinates: coordinates2 };
   });
