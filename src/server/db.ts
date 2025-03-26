@@ -1,6 +1,7 @@
 import fs from "fs";
 import { DataTypes, Preset, SceneName } from "../types";
 import { databaseFile } from "./utils";
+import { execSync } from "child_process";
 
 const defaultPreset: Preset = {
   name: "Default",
@@ -68,6 +69,7 @@ function getDatabaseName() {
 
 function readDb(): DataTypes {
   const dbFile = getDatabaseName();
+  console.log(execSync("pwd"));
   try {
     const file = fs.readFileSync(dbFile).toString();
     return JSON.parse(file);
