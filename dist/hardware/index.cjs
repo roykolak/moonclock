@@ -1902,7 +1902,6 @@ function databaseFile() {
 }
 
 // src/server/db.ts
-var import_child_process = require("child_process");
 var defaultPreset = {
   name: "Default",
   scenes: [{ sceneName: "blank" /* Blank */, sceneConfig: {} }],
@@ -1964,7 +1963,7 @@ function getDatabaseName() {
 }
 function readDb() {
   const dbFile = getDatabaseName();
-  console.log((0, import_child_process.execSync)("pwd"));
+  console.log(process.cwd());
   try {
     const file = import_fs.default.readFileSync(dbFile).toString();
     return JSON.parse(file);
