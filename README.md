@@ -99,9 +99,6 @@ Clone and build Moonclock...
 ```
 cd /usr/local/bin/
 sudo git clone https://github.com/roykolak/moonclock.git
-cd moonclock
-sudo npm install
-sudo npm run app:build
 ```
 
 Finally, install Moonclock as a service...
@@ -132,4 +129,22 @@ Also you can trigger a restart of the hardware process with:
 
 ```
 mc restart
+```
+
+## Developing locally
+
+Clone and build Moonclock...
+
+```
+cd /usr/local/bin/
+sudo git clone https://github.com/roykolak/moonclock.git
+cd moonclock
+sudo npm install
+sudo npm run start:dev
+```
+
+To build a release...
+
+```
+npm run build
 ```

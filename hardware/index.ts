@@ -1,5 +1,4 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
-import { Command } from "commander";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
 import { getData } from "@/server/db";
@@ -7,20 +6,17 @@ import { transformPresetToDisplayMacros } from "@/server/actions/transformPreset
 import { PanelField } from "@/types";
 
 (async () => {
+  const args = process.argv.slice(2);
+  const params: any = { emulate: false };
+
+  args.forEach((arg) => {
+    if (arg.startsWith("--")) {
+      const key = arg.substring(2);
+      params[key] = true;
+    }
+  });
+
   const { panel, hardware } = await getData();
-
-  const program = new Command();
-
-  program
-    .name("bigdots")
-    .description("Power a hardware LED board")
-    .version("0.1.0");
-
-  program.option("--debug <boolean>").option("--emulate <boolean>");
-
-  program.parse(process.argv);
-
-  const options = program.opts();
 
   const updateQueue: Pixel[][] = [];
 
@@ -35,7 +31,7 @@ import { PanelField } from "@/types";
       .join("");
   }
 
-  if (!options.emulate) {
+  if (!params.emulate) {
     console.log("Starting Hardware...");
     const matrix = new LedMatrix(
       {
@@ -53,9 +49,6 @@ import { PanelField } from "@/types";
       }
     );
     matrix.afterSync(() => {
-      if (options.debug && updateQueue.length > 0) {
-        console.log("Queue:", updateQueue.length);
-      }
       const pixelUpdates = updateQueue.shift();
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
