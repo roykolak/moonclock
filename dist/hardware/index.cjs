@@ -3817,7 +3817,7 @@ var import_fs2 = __toESM(require("fs"), 1);
 
 // src/server/utils.ts
 function customScenesPath() {
-  return process.env.NODE_ENV ? "./custom_scenes" : "../../custom_scenes";
+  return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
 }
 
 // src/server/queries.ts

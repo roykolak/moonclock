@@ -3,8 +3,8 @@
   "/page": "app/page.js",
   "/panel/page": "app/panel/page.js",
   "/presets/page": "app/presets/page.js",
-  "/presets/new/page": "app/presets/new/page.js",
   "/composer/page": "app/composer/page.js",
+  "/presets/new/page": "app/presets/new/page.js",
   "/settings/page": "app/settings/page.js",
   "/presets/[index]/edit/page": "app/presets/[index]/edit/page.js"
 }

@@ -10,5 +10,7 @@ function log(message: string) {
 }
 
 export function customScenesPath() {
-  return process.env.NODE_ENV ? "./custom_scenes" : "../../custom_scenes";
+  return process.env.NODE_ENV === "production"
+    ? "../../custom_scenes"
+    : "./custom_scenes";
 }
