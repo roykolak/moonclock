@@ -1,10 +1,10 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
+  "/presets/new/page": "app/presets/new/page.js",
   "/settings/page": "app/settings/page.js",
   "/composer/page": "app/composer/page.js",
-  "/presets/[index]/edit/page": "app/presets/[index]/edit/page.js",
   "/presets/page": "app/presets/page.js",
-  "/presets/new/page": "app/presets/new/page.js",
-  "/panel/page": "app/panel/page.js"
+  "/panel/page": "app/panel/page.js",
+  "/presets/[index]/edit/page": "app/presets/[index]/edit/page.js"
 }
