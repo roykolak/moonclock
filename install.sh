@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "\n -> Copying services to /etc/systemd/system/"
+echo '\n -> Copying services to /etc/systemd/system/'
 
 sudo cp moonclock-app.service /etc/systemd/system/
 sudo cp moonclock-hardware.service /etc/systemd/system/

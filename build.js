@@ -28,3 +28,10 @@ fs.cpSync(".next/standalone", "dist/app", { recursive: true });
 fs.cpSync(".next/static", "dist/app/.next/static", { recursive: true });
 
 console.log("\n\nCopied Next.js app with static assets to /dist");
+
+fs.cpSync(
+  "dist/hardware/canvas.node",
+  "dist/app/node_modules/canvas/build/Release/canvas.node"
+);
+
+console.log("\n\nCopied RPI canvas.node to /dist/app/node_modules...");
