@@ -22,7 +22,7 @@ import {
 import { Preset, PresetField, SceneName } from "../types";
 import { useForm, UseFormReturnType } from "@mantine/form";
 import { PresetPreview } from "./PresetPreview";
-import { IconSettings } from "@tabler/icons-react";
+import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
   MacroMarqueeConfig,
@@ -55,8 +55,6 @@ export function PresetForm({
   submitLabel,
   title,
 }: PresetFormProps) {
-  const [sceneControlsVisible, sceneControlshandlers] = useDisclosure();
-
   const form = useForm<Preset>({
     initialValues: { ...defaultPreset, ...preset },
   });
@@ -112,46 +110,24 @@ export function PresetForm({
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
           {form.getValues().scenes.map((item, index) => (
-            <Group key={index} w="100%">
-              <Group w="100%">
-                <Select
-                  placeholder="Scene"
-                  variant="filled"
-                  style={{ flex: "auto" }}
-                  data={[
-                    {
-                      group: "Built-in Scenes",
-                      items: [
-                        SceneName.Moon,
-                        SceneName.Countdown,
-                        SceneName.Twinkle,
-                        SceneName.Ripple,
-                        SceneName.Marquee,
-                      ],
-                    },
-                    {
-                      group: "Custom Scenes",
-                      items: customSceneNames,
-                    },
-                  ]}
-                  data-testid="scene-select"
-                  required
-                  key={form.key(`scenes.${index}.sceneName`)}
-                  {...form.getInputProps(`scenes.${index}.sceneName`)}
-                />
-                <ActionIcon
-                  variant="light"
-                  onClick={sceneControlshandlers.toggle}
-                  size="lg"
-                >
-                  <IconSettings size={22} />
-                </ActionIcon>
-              </Group>
-              {sceneControlsVisible && (
-                <SceneConfigControls form={form} index={index} />
-              )}
-            </Group>
+            <Scene
+              key={index}
+              form={form}
+              index={index}
+              customSceneNames={customSceneNames}
+            />
           ))}
+          <Button
+            variant="light"
+            onClick={() =>
+              form.insertListItem("scenes", {
+                sceneName: SceneName.Moon,
+                sceneConfig: {},
+              })
+            }
+          >
+            Add new scene
+          </Button>
         </Stack>
         <Divider />
         <SegmentedControl
@@ -237,6 +213,68 @@ export function PresetForm({
   );
 }
 
+function Scene({
+  form,
+  index,
+  customSceneNames,
+}: {
+  form: UseFormReturnType<Preset>;
+  index: number;
+  customSceneNames: string[];
+}) {
+  const [sceneControlsVisible, sceneControlshandlers] = useDisclosure();
+
+  return (
+    <Group key={index} w="100%" mb="xs">
+      <Group w="100%" gap="6">
+        <Select
+          placeholder="Scene"
+          variant="filled"
+          style={{ flex: "auto" }}
+          data={[
+            {
+              group: "Built-in Scenes",
+              items: [
+                SceneName.Moon,
+                SceneName.Countdown,
+                SceneName.Twinkle,
+                SceneName.Ripple,
+                SceneName.Marquee,
+              ],
+            },
+            {
+              group: "Custom Scenes",
+              items: customSceneNames,
+            },
+          ]}
+          data-testid="scene-select"
+          required
+          key={form.key(`scenes.${index}.sceneName`)}
+          {...form.getInputProps(`scenes.${index}.sceneName`)}
+        />
+        <ActionIcon
+          variant="light"
+          onClick={sceneControlshandlers.toggle}
+          size="lg"
+        >
+          <IconSettings size={22} />
+        </ActionIcon>
+        <ActionIcon
+          color="red"
+          variant="light"
+          size="lg"
+          onClick={() => form.removeListItem("scenes", index)}
+        >
+          <IconTrash size={16} />
+        </ActionIcon>
+      </Group>
+      {sceneControlsVisible && (
+        <SceneConfigControls form={form} index={index} />
+      )}
+    </Group>
+  );
+}
+
 export function SceneConfigControls({
   form,
   index,
@@ -244,7 +282,7 @@ export function SceneConfigControls({
   form: UseFormReturnType<Preset>;
   index: number;
 }) {
-  const { sceneName } = form.getValues().scenes[0];
+  const { sceneName } = form.getValues().scenes[index];
 
   if (sceneName === "twinkle") {
     return (
