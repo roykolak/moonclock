@@ -10,6 +10,6 @@ Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=sudo npm run app
+ExecStart=sudo node build/app/server.js
 [Install]
 WantedBy=default.target

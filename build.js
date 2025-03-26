@@ -1,22 +1,6 @@
 import * as esbuild from "esbuild";
 import fs from "fs";
 
-await fs.cpSync(
-  "./node_modules/canvas/build/Release/canvas.node",
-  "./build/canvas.node",
-  {
-    recursive: true,
-  }
-);
-
-await fs.cpSync(
-  "./node_modules/rpi-led-matrix/build/Release/rpi-led-matrix.node",
-  "./build/rpi-led-matrix.node",
-  {
-    recursive: true,
-  }
-);
-
 await esbuild.build({
   entryPoints: ["hardware/index.ts"],
   bundle: true,
@@ -25,19 +9,22 @@ await esbuild.build({
     ".node": "file",
   },
   external: ["*.node"],
-  outfile: "build/out.cjs",
+  outfile: "build/hardware/index.cjs",
 });
 
-// Read the file
-const filePath = "build/out.cjs";
-let content = fs.readFileSync(filePath, "utf8");
+console.log("\nHardware script built");
 
-// Replace the string
+// update canvas.node path in hardware output
+const filePath = "dist/hardware/index.cjs";
+let content = fs.readFileSync(filePath, "utf8");
 const oldString = "../build/Release/canvas.node";
 const newString = "./canvas.node";
 content = content.replace(oldString, newString);
-
-// Write the file back
 fs.writeFileSync(filePath, content, "utf8");
 
-console.log("String replacement completed");
+console.log("\ncanvas.node dependency path rewritten");
+
+fs.cpSync(".next/standalone", "build/app", { recursive: true });
+fs.cpSync(".next/static", "build/app/.next/static", { recursive: true });
+
+console.log("\n\nCopied Next.js app with static assets to /dist");
