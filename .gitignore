@@ -45,7 +45,8 @@ custom_scenes/automated-test-scene-123.json
 hardware/lastHeartbeat.txt
 restart-hardware
 
-node_modules
+/node_modules
+
 /test-results/
 /playwright-report/
 /blob-report/
