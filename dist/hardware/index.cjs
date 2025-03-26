@@ -1893,6 +1893,14 @@ var import_fs = __toESM(require("fs"), 1);
 // src/types.ts
 var TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
 
+// src/server/utils.ts
+function customScenesPath() {
+  return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
+}
+function databaseFile() {
+  return process.env.NODE_ENV === "production" ? "../../database.json" : "./database.json";
+}
+
 // src/server/db.ts
 var defaultPreset = {
   name: "Default",
@@ -1951,12 +1959,12 @@ var defaultData = {
   ]
 };
 function getDatabaseName() {
-  return process.env["APP_ENV"] === "test" ? "database-test.json" : "database.json";
+  return process.env["APP_ENV"] === "test" ? "./database-test.json" : databaseFile();
 }
 function readDb() {
   const dbFile = getDatabaseName();
   try {
-    const file = import_fs.default.readFileSync(`./${dbFile}`).toString();
+    const file = import_fs.default.readFileSync(dbFile).toString();
     return JSON.parse(file);
   } catch {
     console.log(`${dbFile} not found, loading default data`);
@@ -3811,13 +3819,6 @@ function getEndDate(preset) {
 
 // src/server/queries.ts
 var import_fs2 = __toESM(require("fs"), 1);
-
-// src/server/utils.ts
-function customScenesPath() {
-  return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
-}
-
-// src/server/queries.ts
 async function getCustomScenes() {
   return import_fs2.default.readdirSync(customScenesPath()).map((file) => {
     const name = file.split(".")[0];
@@ -3898,6 +3899,7 @@ function getSceneName(preset) {
 }
 async function checkForNewDisplayConfig() {
   try {
+    console.log("checkForNewDisplayConfig");
     const { scheduledPreset, panel, hardware } = await getData();
     if (!scheduledPreset?.preset) {
       if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {

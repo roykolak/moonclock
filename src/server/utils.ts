@@ -20,3 +20,9 @@ export function heartBeatFile() {
     ? "../../hardware/lastHeartbeat.txt"
     : "./hardware/lastHeartbeat.txt";
 }
+
+export function databaseFile() {
+  return process.env.NODE_ENV === "production"
+    ? "../../database.json"
+    : "./database.json";
+}

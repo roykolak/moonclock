@@ -1,5 +1,6 @@
 import fs from "fs";
 import { DataTypes, Preset, SceneName } from "../types";
+import { databaseFile } from "./utils";
 
 const defaultPreset: Preset = {
   name: "Default",
@@ -61,14 +62,14 @@ export const defaultData: DataTypes = {
 
 function getDatabaseName() {
   return process.env["APP_ENV"] === "test"
-    ? "database-test.json"
-    : "database.json";
+    ? "./database-test.json"
+    : databaseFile();
 }
 
 function readDb(): DataTypes {
   const dbFile = getDatabaseName();
   try {
-    const file = fs.readFileSync(`./${dbFile}`).toString();
+    const file = fs.readFileSync(dbFile).toString();
     return JSON.parse(file);
   } catch {
     console.log(`${dbFile} not found, loading default data`);

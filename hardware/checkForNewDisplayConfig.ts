@@ -15,6 +15,7 @@ function getSceneName(preset: Preset | null) {
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
+    console.log("checkForNewDisplayConfig");
     // fs.writeFileSync(heartBeatFile(), new Date().toJSON(), {
     //   mode: 0o776,
     // });
