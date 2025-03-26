@@ -1,6 +1,7 @@
 "use server";
 
 import fs from "fs";
+import { customScenesPath } from "../utils";
 
 export async function updateCustomSceneData({
   name,
@@ -9,6 +10,6 @@ export async function updateCustomSceneData({
   name: string;
   coordinates: { [k: string]: string };
 }) {
-  const fileName = `./custom_scenes/${name}.json`;
+  const fileName = `${customScenesPath()}/${name}.json`;
   fs.writeFileSync(fileName, JSON.stringify(coordinates, null, 2));
 }

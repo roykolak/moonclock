@@ -1,6 +1,7 @@
 "use server";
 
 import fs from "fs";
+import { customScenesPath } from "./utils";
 
 export async function getLastHeartbeat() {
   try {
@@ -11,14 +12,16 @@ export async function getLastHeartbeat() {
 }
 
 export async function getCustomSceneNames() {
-  return fs.readdirSync("./custom_scenes").map((file) => file.split(".")[0]);
+  customScenesPath();
+  return fs.readdirSync(customScenesPath()).map((file) => file.split(".")[0]);
 }
 
 export async function getCustomScenes() {
-  return fs.readdirSync("./custom_scenes").map((file) => {
+  customScenesPath();
+  return fs.readdirSync(customScenesPath()).map((file) => {
     const name = file.split(".")[0];
     const coordinates = JSON.parse(
-      fs.readFileSync(`./custom_scenes/${name}.json`).toString()
+      fs.readFileSync(`${customScenesPath()}/${name}.json`).toString()
     );
     return { name, coordinates };
   });

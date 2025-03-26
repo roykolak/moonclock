@@ -8,3 +8,7 @@ export function reloadHardware() {
 function log(message: string) {
   console.log(`[APP] ${message}`);
 }
+
+export function customScenesPath() {
+  return process.env.NODE_ENV ? "./custom_scenes" : "../../custom_scenes";
+}
