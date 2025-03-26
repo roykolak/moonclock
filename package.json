@@ -6,6 +6,7 @@
   "scripts": {
     "app:dev": "next dev",
     "app:test": "APP_ENV=test next dev",
+    "app:build": "next build",
     "build": "next build; node build.js",
     "app": "next start -p 80",
     "lint": "next lint",
