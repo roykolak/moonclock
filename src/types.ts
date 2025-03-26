@@ -60,6 +60,7 @@ export enum SceneName {
   Countdown = "countdown",
   Twinkle = "twinkle",
   Ripple = "ripple",
+  Marquee = "marquee",
 }
 
 export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";

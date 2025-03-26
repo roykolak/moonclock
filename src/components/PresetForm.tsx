@@ -24,7 +24,11 @@ import { useForm, UseFormReturnType } from "@mantine/form";
 import { PresetPreview } from "./PresetPreview";
 import { IconSettings } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
-import { MacroRippleConfig, MacroTwinkleConfig } from "@/display-engine/types";
+import {
+  MacroMarqueeConfig,
+  MacroRippleConfig,
+  MacroTwinkleConfig,
+} from "@/display-engine/types";
 
 interface PresetFormProps {
   preset?: Preset;
@@ -76,6 +80,14 @@ export function PresetForm({
       } as Partial<MacroRippleConfig>);
     }
 
+    if (value === SceneName.Marquee) {
+      return form.setFieldValue(fieldValue, {
+        color: "#ffffff",
+        speed: 50,
+        text: "hello",
+      } as Partial<MacroMarqueeConfig>);
+    }
+
     form.setFieldValue(fieldValue, {});
   });
 
@@ -114,6 +126,7 @@ export function PresetForm({
                         SceneName.Countdown,
                         SceneName.Twinkle,
                         SceneName.Ripple,
+                        SceneName.Marquee,
                       ],
                     },
                     {
@@ -281,6 +294,40 @@ export function SceneConfigControls({
               label={null}
               key={form.key(`scenes.${index}.sceneConfig.waveHeight`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
+            />
+          </Stack>
+          <ColorInput
+            placeholder="Select a twinkle color"
+            key={form.key(`scenes.${index}.sceneConfig.color`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (sceneName === "marquee") {
+    return (
+      <Card w="100%">
+        <Stack>
+          <TextInput
+            label="Message"
+            key={form.key(`scenes.${index}.sceneConfig.text`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
+          />
+          <Stack gap={4}>
+            <Text size="sm">Speed</Text>
+            <Slider
+              key={form.key(`scenes.${index}.sceneConfig.speed`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
+            />
+          </Stack>
+          <Stack gap={4}>
+            <Text size="sm">Starting row</Text>
+            <Slider
+              max={32}
+              key={form.key(`scenes.${index}.sceneConfig.startingRow`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.startingRow`)}
             />
           </Stack>
           <ColorInput
