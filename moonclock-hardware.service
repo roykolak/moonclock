@@ -11,6 +11,6 @@ RestartSec=5
 RuntimeMaxSec=1d
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=sudo node build/hardware/index.cjs
+ExecStart=sudo node dist/hardware/index.cjs
 [Install]
 WantedBy=default.target
