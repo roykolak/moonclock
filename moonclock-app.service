@@ -9,7 +9,7 @@ Type=simple
 Restart=always
 RestartSec=5
 TimeoutStopSec=600
-WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=sudo PORT=80 node dist/app/server.js
+WorkingDirectory=/usr/local/bin/moonclock/dist/app
+ExecStart=sudo PORT=80 node server.js
 [Install]
 WantedBy=default.target

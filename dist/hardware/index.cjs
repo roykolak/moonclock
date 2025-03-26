@@ -1966,7 +1966,6 @@ function getDatabaseName() {
 }
 function readDb() {
   const dbFile = getDatabaseName();
-  console.log(process.cwd());
   try {
     const file = import_fs.default.readFileSync(dbFile).toString();
     return JSON.parse(file);

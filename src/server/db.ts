@@ -68,7 +68,6 @@ function getDatabaseName() {
 
 function readDb(): DataTypes {
   const dbFile = getDatabaseName();
-  console.log(process.cwd());
   try {
     const file = fs.readFileSync(dbFile).toString();
     return JSON.parse(file);

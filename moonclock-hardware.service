@@ -10,7 +10,7 @@ Restart=always
 RestartSec=5
 RuntimeMaxSec=1d
 TimeoutStopSec=600
-WorkingDirectory=/usr/local/bin/moonclock
-ExecStart=cd dist/hardware && sudo NODE_ENV=production node index.cjs
+WorkingDirectory=/usr/local/bin/moonclock/dist/hardware
+ExecStart=sudo NODE_ENV=production node index.cjs
 [Install]
 WantedBy=default.target
