@@ -249,19 +249,19 @@ var require_file_uri_to_path = __commonJS({
 // node_modules/bindings/bindings.js
 var require_bindings = __commonJS({
   "node_modules/bindings/bindings.js"(exports2, module2) {
-    var fs4 = require("fs");
+    var fs3 = require("fs");
     var path = require("path");
     var fileURLToPath = require_file_uri_to_path();
     var join = path.join;
     var dirname = path.dirname;
-    var exists = fs4.accessSync && function(path2) {
+    var exists = fs3.accessSync && function(path2) {
       try {
-        fs4.accessSync(path2);
+        fs3.accessSync(path2);
       } catch (e) {
         return false;
       }
       return true;
-    } || fs4.existsSync || path.existsSync;
+    } || fs3.existsSync || path.existsSync;
     var defaults = {
       arrow: process.env.NODE_BINDINGS_ARROW || " \u2192 ",
       compiled: process.env.NODE_BINDINGS_COMPILED_DIR || "compiled",
@@ -1820,7 +1820,7 @@ var require_canvas2 = __commonJS({
     var parseFont = require_parse_font();
     var packageJson = require_package();
     var bindings = require_bindings2();
-    var fs4 = require("fs");
+    var fs3 = require("fs");
     var PNGStream = require_pngstream();
     var PDFStream = require_pdfstream();
     var JPEGStream = require_jpegstream();
@@ -1850,7 +1850,7 @@ var require_canvas2 = __commonJS({
       });
     }
     function registerFont(src, fontFace) {
-      return Canvas._registerFont(fs4.realpathSync(src), fontFace);
+      return Canvas._registerFont(fs3.realpathSync(src), fontFace);
     }
     function deregisterAllFonts() {
       return Canvas._deregisterAllFonts();
@@ -1975,9 +1975,6 @@ function setData(data) {
   const db = readDb();
   writeDb({ ...db, ...data });
 }
-
-// hardware/checkForNewDisplayConfig.ts
-var import_fs3 = __toESM(require("fs"), 1);
 
 // src/display-engine/colors.ts
 function mixColors({
@@ -3819,9 +3816,6 @@ var import_fs2 = __toESM(require("fs"), 1);
 function customScenesPath() {
   return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
 }
-function heartBeatFile() {
-  return process.env.NODE_ENV === "production" ? "../../hardware/lastHeartbeat.txt" : "./hardware/lastHeartbeat.txt";
-}
 
 // src/server/queries.ts
 async function getCustomScenes() {
@@ -3904,9 +3898,6 @@ function getSceneName(preset) {
 }
 async function checkForNewDisplayConfig() {
   try {
-    import_fs3.default.writeFileSync(heartBeatFile(), (/* @__PURE__ */ new Date()).toJSON(), {
-      mode: 510
-    });
     const { scheduledPreset, panel, hardware } = await getData();
     if (!scheduledPreset?.preset) {
       if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {

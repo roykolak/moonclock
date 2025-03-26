@@ -15,9 +15,9 @@ function getSceneName(preset: Preset | null) {
 
 export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
   try {
-    fs.writeFileSync(heartBeatFile(), new Date().toJSON(), {
-      mode: 0o776,
-    });
+    // fs.writeFileSync(heartBeatFile(), new Date().toJSON(), {
+    //   mode: 0o776,
+    // });
 
     const { scheduledPreset, panel, hardware } = await getData();
 
