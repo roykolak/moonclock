@@ -3825,7 +3825,6 @@ function heartBeatFile() {
 
 // src/server/queries.ts
 async function getCustomScenes() {
-  customScenesPath();
   return import_fs2.default.readdirSync(customScenesPath()).map((file) => {
     const name = file.split(".")[0];
     const coordinates2 = JSON.parse(
