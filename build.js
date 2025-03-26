@@ -9,7 +9,7 @@ await esbuild.build({
     ".node": "file",
   },
   external: ["*.node"],
-  outfile: "build/hardware/index.cjs",
+  outfile: "dist/hardware/index.cjs",
 });
 
 console.log("\nHardware script built");
@@ -24,7 +24,7 @@ fs.writeFileSync(filePath, content, "utf8");
 
 console.log("\ncanvas.node dependency path rewritten");
 
-fs.cpSync(".next/standalone", "build/app", { recursive: true });
-fs.cpSync(".next/static", "build/app/.next/static", { recursive: true });
+fs.cpSync(".next/standalone", "dist/app", { recursive: true });
+fs.cpSync(".next/static", "dist/app/.next/static", { recursive: true });
 
 console.log("\n\nCopied Next.js app with static assets to /dist");
