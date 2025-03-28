@@ -46,7 +46,6 @@ hardware/lastHeartbeat.txt
 restart-hardware
 
 node_modules
-dist
 moonclock
 release.tar.gz
 
