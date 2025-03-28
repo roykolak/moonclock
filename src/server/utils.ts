@@ -11,18 +11,18 @@ function log(message: string) {
 
 export function customScenesPath() {
   return process.env.NODE_ENV === "production"
-    ? "../../custom_scenes"
+    ? "/var/lib/moonclock/custom_scenes"
     : "./custom_scenes";
 }
 
 export function heartBeatFile() {
   return process.env.NODE_ENV === "production"
-    ? "../../hardware/lastHeartbeat.txt"
+    ? "/var/lib/moonclock/lastHeartbeat.txt"
     : "./hardware/lastHeartbeat.txt";
 }
 
 export function databaseFile() {
   return process.env.NODE_ENV === "production"
-    ? "../../database.json"
+    ? "/var/lib/moonclock/database.json"
     : "./database.json";
 }

@@ -37,6 +37,7 @@ export const startMarquee: MacroFn = async ({
     ctx.textBaseline = "top";
     ctx.font = `16px ${config.font}`;
     ctx.fillStyle = config.color;
+    ctx.textDrawingMode = "glyph";
     ctx.fillText(
       config.text,
       config.direction === "horizontal"

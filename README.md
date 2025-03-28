@@ -71,7 +71,6 @@ Update the system and install git...
 
 ```
 sudo apt update
-sudo apt install git
 ```
 
 Install [nvm](https://github.com/nvm-sh/nvm) and Node 22.9.0...
@@ -92,6 +91,12 @@ Install Canvas dependencies...
 
 ```
 sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+```
+
+Install Emoji font library...
+
+```
+wget -O /usr/share/fonts/AppleColorEmoji.ttf https://github.com/samuelngs/apple-emoji-linux/releases/latest/download/AppleColorEmoji.ttf
 ```
 
 Clone and build Moonclock...
@@ -133,13 +138,16 @@ mc restart
 
 ## Developing locally
 
-Clone and build Moonclock...
+Clone and install Moonclock...
 
 ```
 cd /usr/local/bin/
 sudo git clone https://github.com/roykolak/moonclock.git
 cd moonclock
 sudo npm install
+```
+
+```
 sudo npm run start:dev
 ```
 
