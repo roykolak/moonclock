@@ -99,11 +99,12 @@ Install Emoji font library...
 wget -O /usr/share/fonts/AppleColorEmoji.ttf https://github.com/samuelngs/apple-emoji-linux/releases/latest/download/AppleColorEmoji.ttf
 ```
 
-Clone and build Moonclock...
+Download and untar Moonclock
 
 ```
 cd /usr/local/bin/
-sudo git clone https://github.com/roykolak/moonclock.git
+sudo wget -O release.tar.gz https://github.com/roykolak/moonclock/releases/.../release.tar.gz
+sudo tar -xzvf release.tar.gz
 ```
 
 Finally, install Moonclock as a service...
@@ -112,15 +113,22 @@ Finally, install Moonclock as a service...
 ./install.sh
 ```
 
-Your raspberry pi should now be running and serving your moonclock!
-
-Your moonclock will automatically start after any pi restarts.
+Your raspberry pi should now be running and serving your moonclock! Your moonclock will automatically start after any pi restarts.
 
 To start Moonclock immediate run...
 
 ```
 mc start
 ```
+
+## Data Storage
+
+All data is stored in `/var/lib/mooclock`. This includes...
+
+- `database.json`
+- `custom_scenes/`
+
+This means that updating moonclock to the latest release will not effect the current of moonclock's data and configuration.
 
 ## Debugging
 
