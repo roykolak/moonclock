@@ -1895,13 +1895,13 @@ var TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
 
 // src/server/utils.ts
 function customScenesPath() {
-  return process.env.NODE_ENV === "production" ? "../../custom_scenes" : "./custom_scenes";
+  return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/custom_scenes" : "./custom_scenes";
 }
 function heartBeatFile() {
-  return process.env.NODE_ENV === "production" ? "../../hardware/lastHeartbeat.txt" : "./hardware/lastHeartbeat.txt";
+  return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/lastHeartbeat.txt" : "./hardware/lastHeartbeat.txt";
 }
 function databaseFile() {
-  return process.env.NODE_ENV === "production" ? "../../database.json" : "./database.json";
+  return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/database.json" : "./database.json";
 }
 
 // src/server/db.ts
@@ -2122,6 +2122,7 @@ var startMarquee = async ({
     ctx.textBaseline = "top";
     ctx.font = `16px ${config.font}`;
     ctx.fillStyle = config.color;
+    ctx.textDrawingMode = "glyph";
     ctx.fillText(
       config.text,
       config.direction === "horizontal" ? config.startingColumn - offset : config.startingColumn,

@@ -1,21 +1,31 @@
 #!/bin/bash
 
-echo '\n -> Copying services to /etc/systemd/system/'
+CURRENT_DIR=$(pwd)
+DATA_FOLDER="/var/lib/moonclock"
+
+echo " -> Copying services to /etc/systemd/system/"
 
 sudo cp moonclock-app.service /etc/systemd/system/
 sudo cp moonclock-hardware.service /etc/systemd/system/
 
-echo "\n -> Reloading systemd daemons"
+echo " -> Reloading systemd daemons"
 
 sudo systemctl daemon-reload
 
-echo "\n -> Enabling services to start on restart"
+echo " -> Enabling services to start on restart"
 
 sudo systemctl enable moonclock-app
 sudo systemctl enable moonclock-hardware
 
-echo "\n -> Symlinking ./bin/mc to /usr/local/bin/"
+echo " -> Seeding custom scenes"
 
-CURRENT_DIR=$(pwd)
+if [ ! -d "$DATA_FOLDER" ]; then
+    sudo mkdir -p "$DATA_FOLDER"
+    sudo cp -r "$CURRENT_DIR/custom_scenes" "$DATA_FOLDER/custom_scenes"
+else
+    echo "   -> data directory exists, skipping"
+fi
 
-sudo ln -s "$CURRENT_DIR/bin/mc" /usr/local/bin/mc
+echo " -> Symlinking ./bin/mc to /usr/local/bin/"
+
+sudo ln -sf "$CURRENT_DIR/bin/mc" /usr/local/bin/mc

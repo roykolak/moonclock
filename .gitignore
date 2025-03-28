@@ -45,7 +45,11 @@ custom_scenes/automated-test-scene-123.json
 hardware/lastHeartbeat.txt
 restart-hardware
 
-/node_modules
+node_modules
+dist
+moonclock
+release.tar.gz
+
 
 /test-results/
 /playwright-report/
