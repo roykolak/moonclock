@@ -127,6 +127,7 @@ export function PresetForm({
           ))}
           <Button
             variant="light"
+            data-testid="new-scene-button"
             onClick={() =>
               form.insertListItem("scenes", {
                 sceneName: SceneName.Moon,
@@ -256,13 +257,14 @@ function Scene({
               items: customSceneNames,
             },
           ]}
-          data-testid="scene-select"
+          data-testid={`scene-${index}-select`}
           required
           key={form.key(`scenes.${index}.sceneName`)}
           {...form.getInputProps(`scenes.${index}.sceneName`)}
         />
         <ActionIcon
           variant="light"
+          data-testid={`scene-${index}-settings-button`}
           onClick={sceneControlshandlers.toggle}
           size="lg"
         >
@@ -272,6 +274,7 @@ function Scene({
           color="red"
           variant="light"
           size="lg"
+          data-testid={`scene-${index}-delete-button`}
           onClick={() => form.removeListItem("scenes", index)}
         >
           <IconTrash size={16} />
