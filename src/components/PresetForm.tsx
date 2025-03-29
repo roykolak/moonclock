@@ -29,6 +29,8 @@ import {
   MacroRippleConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 
 interface PresetFormProps {
   preset?: Preset;
@@ -83,6 +85,12 @@ export function PresetForm({
         color: "#ffffff",
         speed: 50,
         text: "hello",
+      } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Emoji) {
+      return form.setFieldValue(fieldValue, {
+        emoji: "😁",
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -240,6 +248,7 @@ function Scene({
                 SceneName.Twinkle,
                 SceneName.Ripple,
                 SceneName.Marquee,
+                SceneName.Emoji,
               ],
             },
             {
@@ -283,6 +292,20 @@ export function SceneConfigControls({
   index: number;
 }) {
   const { sceneName } = form.getValues().scenes[index];
+
+  if (sceneName === "emoji") {
+    return (
+      <Picker
+        data={data}
+        previewPosition="none"
+        navPosition="none"
+        maxFrequentRows="1"
+        onEmojiSelect={(emoji: any) => {
+          form.setFieldValue(`scenes.${index}.sceneConfig.emoji`, emoji.native);
+        }}
+      />
+    );
+  }
 
   if (sceneName === "twinkle") {
     return (

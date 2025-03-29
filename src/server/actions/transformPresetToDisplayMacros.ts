@@ -49,6 +49,17 @@ export async function transformPresetToDisplayMacros(
         ];
       }
 
+      if (sceneName === SceneName.Emoji) {
+        return [
+          text({
+            startingRow: 3,
+            startingColumn: 1,
+            fontSize: 30,
+            text: sceneConfig.emoji,
+          }),
+        ];
+      }
+
       if (sceneName === SceneName.Countdown) {
         const endDate = getEndDate(preset);
 
