@@ -78,7 +78,7 @@ export function PresetPreview({
     >
       {imageData && (
         <img
-          alt={`${preset?.scenes[0].sceneName} scene`}
+          alt={`${preset?.scenes.map((s) => s.sceneName).join(", ")} scene`}
           src={imageData}
           style={{ imageRendering: "pixelated" }}
           width="100%"

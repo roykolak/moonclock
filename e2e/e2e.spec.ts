@@ -118,11 +118,12 @@ test.describe("Test", () => {
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "1 hour 30 minutes" }).click();
 
-    await page.getByTestId("scene-select").click();
+    await page.getByTestId("scene-0-select").click();
     await page.getByRole("option", { name: "bunny" }).click();
 
     await page.getByRole("button", { name: "Save" }).click();
 
+    await expect(newPreset.getByText("Updated custom preset")).toBeVisible();
     await expect(newPreset.getByText("For 1 hours & 30 mins")).toBeVisible();
     await expect(newPreset.getByAltText("bunny scene")).toBeVisible();
 
@@ -133,6 +134,31 @@ test.describe("Test", () => {
     await page.getByRole("button", { name: "Delete preset" }).click();
 
     await expect(page.getByTestId("preset-item")).toHaveCount(3);
+  });
+
+  test("creating a new, multiple scene, preset", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
+    await page.getByRole("link", { name: "Presets" }).click();
+
+    await page.getByRole("link", { name: "New Preset" }).click();
+
+    await expect(page.getByText("Create New Preset")).toBeVisible();
+
+    await page.getByTestId("preset-name").fill("multi-scene preset");
+
+    await page.getByTestId("new-scene-button").click();
+
+    await page.getByTestId("scene-1-select").click();
+    await page.getByRole("option", { name: "marquee" }).click();
+
+    await page.getByRole("button", { name: "Save" }).click();
+
+    const newPreset = page.getByTestId("preset-item").nth(3);
+
+    await expect(newPreset).toBeVisible();
+
+    await expect(newPreset.getByAltText("moon, marquee scene")).toBeVisible();
   });
 
   test("updating settings", async ({ page }) => {

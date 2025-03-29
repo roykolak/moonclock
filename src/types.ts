@@ -1,5 +1,3 @@
-import Panel from "./components/Panel";
-
 export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
