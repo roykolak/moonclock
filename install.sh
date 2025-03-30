@@ -17,6 +17,14 @@ echo " -> Enabling services to start on restart"
 sudo systemctl enable moonclock-app
 sudo systemctl enable moonclock-hardware
 
+echo " -> Seeding database file"
+
+sudo touch $DATA_FOLDER/database.json
+sudo chmod 666 $DATA_FOLDER/database.json
+
+sudo touch $DATA_FOLDER/lastHeartbeat.txt
+sudo chmod 666 $DATA_FOLDER/lastHeartbeat.txt
+
 echo " -> Seeding custom scenes"
 
 if [ ! -d "$DATA_FOLDER" ]; then

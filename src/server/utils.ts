@@ -18,7 +18,7 @@ export function customScenesPath() {
 export function heartBeatFile() {
   return process.env.NODE_ENV === "production"
     ? "/var/lib/moonclock/lastHeartbeat.txt"
-    : "./hardware/lastHeartbeat.txt";
+    : "./lastHeartbeat.txt";
 }
 
 export function databaseFile() {

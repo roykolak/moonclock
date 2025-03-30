@@ -115,7 +115,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           />
         </Stack>
 
-        <Accordion defaultValue="advanced" variant="separated" mt="md">
+        <Accordion variant="separated" mt="md">
           <Accordion.Item key="hardware" value="advanced">
             <Accordion.Control>
               <Text size="sm" c="dimmed">
