@@ -72,7 +72,7 @@ function readDb(): DataTypes {
     const file = fs.readFileSync(dbFile).toString();
     return JSON.parse(file);
   } catch {
-    console.log(`${dbFile} not found, loading default data`);
+    console.log(`trouble loading ${dbFile}, loading default data`);
     return JSON.parse(JSON.stringify(defaultData));
   }
 }

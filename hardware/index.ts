@@ -1,7 +1,7 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine, Pixel } from "../src/display-engine";
-import { getData } from "@/server/db";
+import { getData, setData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField } from "@/types";
 
@@ -73,6 +73,11 @@ import { PanelField } from "@/types";
       updateQueue.push(pixels);
     },
   });
+
+  const preset = panel.defaultPreset;
+  const renderedAt = new Date().toJSON();
+
+  await setData({ hardware: { preset, renderedAt } });
 
   engine.render(await transformPresetToDisplayMacros(hardware.preset));
 

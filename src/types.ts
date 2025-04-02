@@ -62,8 +62,6 @@ export enum SceneName {
   Emoji = "emoji",
 }
 
-export const TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
-
 export interface Preset {
   [PresetField.Name]: string;
   [PresetField.Mode]: "for" | "until";

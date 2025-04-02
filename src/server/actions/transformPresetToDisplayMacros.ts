@@ -11,7 +11,7 @@ import {
   text,
   twinkle,
 } from "../../display-engine";
-import { Preset, SceneName, TriggerHardwareReloadScene } from "@/types";
+import { Preset, SceneName } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
@@ -78,10 +78,6 @@ export async function transformPresetToDisplayMacros(
             amount: sceneConfig.amount * 10,
           }),
         ];
-      }
-
-      if (sceneName === TriggerHardwareReloadScene) {
-        return [box({ backgroundColor: "#000000" })];
       }
 
       const customScenes = await getCustomScenes();

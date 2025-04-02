@@ -29,9 +29,7 @@ describe("checkForUpdates", () => {
 
     await checkForNewDisplayConfig();
 
-    const lastHeartBeat = fs
-      .readFileSync(`./hardware/lastHeartbeat.txt`)
-      .toString();
+    const lastHeartBeat = fs.readFileSync(`./lastHeartbeat.txt`).toString();
 
     assert.equal(lastHeartBeat, "2025-01-04T12:40:02.614Z");
   });
