@@ -47,6 +47,9 @@ fs.mkdirSync(releaseFolder);
 
 fs.cpSync("dist", `${releaseFolder}/dist`, { recursive: true });
 fs.cpSync("bin", `${releaseFolder}/bin`, { recursive: true });
+fs.cpSync("custom_scenes", `${releaseFolder}/custom_scenes`, {
+  recursive: true,
+});
 
 const releaseFiles = [
   "install.sh",

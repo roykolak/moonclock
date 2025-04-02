@@ -102,9 +102,8 @@ wget -O /usr/share/fonts/AppleColorEmoji.ttf https://github.com/samuelngs/apple-
 Download and untar Moonclock
 
 ```
-cd /usr/local/bin/
 sudo wget -O release.tar.gz https://github.com/roykolak/moonclock/releases/.../release.tar.gz
-sudo tar -xzvf release.tar.gz
+sudo tar -xzvf release.tar.gz -C /usr/local/bin
 ```
 
 Finally, install Moonclock as a service...

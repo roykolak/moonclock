@@ -1890,15 +1890,12 @@ var import_rpi_led_matrix = __toESM(require_dist(), 1);
 // src/server/db.ts
 var import_fs = __toESM(require("fs"), 1);
 
-// src/types.ts
-var TriggerHardwareReloadScene = "trigger-hardware-scene-reload";
-
 // src/server/utils.ts
 function customScenesPath() {
   return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/custom_scenes" : "./custom_scenes";
 }
 function heartBeatFile() {
-  return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/lastHeartbeat.txt" : "./hardware/lastHeartbeat.txt";
+  return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/lastHeartbeat.txt" : "./lastHeartbeat.txt";
 }
 function databaseFile() {
   return process.env.NODE_ENV === "production" ? "/var/lib/moonclock/database.json" : "./database.json";
@@ -1970,7 +1967,7 @@ function readDb() {
     const file = import_fs.default.readFileSync(dbFile).toString();
     return JSON.parse(file);
   } catch {
-    console.log(`${dbFile} not found, loading default data`);
+    console.log(`trouble loading ${dbFile}, loading default data`);
     return JSON.parse(JSON.stringify(defaultData));
   }
 }
@@ -2110,29 +2107,44 @@ var startMarquee = async ({
     startingColumn: 0,
     startingRow: 0,
     direction: "vertical",
+    mirrorHorizontally: false,
     ...macroConfig
   };
   ctx.textBaseline = "top";
-  ctx.font = `${config.fontSize}px ${config.font}`;
+  ctx.font = `bold ${config.fontSize}px ${config.font}`;
   ctx.fillStyle = config.color;
+  if (config.mirrorHorizontally) {
+    ctx.scale(-1, 1);
+  }
   const textMetrics = ctx.measureText(config.text);
-  let offset = config.direction === "horizontal" ? -config.width : -config.height;
+  let offset = config.direction === "horizontal" ? config.mirrorHorizontally ? 0 : -config.width : -config.height;
   const interval = setInterval(() => {
-    ctx.clearRect(0, 0, config.width, config.height);
+    ctx.clearRect(
+      0,
+      0,
+      config.mirrorHorizontally ? -config.width : config.width,
+      config.height
+    );
     ctx.textBaseline = "top";
-    ctx.font = `16px ${config.font}`;
+    ctx.font = `${config.fontSize}px ${config.font}`;
     ctx.fillStyle = config.color;
     ctx.textDrawingMode = "glyph";
     ctx.fillText(
       config.text,
-      config.direction === "horizontal" ? config.startingColumn - offset : config.startingColumn,
+      config.direction === "horizontal" ? config.mirrorHorizontally ? offset : config.startingColumn - offset : config.startingColumn,
       config.direction === "vertical" ? config.startingRow - offset : config.startingRow
     );
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
     if (config.direction === "horizontal") {
-      if (offset > config.width + textMetrics.width) {
-        offset = -config.width;
+      if (config.mirrorHorizontally) {
+        if (offset < -(config.width + textMetrics.width)) {
+          offset = config.width;
+        }
+      } else {
+        if (offset > config.width + textMetrics.width) {
+          offset = -config.width;
+        }
       }
     } else if (config.direction === "vertical") {
       const height = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
@@ -2140,7 +2152,11 @@ var startMarquee = async ({
         offset = -config.height;
       }
     }
-    offset += 1;
+    if (config.mirrorHorizontally) {
+      offset -= 1;
+    } else {
+      offset += 1;
+    }
   }, 100 - config.speed);
   return () => clearInterval(interval);
 };
@@ -3868,6 +3884,16 @@ async function transformPresetToDisplayMacros(preset) {
           })
         ];
       }
+      if (sceneName === "emoji" /* Emoji */) {
+        return [
+          text({
+            startingRow: 3,
+            startingColumn: 1,
+            fontSize: 30,
+            text: sceneConfig.emoji
+          })
+        ];
+      }
       if (sceneName === "countdown" /* Countdown */) {
         const endDate = getEndDate(preset);
         if (endDate) {
@@ -3884,9 +3910,6 @@ async function transformPresetToDisplayMacros(preset) {
             amount: sceneConfig.amount * 10
           })
         ];
-      }
-      if (sceneName === TriggerHardwareReloadScene) {
-        return [box({ backgroundColor: "#000000" })];
       }
       const customScenes = await getCustomScenes();
       const customScene = customScenes.find(
@@ -4015,6 +4038,9 @@ async function checkForNewDisplayConfig() {
       updateQueue.push(pixels);
     }
   });
+  const preset = panel.defaultPreset;
+  const renderedAt = (/* @__PURE__ */ new Date()).toJSON();
+  await setData({ hardware: { preset, renderedAt } });
   engine.render(await transformPresetToDisplayMacros(hardware.preset));
   setInterval(async () => {
     const displayConfig = await checkForNewDisplayConfig();

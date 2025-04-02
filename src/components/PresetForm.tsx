@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   ColorInput,
   Divider,
   Flex,
@@ -84,6 +85,7 @@ export function PresetForm({
       return form.setFieldValue(fieldValue, {
         color: "#ffffff",
         speed: 50,
+        fontSize: 16,
         text: "hello",
       } as Partial<MacroMarqueeConfig>);
     }
@@ -380,8 +382,26 @@ export function SceneConfigControls({
             {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
           />
           <Stack gap={4}>
+            <Text size="sm">Font size</Text>
+            <Slider
+              min={12}
+              max={60}
+              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
+            />
+          </Stack>
+          <Checkbox
+            label="Mirror horizontally"
+            key={form.key(`scenes.${index}.sceneConfig.mirrorHorizontally`)}
+            {...form.getInputProps(
+              `scenes.${index}.sceneConfig.mirrorHorizontally`
+            )}
+          />
+          <Stack gap={4}>
             <Text size="sm">Speed</Text>
             <Slider
+              min={10}
+              max={50}
               key={form.key(`scenes.${index}.sceneConfig.speed`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
             />
