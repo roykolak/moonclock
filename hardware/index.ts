@@ -18,7 +18,7 @@ import { PanelField } from "@/types";
 
   const { panel, hardware } = await getData();
 
-  const updateQueue: Pixel[][] = [];
+  let updateQueue: Pixel[][] = [];
 
   function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
     const hexValues = [...rgba]
@@ -32,7 +32,7 @@ import { PanelField } from "@/types";
   }
 
   if (!params.emulate) {
-    console.log("Starting Hardware...");
+    console.log("[HARDWARE] Initing LED Matrix...");
     const matrix = new LedMatrix(
       {
         ...LedMatrix.defaultMatrixOptions(),
@@ -60,11 +60,19 @@ import { PanelField } from "@/types";
             .setPixel(pixel.x, pixel.y);
         }
       }
-      setTimeout(() => matrix.sync(), 0);
+
+      setTimeout(() => {
+        matrix.sync();
+      }, 0);
     });
     matrix.sync();
   } else {
-    console.log("Skipping hardware...");
+    function fakeSync() {
+      updateQueue.shift();
+      setTimeout(fakeSync, 0);
+    }
+    fakeSync();
+    console.log("[HARDWARE] Emulating LED Matrix...");
   }
 
   const engine = createDisplayEngine({
@@ -85,7 +93,17 @@ import { PanelField } from "@/types";
     const displayConfig = await checkForNewDisplayConfig();
 
     if (displayConfig) {
+      updateQueue = [];
       engine.render(displayConfig);
+    }
+
+    if (updateQueue.length > 10) {
+      console.log(`[HARDWARE] Update queue lagging`, updateQueue.length);
+    }
+
+    if (updateQueue.length > 50) {
+      updateQueue = [];
+      console.log(`[HARDWARE] Reset update queue`);
     }
   }, 2000);
 })();

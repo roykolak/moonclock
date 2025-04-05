@@ -48,6 +48,8 @@ node_modules
 moonclock
 release.tar.gz
 
+/dist/app
+/dist/hardware/index.cjs
 
 /test-results/
 /playwright-report/
