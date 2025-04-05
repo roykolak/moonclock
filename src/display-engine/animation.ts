@@ -1,14 +1,11 @@
-const FRAME_RATE = 1000 / 60;
+const FRAME_RATE = 1000 / 15;
 let lastTime = 0;
 
-export function getAnimationFrame(
-  callback: (timestamp: number) => void,
-  framerate?: number
-) {
+export function getAnimationFrame(callback: (timestamp: number) => void) {
   const currentTime = performance.now();
-  const timeToCall = Math.max(
-    0,
-    (framerate || FRAME_RATE) - (currentTime - lastTime)
+  const timeToCall = Math.min(
+    FRAME_RATE - (currentTime - lastTime),
+    FRAME_RATE
   );
 
   const timeoutId = setTimeout(() => {

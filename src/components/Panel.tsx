@@ -118,9 +118,7 @@ export default function Panel({
                 </Menu.Item>
                 <Menu.Item
                   onClick={async () => {
-                    showNotification({
-                      message: "Hardware Scene reloading...",
-                    });
+                    showNotification({ message: "Reloaded hardware" });
                     await reloadHardwareScene();
                   }}
                 >

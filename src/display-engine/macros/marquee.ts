@@ -1,4 +1,4 @@
-import { syncFromCanvas } from "../canvas";
+import { buildCanvas, syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 import { getAnimationFrame, stopAnimationFrame } from "../animation";
 
@@ -37,6 +37,17 @@ export const startMarquee: MacroFn = async ({
 
   const textMetrics = ctx.measureText(config.text);
 
+  const { canvas: textCanvas, ctx: textCtx } = buildCanvas({
+    width: textMetrics.width,
+    height: 32,
+  });
+
+  textCtx.textBaseline = "top";
+  textCtx.font = `${config.fontSize}px ${config.font}`;
+  textCtx.fillStyle = config.color;
+  textCtx.textDrawingMode = "glyph";
+  textCtx.fillText(config.text, 0, 0);
+
   let offset =
     config.direction === "horizontal"
       ? config.mirrorHorizontally
@@ -52,20 +63,10 @@ export const startMarquee: MacroFn = async ({
       config.height
     );
 
-    ctx.textBaseline = "top";
-    ctx.font = `${config.fontSize}px ${config.font}`;
-    ctx.fillStyle = config.color;
-    ctx.textDrawingMode = "glyph";
-    ctx.fillText(
-      config.text,
-      config.direction === "horizontal"
-        ? config.mirrorHorizontally
-          ? offset
-          : config.startingColumn - offset
-        : config.startingColumn,
-      config.direction === "vertical"
-        ? config.startingRow - offset
-        : config.startingRow
+    ctx.drawImage(
+      textCanvas,
+      config.mirrorHorizontally ? offset : -offset,
+      config.startingColumn
     );
 
     if (config.direction === "horizontal") {
@@ -96,7 +97,7 @@ export const startMarquee: MacroFn = async ({
     if (running) {
       const pixels = syncFromCanvas(ctx, dimensions);
       updatePixels(pixels, index);
-      timeoutId = getAnimationFrame(runMarquee, 1000 / config.speed);
+      timeoutId = getAnimationFrame(runMarquee);
     }
   }
 

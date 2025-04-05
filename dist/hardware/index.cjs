@@ -2088,6 +2088,25 @@ function getFillStyle(color, dimensions, ctx) {
   return gradient;
 }
 
+// src/display-engine/animation.ts
+var FRAME_RATE = 1e3 / 15;
+var lastTime = 0;
+function getAnimationFrame(macroName, callback) {
+  const currentTime = performance.now();
+  const timeToCall = Math.min(
+    FRAME_RATE - (currentTime - lastTime),
+    FRAME_RATE
+  );
+  const timeoutId = setTimeout(() => {
+    lastTime = performance.now();
+    callback(lastTime);
+  }, timeToCall);
+  return timeoutId;
+}
+function stopAnimationFrame(id) {
+  clearTimeout(id);
+}
+
 // src/display-engine/macros/marquee.ts
 var startMarquee = async ({
   macroConfig,
@@ -2110,6 +2129,8 @@ var startMarquee = async ({
     mirrorHorizontally: false,
     ...macroConfig
   };
+  let timeoutId;
+  let running = true;
   ctx.textBaseline = "top";
   ctx.font = `bold ${config.fontSize}px ${config.font}`;
   ctx.fillStyle = config.color;
@@ -2117,25 +2138,28 @@ var startMarquee = async ({
     ctx.scale(-1, 1);
   }
   const textMetrics = ctx.measureText(config.text);
+  const { canvas: textCanvas, ctx: textCtx } = buildCanvas({
+    width: textMetrics.width,
+    height: 32
+  });
+  textCtx.textBaseline = "top";
+  textCtx.font = `${config.fontSize}px ${config.font}`;
+  textCtx.fillStyle = config.color;
+  textCtx.textDrawingMode = "glyph";
+  textCtx.fillText(config.text, 0, 0);
   let offset = config.direction === "horizontal" ? config.mirrorHorizontally ? 0 : -config.width : -config.height;
-  const interval = setInterval(() => {
+  function runMarquee() {
     ctx.clearRect(
       0,
       0,
       config.mirrorHorizontally ? -config.width : config.width,
       config.height
     );
-    ctx.textBaseline = "top";
-    ctx.font = `${config.fontSize}px ${config.font}`;
-    ctx.fillStyle = config.color;
-    ctx.textDrawingMode = "glyph";
-    ctx.fillText(
-      config.text,
-      config.direction === "horizontal" ? config.mirrorHorizontally ? offset : config.startingColumn - offset : config.startingColumn,
-      config.direction === "vertical" ? config.startingRow - offset : config.startingRow
+    ctx.drawImage(
+      textCanvas,
+      config.mirrorHorizontally ? offset : -offset,
+      config.startingColumn
     );
-    const pixels = syncFromCanvas(ctx, dimensions);
-    updatePixels(pixels, index);
     if (config.direction === "horizontal") {
       if (config.mirrorHorizontally) {
         if (offset < -(config.width + textMetrics.width)) {
@@ -2157,25 +2181,18 @@ var startMarquee = async ({
     } else {
       offset += 1;
     }
-  }, 100 - config.speed);
-  return () => clearInterval(interval);
+    if (running) {
+      const pixels = syncFromCanvas(ctx, dimensions);
+      updatePixels(pixels, index);
+      timeoutId = getAnimationFrame("marquee" /* Marquee */, runMarquee);
+    }
+  }
+  runMarquee();
+  return () => {
+    running = false;
+    stopAnimationFrame(timeoutId);
+  };
 };
-
-// src/display-engine/animation.ts
-var FRAME_RATE = 1e3 / 60;
-var lastTime = 0;
-function getAnimationFrame(callback) {
-  const currentTime = performance.now();
-  const timeToCall = Math.max(0, FRAME_RATE - (currentTime - lastTime));
-  const timeoutId = setTimeout(() => {
-    lastTime = performance.now();
-    callback(lastTime);
-  }, timeToCall);
-  return timeoutId;
-}
-function stopAnimationFrame(id) {
-  clearTimeout(id);
-}
 
 // src/display-engine/macros/ripple.ts
 function colorToRgba(hexOrRgbString) {
@@ -2246,7 +2263,7 @@ var startRipple = async ({
     }
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
-    timeoutId = getAnimationFrame(drawRipple);
+    timeoutId = getAnimationFrame("ripple" /* Ripple */, drawRipple);
   }
   const startTime = performance.now();
   drawRipple(startTime);
@@ -2456,7 +2473,7 @@ var startTwinkle = async ({
     }
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
-    timeoutId = getAnimationFrame(drawTwinkle);
+    timeoutId = getAnimationFrame("twinkle" /* Twinkle */, drawTwinkle);
   }
   drawTwinkle();
   return () => {
@@ -3635,7 +3652,7 @@ var startMoon = async ({
     }
     if (running) {
       updatePixels(pixels, index + 1);
-      timeoutId = getAnimationFrame(runMoon);
+      timeoutId = getAnimationFrame("moon" /* Moon */, runMoon);
     }
   }
   const startTime = performance.now();
@@ -3948,7 +3965,7 @@ async function checkForNewDisplayConfig() {
     if (!scheduledPreset?.preset) {
       if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {
         console.log(
-          `[RERENDER] Default Preset change (${getSceneName(
+          `[HARDWARE] Default Preset change, rerendering (${getSceneName(
             hardware?.preset
           )} to ${getSceneName(panel.defaultPreset)})`
         );
@@ -3960,7 +3977,9 @@ async function checkForNewDisplayConfig() {
       return null;
     }
     if (scheduledPreset.endTime !== null && (/* @__PURE__ */ new Date()).getTime() > new Date(scheduledPreset.endTime).getTime()) {
-      console.log(`[CLEAR] ${scheduledPreset.preset.name} has expired`);
+      console.log(
+        `[HARDWARE] ${scheduledPreset.preset.name} has expired, clearing`
+      );
       const preset = panel.defaultPreset;
       const renderedAt = (/* @__PURE__ */ new Date()).toJSON();
       await setData({
@@ -3971,7 +3990,7 @@ async function checkForNewDisplayConfig() {
     }
     if (!sceneMatch(scheduledPreset.preset, hardware.preset)) {
       console.log(
-        `[UPDATE] Rerendering ${scheduledPreset.preset["name" /* Name */]} until ${scheduledPreset.endTime}`
+        `[HARDWARE] Rendering ${scheduledPreset.preset["name" /* Name */]} until ${scheduledPreset.endTime}`
       );
       const preset = scheduledPreset.preset;
       const renderedAt = (/* @__PURE__ */ new Date()).toJSON();
@@ -3995,13 +4014,13 @@ async function checkForNewDisplayConfig() {
     }
   });
   const { panel, hardware } = await getData();
-  const updateQueue = [];
+  let updateQueue = [];
   function RGBAToHexA(rgba, forceRemoveAlpha = false) {
     const hexValues = [...rgba].filter((_number, index) => !forceRemoveAlpha || index !== 3).map((number, index) => index === 3 ? Math.round(number * 255) : number).map((number) => number.toString(16));
     return hexValues.map((string) => string.length === 1 ? "0" + string : string).join("");
   }
   if (!params.emulate) {
-    console.log("Starting Hardware...");
+    console.log("[HARDWARE] Initing LED Matrix...");
     const matrix = new import_rpi_led_matrix.LedMatrix(
       {
         ...import_rpi_led_matrix.LedMatrix.defaultMatrixOptions(),
@@ -4018,6 +4037,7 @@ async function checkForNewDisplayConfig() {
       }
     );
     matrix.afterSync(() => {
+      const currentTime = performance.now();
       const pixelUpdates = updateQueue.shift();
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
@@ -4026,11 +4046,20 @@ async function checkForNewDisplayConfig() {
           ).setPixel(pixel.x, pixel.y);
         }
       }
-      setTimeout(() => matrix.sync(), 0);
+      const lastTime2 = performance.now();
+      setTimeout(() => {
+        matrix.sync();
+      }, 0);
     });
     matrix.sync();
   } else {
-    console.log("Skipping hardware...");
+    let fakeSync2 = function() {
+      updateQueue.shift();
+      setTimeout(fakeSync2, 0);
+    };
+    var fakeSync = fakeSync2;
+    fakeSync2();
+    console.log("[HARDWARE] Emulating LED Matrix...");
   }
   const engine = createDisplayEngine({
     dimensions: { width: 32, height: 32 },
@@ -4045,7 +4074,15 @@ async function checkForNewDisplayConfig() {
   setInterval(async () => {
     const displayConfig = await checkForNewDisplayConfig();
     if (displayConfig) {
+      updateQueue = [];
       engine.render(displayConfig);
+    }
+    if (updateQueue.length > 10) {
+      console.log(`[HARDWARE] Update queue lagging`, updateQueue.length);
+    }
+    if (updateQueue.length > 50) {
+      updateQueue = [];
+      console.log(`[HARDWARE] Reset update queue`);
     }
   }, 2e3);
 })();

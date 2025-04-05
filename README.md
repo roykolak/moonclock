@@ -122,7 +122,7 @@ mc start
 
 ## Data Storage
 
-All data is stored in `/var/lib/mooclock`. This includes...
+All data is stored in `/var/lib/moonclock`. This includes...
 
 - `database.json`
 - `custom_scenes/`

@@ -30,7 +30,7 @@ export function HardwareSettings({
               </Grid.Col>
               <Grid.Col span={8}>
                 <Text c="dimmed" size="sm">
-                  {hardwarePreset.scenes[0].sceneName} scene
+                  {hardwarePreset.scenes[0]?.sceneName} scene
                 </Text>
               </Grid.Col>
               <Grid.Col span={4}>

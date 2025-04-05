@@ -24,7 +24,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
     if (!scheduledPreset?.preset) {
       if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {
         console.log(
-          `[RERENDER] Default Preset change (${getSceneName(
+          `[HARDWARE] Default Preset change, rerendering (${getSceneName(
             hardware?.preset
           )} to ${getSceneName(panel.defaultPreset)})`
         );
@@ -44,7 +44,9 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
       scheduledPreset.endTime !== null &&
       new Date().getTime() > new Date(scheduledPreset.endTime).getTime()
     ) {
-      console.log(`[CLEAR] ${scheduledPreset.preset.name} has expired`);
+      console.log(
+        `[HARDWARE] ${scheduledPreset.preset.name} has expired, clearing`
+      );
 
       const preset = panel.defaultPreset;
       const renderedAt = new Date().toJSON();
@@ -59,7 +61,7 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
 
     if (!sceneMatch(scheduledPreset.preset, hardware.preset)) {
       console.log(
-        `[UPDATE] Rerendering ${
+        `[HARDWARE] Rendering ${
           scheduledPreset.preset[PresetField.Name]
         } until ${scheduledPreset.endTime}`
       );
