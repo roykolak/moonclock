@@ -40,19 +40,13 @@ interface PanelProps {
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
   formattedEndTime: string | null;
-  formattedLastHeartbeat: string | null;
-  formattedHardwareRenderedAt: string | null;
   customSceneNames: string[];
-  hardwarePreset: Preset;
 }
 
 export default function Panel({
   panel,
-  hardwarePreset,
   scheduledPreset,
   formattedEndTime,
-  formattedLastHeartbeat,
-  formattedHardwareRenderedAt,
   presets,
   customSceneNames,
 }: PanelProps) {
@@ -221,11 +215,7 @@ export default function Panel({
           )}
         </Card.Section>
       </Card>
-      <HardwareSettings
-        hardwarePreset={hardwarePreset}
-        formattedLastHeartbeat={formattedLastHeartbeat}
-        formattedHardwareRenderedAt={formattedHardwareRenderedAt}
-      />
+      <HardwareSettings />
     </>
   );
 }

@@ -26,6 +26,10 @@ export async function transformPresetToDisplayMacros(
         return [box({ backgroundColor: "#000000" })];
       }
 
+      if (sceneName === SceneName.Color) {
+        return [box({ backgroundColor: sceneConfig.color })];
+      }
+
       if (sceneName === SceneName.Moon) {
         return [moon({})];
       }
@@ -34,7 +38,7 @@ export async function transformPresetToDisplayMacros(
         return [
           ripple({
             ...sceneConfig,
-            speed: sceneConfig.speed / 10,
+            speed: sceneConfig.speed,
             waveHeight: sceneConfig.waveHeight / 10,
           }),
         ];
@@ -74,7 +78,7 @@ export async function transformPresetToDisplayMacros(
         return [
           twinkle({
             ...sceneConfig,
-            speed: 51 - sceneConfig.speed / 2,
+            speed: sceneConfig.speed,
             amount: sceneConfig.amount * 10,
           }),
         ];

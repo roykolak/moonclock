@@ -15,12 +15,6 @@ export function customScenesPath() {
     : "./custom_scenes";
 }
 
-export function heartBeatFile() {
-  return process.env.NODE_ENV === "production"
-    ? "/var/lib/moonclock/lastHeartbeat.txt"
-    : "./lastHeartbeat.txt";
-}
-
 export function databaseFile() {
   return process.env.NODE_ENV === "production"
     ? "/var/lib/moonclock/database.json"

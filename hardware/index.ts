@@ -1,9 +1,11 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
-import { createDisplayEngine, Pixel } from "../src/display-engine";
-import { getData, setData } from "@/server/db";
+import { createDisplayEngine, Macro, Pixel } from "../src/display-engine";
+import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
-import { PanelField } from "@/types";
+import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
+
+import express from "express";
 
 (async () => {
   const args = process.argv.slice(2);
@@ -16,9 +18,57 @@ import { PanelField } from "@/types";
     }
   });
 
-  const { panel, hardware } = await getData();
+  function recordQueuedFramesSnapshot(count: number) {
+    queuedFramesSnapshots.push({
+      timestamp: Date.now(),
+      count: count > 50 ? 75 : count,
+    });
+
+    if (queuedFramesSnapshots.length > 100) {
+      queuedFramesSnapshots.shift();
+    }
+  }
+
+  const app = express();
+  const port = 3001;
+
+  app.use((req: any, res: any, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
+
+  app.use(express.json());
+
+  app.get("/api/state", (req, res) => {
+    res.send({ queuedFramesSnapshots, preset, renderedAt, lastLoopRunAt });
+  });
+
+  app.listen(port, () => {
+    console.log(`[HARDWARE] Server running on port ${port}`);
+  });
+
+  const { panel } = await getData();
+
+  let displayConfig: Macro[] = await transformPresetToDisplayMacros(
+    panel.defaultPreset
+  );
+  let preset: Preset = panel.defaultPreset;
+  let renderedAt: string = new Date().toJSON();
+  let lastLoopRunAt: string = "";
 
   let updateQueue: Pixel[][] = [];
+  let queuedFramesSnapshots: QueuedFramesSnapshot[] = [];
 
   function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
     const hexValues = [...rgba]
@@ -50,6 +100,9 @@ import { PanelField } from "@/types";
     );
     matrix.afterSync(() => {
       const pixelUpdates = updateQueue.shift();
+
+      recordQueuedFramesSnapshot(updateQueue.length);
+
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
           matrix
@@ -69,6 +122,9 @@ import { PanelField } from "@/types";
   } else {
     function fakeSync() {
       updateQueue.shift();
+
+      recordQueuedFramesSnapshot(updateQueue.length);
+
       setTimeout(fakeSync, 0);
     }
     fakeSync();
@@ -82,18 +138,19 @@ import { PanelField } from "@/types";
     },
   });
 
-  const preset = panel.defaultPreset;
-  const renderedAt = new Date().toJSON();
-
-  await setData({ hardware: { preset, renderedAt } });
-
-  engine.render(await transformPresetToDisplayMacros(hardware.preset));
+  engine.render(displayConfig);
 
   setInterval(async () => {
-    const displayConfig = await checkForNewDisplayConfig();
+    lastLoopRunAt = new Date().toJSON();
 
-    if (displayConfig) {
+    const result = await checkForNewDisplayConfig(preset);
+
+    if (result) {
       updateQueue = [];
+      queuedFramesSnapshots = [];
+
+      ({ displayConfig, renderedAt, preset } = result);
+
       engine.render(displayConfig);
     }
 

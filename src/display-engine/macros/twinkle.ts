@@ -32,7 +32,7 @@ export const startTwinkle: MacroFn = async ({
     twinklingCoordinates.push({ x, y, a, peaked: i % 2 });
   }
 
-  const stepAmount = Math.floor(255 / speed);
+  const stepAmount = Math.floor(255 / 10);
 
   function drawTwinkle() {
     const availableSlots = amount - twinklingCoordinates.length;
@@ -73,7 +73,9 @@ export const startTwinkle: MacroFn = async ({
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
 
-    timeoutId = getAnimationFrame(drawTwinkle);
+    timeoutId = getAnimationFrame(drawTwinkle, {
+      framesPerSecond: speed,
+    });
   }
 
   drawTwinkle();
