@@ -123,7 +123,9 @@ export const startMoon: MacroFn = async ({
 
     if (running) {
       updatePixels(pixels, index + 1);
-      timeoutId = getAnimationFrame(runMoon);
+      timeoutId = getAnimationFrame(runMoon, {
+        framesPerSecond: 15,
+      });
     }
   }
 

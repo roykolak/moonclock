@@ -42,7 +42,6 @@ next-env.d.ts
 database.json
 database-test.json
 custom_scenes/automated-test-scene-123.json
-lastHeartbeat.txt
 
 node_modules
 moonclock

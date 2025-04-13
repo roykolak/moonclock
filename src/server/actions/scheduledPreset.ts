@@ -16,6 +16,7 @@ export async function updateScheduledPreset(
       ...scheduledPreset,
     },
   });
+
   revalidatePath("/panel");
 }
 

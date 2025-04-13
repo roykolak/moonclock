@@ -140,6 +140,10 @@ export interface Pixel {
   rgba: null | Uint8ClampedArray;
 }
 
+export interface AnimationConfig {
+  framesPerSecond: number;
+}
+
 export type UpdatePixels = (pixels: Pixel[], index: number) => void;
 export type InternalPixelsChangeCallback = (
   pixels: Pixel[],

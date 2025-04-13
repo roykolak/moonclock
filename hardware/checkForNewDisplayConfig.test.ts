@@ -11,29 +11,6 @@ describe("checkForUpdates", () => {
     timekeeper.freeze(new Date(1735994402614));
   });
 
-  it("writes a timestamp to lastHeartBeat.txt", async () => {
-    const date = new Date();
-    date.setMinutes(date.getMinutes() - 1);
-
-    setData({
-      scheduledPreset: {
-        endTime: date.toJSON(),
-        preset: {
-          name: "bedtime",
-          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
-        } as Preset,
-      },
-      presets: [],
-      panel: defaultData.panel,
-    });
-
-    await checkForNewDisplayConfig();
-
-    const lastHeartBeat = fs.readFileSync(`./lastHeartbeat.txt`).toString();
-
-    assert.equal(lastHeartBeat, "2025-01-04T12:40:02.614Z");
-  });
-
   describe("when the currentSlot is not set", () => {
     describe("when the current hardware scene is not the same as the default scene", () => {
       it("updates the current hardware scene", async () => {
@@ -44,19 +21,17 @@ describe("checkForUpdates", () => {
           scheduledPreset: null,
           presets: [],
           panel: defaultData.panel,
-          hardware: {
-            preset: {
-              name: "bedtime",
-              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
-            } as Preset,
-          },
         });
 
-        const displayConfig = await checkForNewDisplayConfig();
+        const currentHardwarePreset = {
+          name: "bedtime",
+          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+        } as Preset;
 
-        const { hardware } = await getData();
+        const { displayConfig, preset } =
+          (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
 
-        assert.equal(hardware.preset?.scenes[0].sceneName, "blank");
+        assert.equal(preset?.scenes[0].sceneName, "blank");
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {
@@ -75,25 +50,22 @@ describe("checkForUpdates", () => {
         const date = new Date();
         date.setHours(date.getHours() + 1);
 
+        const currentHardwarePreset = {
+          name: "bedtime",
+          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+        } as Preset;
+
         setData({
           scheduledPreset: {
             endTime: date.toJSON(),
-            preset: {
-              name: "bedtime",
-              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
-            } as Preset,
+            preset: currentHardwarePreset,
           },
           presets: [],
           panel: defaultData.panel,
-          hardware: {
-            preset: {
-              name: "bedtime",
-              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
-            } as Preset,
-          },
         });
 
-        const displayConfig = await checkForNewDisplayConfig();
+        const { displayConfig } =
+          (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
 
         const { scheduledPreset } = await getData();
 
@@ -107,24 +79,27 @@ describe("checkForUpdates", () => {
         const date = new Date();
         date.setMinutes(date.getMinutes() - 1);
 
+        const currentHardwarePreset = {
+          name: "bedtime",
+          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+        } as Preset;
+
         setData({
           scheduledPreset: {
             endTime: date.toJSON(),
-            preset: {
-              name: "bedtime",
-              scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
-            } as Preset,
+            preset: currentHardwarePreset,
           },
           presets: [],
           panel: defaultData.panel,
         });
 
-        const displayConfig = await checkForNewDisplayConfig();
+        const { displayConfig, preset } =
+          (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
 
-        const { hardware, scheduledPreset } = await getData();
+        const { scheduledPreset } = await getData();
 
         assert.equal(scheduledPreset, null);
-        assert.deepEqual(hardware.preset, defaultData.panel.defaultPreset);
+        assert.deepEqual(preset, defaultData.panel.defaultPreset);
         assert.deepEqual(displayConfig, [
           {
             macroConfig: {

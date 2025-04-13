@@ -1,9 +1,7 @@
 import { getData, setData } from "@/server/db";
 import { Macro } from "../src/display-engine";
 import { Preset, PresetField } from "@/types";
-import fs from "fs";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
-import { heartBeatFile } from "@/server/utils";
 
 function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
   return JSON.stringify(preset1?.scenes) === JSON.stringify(preset2?.scenes);
@@ -13,28 +11,27 @@ function getSceneName(preset: Preset | null) {
   return preset?.scenes?.[0].sceneName;
 }
 
-export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
+export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
+  preset: Preset;
+  renderedAt: string;
+  displayConfig: Macro[];
+} | null> {
   try {
-    fs.writeFileSync(heartBeatFile(), new Date().toJSON(), {
-      mode: 0o776,
-    });
-
-    const { scheduledPreset, panel, hardware } = await getData();
+    const { scheduledPreset, panel } = await getData();
 
     if (!scheduledPreset?.preset) {
-      if (!sceneMatch(hardware?.preset, panel.defaultPreset)) {
+      if (!sceneMatch(currentPreset, panel.defaultPreset)) {
         console.log(
           `[HARDWARE] Default Preset change, rerendering (${getSceneName(
-            hardware?.preset
+            currentPreset
           )} to ${getSceneName(panel.defaultPreset)})`
         );
 
         const preset = panel.defaultPreset;
         const renderedAt = new Date().toJSON();
+        const displayConfig = await transformPresetToDisplayMacros(preset);
 
-        await setData({ hardware: { preset, renderedAt } });
-
-        return transformPresetToDisplayMacros(preset);
+        return { displayConfig, preset, renderedAt };
       }
 
       return null;
@@ -50,16 +47,14 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
 
       const preset = panel.defaultPreset;
       const renderedAt = new Date().toJSON();
+      const displayConfig = await transformPresetToDisplayMacros(preset);
 
-      await setData({
-        scheduledPreset: null,
-        hardware: { preset, renderedAt },
-      });
+      await setData({ scheduledPreset: null });
 
-      return transformPresetToDisplayMacros(preset);
+      return { displayConfig, preset, renderedAt };
     }
 
-    if (!sceneMatch(scheduledPreset.preset, hardware.preset)) {
+    if (!sceneMatch(scheduledPreset.preset, currentPreset)) {
       console.log(
         `[HARDWARE] Rendering ${
           scheduledPreset.preset[PresetField.Name]
@@ -68,10 +63,9 @@ export async function checkForNewDisplayConfig(): Promise<Macro[] | null> {
 
       const preset = scheduledPreset.preset;
       const renderedAt = new Date().toJSON();
+      const displayConfig = await transformPresetToDisplayMacros(preset);
 
-      await setData({ hardware: { preset, renderedAt } });
-
-      return transformPresetToDisplayMacros(preset);
+      return { displayConfig, preset, renderedAt };
     }
   } catch (e) {
     console.log("Error!", e);

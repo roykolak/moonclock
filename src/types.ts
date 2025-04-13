@@ -2,7 +2,6 @@ export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
-  hardware: Hardware;
 }
 
 export interface ScheduledPreset {
@@ -31,11 +30,6 @@ export enum PanelField {
   PwmBits = "pwmBits",
 }
 
-export interface Hardware {
-  renderedAt?: string;
-  preset: Preset;
-}
-
 export interface Time {
   hour: number;
   minute: number;
@@ -52,6 +46,11 @@ export enum PresetField {
   TimeAdjustmentAmount = "timeAdjustmentAmount",
 }
 
+export interface QueuedFramesSnapshot {
+  timestamp: number;
+  count: number;
+}
+
 export enum SceneName {
   Blank = "blank",
   Moon = "moon",
@@ -60,6 +59,7 @@ export enum SceneName {
   Ripple = "ripple",
   Marquee = "marquee",
   Emoji = "emoji",
+  Color = "color",
 }
 
 export interface Preset {

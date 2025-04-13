@@ -68,7 +68,7 @@ export function PresetForm({
     if (value === SceneName.Twinkle) {
       return form.setFieldValue(fieldValue, {
         color: "#ffffff",
-        speed: 50,
+        speed: 30,
         amount: 50,
       } as Partial<MacroTwinkleConfig>);
     }
@@ -76,7 +76,7 @@ export function PresetForm({
     if (value === SceneName.Ripple) {
       return form.setFieldValue(fieldValue, {
         color: "#ffffff",
-        speed: 5,
+        speed: 30,
         waveHeight: 6,
       } as Partial<MacroRippleConfig>);
     }
@@ -84,7 +84,7 @@ export function PresetForm({
     if (value === SceneName.Marquee) {
       return form.setFieldValue(fieldValue, {
         color: "#ffffff",
-        speed: 50,
+        speed: 30,
         fontSize: 16,
         text: "hello",
       } as Partial<MacroMarqueeConfig>);
@@ -93,6 +93,12 @@ export function PresetForm({
     if (value === SceneName.Emoji) {
       return form.setFieldValue(fieldValue, {
         emoji: "😁",
+      } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Color) {
+      return form.setFieldValue(fieldValue, {
+        color: "#ff0000",
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -247,6 +253,7 @@ function Scene({
               group: "Built-in Scenes",
               items: [
                 SceneName.Moon,
+                SceneName.Color,
                 SceneName.Countdown,
                 SceneName.Twinkle,
                 SceneName.Ripple,
@@ -320,6 +327,8 @@ export function SceneConfigControls({
             <Text size="sm">Twinkle Speed</Text>
             <Slider
               label={null}
+              min={5}
+              max={60}
               key={form.key(`scenes.${index}.sceneConfig.speed`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
             />
@@ -342,6 +351,20 @@ export function SceneConfigControls({
     );
   }
 
+  if (sceneName === SceneName.Color) {
+    return (
+      <Card w="100%">
+        <Stack>
+          <ColorInput
+            placeholder="Select a color"
+            key={form.key(`scenes.${index}.sceneConfig.color`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          />
+        </Stack>
+      </Card>
+    );
+  }
+
   if (sceneName === "ripple") {
     return (
       <Card w="100%">
@@ -350,6 +373,8 @@ export function SceneConfigControls({
             <Text size="sm">Speed</Text>
             <Slider
               label={null}
+              min={5}
+              max={60}
               key={form.key(`scenes.${index}.sceneConfig.speed`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
             />
@@ -400,8 +425,8 @@ export function SceneConfigControls({
           <Stack gap={4}>
             <Text size="sm">Speed</Text>
             <Slider
-              min={10}
-              max={50}
+              min={5}
+              max={60}
               key={form.key(`scenes.${index}.sceneConfig.speed`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
             />

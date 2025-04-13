@@ -97,7 +97,9 @@ export const startMarquee: MacroFn = async ({
     if (running) {
       const pixels = syncFromCanvas(ctx, dimensions);
       updatePixels(pixels, index);
-      timeoutId = getAnimationFrame(runMarquee);
+      timeoutId = getAnimationFrame(runMarquee, {
+        framesPerSecond: config.speed,
+      });
     }
   }
 

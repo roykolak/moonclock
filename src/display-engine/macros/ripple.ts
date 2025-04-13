@@ -84,7 +84,7 @@ export const startRipple: MacroFn = async ({
     const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
 
-    timeoutId = getAnimationFrame(drawRipple);
+    timeoutId = getAnimationFrame(drawRipple, { framesPerSecond: speed });
   }
 
   const startTime = performance.now();
