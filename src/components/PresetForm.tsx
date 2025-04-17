@@ -34,7 +34,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
 interface PresetFormProps {
-  preset?: Preset;
+  preset: Preset | null;
   customSceneNames: string[];
   title?: string;
   submitLabel?: string;
@@ -44,7 +44,7 @@ interface PresetFormProps {
 const defaultPreset: Preset = {
   mode: "for",
   name: "",
-  scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+  scenes: [],
   untilMinute: "0",
   untilDay: "0",
   untilHour: "0",

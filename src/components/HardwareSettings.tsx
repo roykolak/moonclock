@@ -1,5 +1,5 @@
 import { LineChart } from "@mantine/charts";
-import { Accordion, Divider, Grid, Stack, Text } from "@mantine/core";
+import { Accordion, Alert, Divider, Grid, Stack, Text } from "@mantine/core";
 import { IconExclamationCircleFilled } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
@@ -18,18 +18,20 @@ export function HardwareSettings() {
 
   let highestQueuedFrameSnapshot = 0;
 
-  if (data) {
+  if (data?.queuedFramesSnapshots) {
     highestQueuedFrameSnapshot = Math.max(
-      ...(data?.queuedFramesSnapshots?.map(({ count }: any) => count) || [])
+      ...(data.queuedFramesSnapshots.map(({ count }: any) => count) || [])
     );
   }
+
+  const framerateLagging = highestQueuedFrameSnapshot > 4;
 
   return (
     <Accordion defaultValue="Apples" variant="filled" mt="xs">
       <Accordion.Item key="hardware" value="hardware">
         <Accordion.Control
           icon={
-            highestQueuedFrameSnapshot > 4 && (
+            framerateLagging && (
               <IconExclamationCircleFilled color="#ff6b6b" opacity={0.6} />
             )
           }
@@ -39,6 +41,11 @@ export function HardwareSettings() {
           </Text>
         </Accordion.Control>
         <Accordion.Panel>
+          {framerateLagging && (
+            <Alert color="red" title="Framerate is lagging!" p="xs" mb="md">
+              Try reducing the speed of your scenes or removing scenes
+            </Alert>
+          )}
           <Stack>
             <Grid gutter={0}>
               <Grid.Col span={4}>
@@ -76,9 +83,6 @@ export function HardwareSettings() {
             </Grid>
           </Stack>
           <Divider my="sm" />
-          <Text c="dimmed" size="sm" mb="ms">
-            Framerate Health
-          </Text>
           <LineChart
             h={45}
             data={data.queuedFramesSnapshots}
@@ -93,6 +97,7 @@ export function HardwareSettings() {
             referenceLines={[
               {
                 y: 50,
+                label: "Frames dropped",
                 color: "red.4",
               },
             ]}
@@ -103,6 +108,9 @@ export function HardwareSettings() {
             withXAxis={false}
             withDots={false}
           />
+          <Text c="dimmed" size="sm" mt="md">
+            Chart for queued frames, flat is good!
+          </Text>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>

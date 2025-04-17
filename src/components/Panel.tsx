@@ -34,6 +34,7 @@ import { IconDots } from "@tabler/icons-react";
 import { reloadHardwareScene } from "@/server/actions/hardware";
 import { showNotification } from "@mantine/notifications";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
+import { useState } from "react";
 
 interface PanelProps {
   panel: PanelType;
@@ -52,6 +53,8 @@ export default function Panel({
 }: PanelProps) {
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
 
+  const [presetEditting, setPresetEditting] = useState<Preset | null>(null);
+
   const timeAdjustment = parseInt(
     scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
       panel.timeAdjustmentAmount,
@@ -67,7 +70,7 @@ export default function Panel({
       >
         <PresetForm
           customSceneNames={customSceneNames}
-          preset={{ name: "Custom Preset" } as Preset}
+          preset={presetEditting}
           action={async (preset) => {
             await createCustomScheduledPreset(preset);
             customPresetModalHandlers.close();
@@ -99,6 +102,15 @@ export default function Panel({
               </Menu.Target>
 
               <Menu.Dropdown>
+                <Menu.Item
+                  disabled={!scheduledPreset?.preset}
+                  onClick={() => {
+                    setPresetEditting(scheduledPreset?.preset as Preset);
+                    customPresetModalHandlers.open();
+                  }}
+                >
+                  Edit Scene
+                </Menu.Item>
                 <Menu.Item
                   disabled={!scheduledPreset?.preset}
                   onClick={() => {
@@ -157,7 +169,10 @@ export default function Panel({
                 <Button
                   variant="light"
                   fullWidth
-                  onClick={customPresetModalHandlers.open}
+                  onClick={() => {
+                    setPresetEditting({ name: "Custom Preset" } as Preset);
+                    customPresetModalHandlers.open();
+                  }}
                 >
                   Custom...
                 </Button>

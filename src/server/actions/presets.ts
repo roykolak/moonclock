@@ -1,8 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getData, setData } from "../db";
 import { Preset } from "@/types";
+import { revalidatePath } from "next/cache";
 
 export async function updatePreset(index: number, preset: Preset) {
   const { presets } = await getData();
@@ -10,7 +10,7 @@ export async function updatePreset(index: number, preset: Preset) {
   presets[index] = preset;
   setData({ presets });
 
-  redirect("/presets");
+  revalidatePath("/presets");
 }
 
 export async function createPreset(preset: Preset) {
@@ -20,7 +20,7 @@ export async function createPreset(preset: Preset) {
   newPresets.push(preset);
   setData({ presets: newPresets });
 
-  redirect("/presets");
+  revalidatePath("/presets");
 }
 
 export async function deletePreset(index: number) {
@@ -30,5 +30,5 @@ export async function deletePreset(index: number) {
   newPresets.splice(index, 1);
   setData({ presets: newPresets });
 
-  redirect("/presets");
+  revalidatePath("/presets");
 }
