@@ -88,16 +88,18 @@ test.describe("Test", () => {
 
     // Create Preset
 
-    await page.getByRole("link", { name: "New Preset" }).click();
+    await page.getByRole("button", { name: "New Preset" }).click();
 
     await expect(page.getByText("Create New Preset")).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Custom preset");
 
+    await page.getByTestId("new-scene-button").click();
+
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "30 minutes", exact: true }).click();
 
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Create Preset" }).click();
 
     const newPreset = page.getByTestId("preset-item").nth(3);
 
@@ -109,7 +111,7 @@ test.describe("Test", () => {
 
     // Edit Preset
 
-    await newPreset.getByRole("link", { name: "Edit" }).click();
+    await newPreset.getByRole("button", { name: "Edit" }).click();
 
     await expect(page.getByText("Edit Preset")).toBeVisible();
 
@@ -121,7 +123,7 @@ test.describe("Test", () => {
     await page.getByTestId("scene-0-select").click();
     await page.getByRole("option", { name: "bunny" }).click();
 
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Update Preset" }).click();
 
     await expect(newPreset.getByText("Updated custom preset")).toBeVisible();
     await expect(newPreset.getByText("For 1 hours & 30 mins")).toBeVisible();
@@ -129,7 +131,7 @@ test.describe("Test", () => {
 
     // Delete Preset
 
-    await newPreset.getByRole("link", { name: "Edit" }).click();
+    await newPreset.getByRole("button", { name: "Edit" }).click();
 
     await page.getByRole("button", { name: "Delete preset" }).click();
 
@@ -141,7 +143,7 @@ test.describe("Test", () => {
 
     await page.getByRole("link", { name: "Presets" }).click();
 
-    await page.getByRole("link", { name: "New Preset" }).click();
+    await page.getByRole("button", { name: "New Preset" }).click();
 
     await expect(page.getByText("Create New Preset")).toBeVisible();
 
@@ -149,10 +151,12 @@ test.describe("Test", () => {
 
     await page.getByTestId("new-scene-button").click();
 
+    await page.getByTestId("new-scene-button").click();
+
     await page.getByTestId("scene-1-select").click();
     await page.getByRole("option", { name: "marquee" }).click();
 
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Create Preset" }).click();
 
     const newPreset = page.getByTestId("preset-item").nth(3);
 
