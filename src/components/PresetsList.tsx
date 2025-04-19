@@ -6,7 +6,11 @@ import { PresetItem } from "./PresetItem";
 import { PresetForm } from "./PresetForm";
 import { useDisclosure } from "@mantine/hooks";
 import { useState } from "react";
-import { createPreset, updatePreset } from "@/server/actions/presets";
+import {
+  createPreset,
+  deletePreset,
+  updatePreset,
+} from "@/server/actions/presets";
 
 interface PresetsListProps {
   presets: Preset[];
@@ -29,7 +33,7 @@ export function PresetsList({
       </Title>
       <Modal
         opened={presetModalOpen}
-        title={"Set custom preset"}
+        title={selectedPresetIndex >= 0 ? "Edit Preset" : "Create New Preset"}
         onClose={presetModalHandlers.close}
       >
         <PresetForm
@@ -47,6 +51,21 @@ export function PresetsList({
             selectedPresetIndex >= 0 ? "Update Preset" : "Create Preset"
           }
         />
+        {selectedPresetIndex >= 0 && (
+          <Button
+            color="red"
+            variant="outline"
+            type="submit"
+            fullWidth
+            mt="xl"
+            onClick={() => {
+              presetModalHandlers.close();
+              deletePreset(selectedPresetIndex);
+            }}
+          >
+            Delete Preset
+          </Button>
+        )}
       </Modal>
       <Stack>
         {presets.map((preset, i) => (
