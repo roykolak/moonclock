@@ -55,6 +55,7 @@ const releaseFiles = [
   "install.sh",
   "moonclock-app.service",
   "moonclock-hardware.service",
+  "package.json",
 ];
 
 for (const file of releaseFiles) {
@@ -63,7 +64,7 @@ for (const file of releaseFiles) {
 
 console.log("\n -> Compiled release folder");
 
-exec("tar -czf release.tar.gz ./moonclock", (error, stdout, stderr) => {
+exec("tar -czf release.tar.gz moonclock", (error, stdout, stderr) => {
   if (error) {
     console.error(`Error: ${error.message}`);
     return;
