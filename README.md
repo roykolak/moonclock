@@ -73,6 +73,10 @@ Update the system and install git...
 sudo apt update
 ```
 
+```
+sudo apt-get install jq
+```
+
 Install [nvm](https://github.com/nvm-sh/nvm) and Node 22.9.0...
 
 ```
