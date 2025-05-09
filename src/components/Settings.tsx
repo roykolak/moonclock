@@ -1,5 +1,6 @@
 "use client";
 
+import { checkForNewRelease, updateNow } from "@/server/actions/app";
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, PanelField, SceneName } from "@/types";
 import {
@@ -7,6 +8,8 @@ import {
   Button,
   Divider,
   Group,
+  Loader,
+  Modal,
   Select,
   Slider,
   Stack,
@@ -15,7 +18,9 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
+import { useState } from "react";
 
 interface SettingsProps {
   panel: Panel;
@@ -28,6 +33,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
       ...panel,
     },
   });
+  const [updateAvailable, setUpdateAvailable] = useState<boolean>();
+  const [updatingModalopened, updatingModalHandler] = useDisclosure(false);
 
   return (
     <form
@@ -37,6 +44,15 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
       })}
       data-testid="preset-form"
     >
+      <Modal
+        opened={updatingModalopened}
+        title="Updating"
+        onClose={updatingModalHandler.close}
+        withCloseButton={false}
+        closeOnClickOutside={false}
+      >
+        <Loader size="xl" />
+      </Modal>
       <Title order={2} mb="md">
         Panel Settings
       </Title>
@@ -177,6 +193,27 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
+
+        <Button
+          onClick={async () => {
+            const isUpdateAvailable = await checkForNewRelease();
+            setUpdateAvailable(isUpdateAvailable);
+          }}
+        >
+          {" "}
+          Check for updates
+        </Button>
+        {updateAvailable && (
+          <Button
+            onClick={async () => {
+              updatingModalHandler.open();
+              await updateNow();
+              window.location.reload();
+            }}
+          >
+            Update Now!
+          </Button>
+        )}
 
         <Button type="submit" fullWidth mt="md">
           Save

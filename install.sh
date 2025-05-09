@@ -2,6 +2,22 @@
 
 CURRENT_DIR=$(pwd)
 DATA_FOLDER="/var/lib/moonclock"
+APP_FOLDER="/usr/local/bin/moonclock"
+MOONCLOCK_VERSION=$(jq -r '.version' package.json)
+
+echo " -> Creating app folders"
+
+if [ ! -d "$APP_FOLDER" ]; then
+    sudo mkdir -p "$APP_FOLDER"
+    sudo mkdir -p "$APP_FOLDER/releases"
+    sudo mkdir -p "$APP_FOLDER/releases/$MOONCLOCK_VERSION"
+else
+    echo "   -> app folders exist, skipping"
+fi 
+
+echo " -> Copying app to release folder"
+
+cp -r . "$APP_FOLDER/releases/$MOONCLOCK_VERSION"
 
 echo " -> Copying services to /etc/systemd/system/"
 
@@ -36,8 +52,12 @@ else
     echo "   -> custom scenes directory exists, skipping"
 fi 
 
-sudo cp "$CURRENT_DIR/custom_scenes/"* "$DATA_FOLDER/custom_scenes/"
+sudo cp "$APP_FOLDER/releases/$MOONCLOCK_VERSION/custom_scenes/"* "$DATA_FOLDER/custom_scenes/"
 
-echo " -> Symlinking ./bin/mc to /usr/local/bin/"
+echo " -> Symlinking release to moonclock/current"
 
-sudo ln -sf "$CURRENT_DIR/bin/mc" /usr/local/bin/mc
+sudo ln -sf "$APP_FOLDER/releases/$MOONCLOCK_VERSION" $APP_FOLDER/current
+
+echo " -> Symlinking mc to bin/mc"
+
+sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
