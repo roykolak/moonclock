@@ -7,6 +7,7 @@ import {
   Accordion,
   Button,
   Divider,
+  Flex,
   Group,
   Loader,
   Modal,
@@ -46,12 +47,20 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
     >
       <Modal
         opened={updatingModalopened}
-        title="Updating"
         onClose={updatingModalHandler.close}
         withCloseButton={false}
         closeOnClickOutside={false}
       >
-        <Loader size="xl" />
+        <Flex
+          justify="center"
+          align="center"
+          direction="column"
+          gap="lg"
+          p={100}
+        >
+          <Loader size="xl" />
+          <Text size="lg">Updating...</Text>
+        </Flex>
       </Modal>
       <Title order={2} mb="md">
         Panel Settings
