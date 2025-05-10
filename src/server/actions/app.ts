@@ -7,6 +7,7 @@ import { pipeline, Readable } from "stream";
 import { promisify } from "util";
 
 const pipelineAsync = promisify(pipeline);
+const execPromise = promisify(exec);
 
 export async function checkForNewRelease() {
   try {
@@ -35,6 +36,7 @@ export async function updateNow() {
     const releases = await fetch(url).then((response) => response.json());
 
     const latestRelease = releases[0];
+    const latestVersion = latestRelease.tag_name;
 
     if (!latestRelease) {
       console.log("No releases found.");
@@ -66,27 +68,25 @@ export async function updateNow() {
     const fileStream = fs.createWriteStream(savePath);
     await pipelineAsync(readableStream, fileStream);
 
-    console.log(
-      `Downloaded and saved as ${savePath}, ${latestRelease.tag_name}`
-    );
+    console.log(`Downloaded and saved as ${savePath}, ${latestVersion}`);
 
-    await exec(
+    const { stderr } = await execPromise(
       `
-      sudo mkdir -p "/usr/local/bin/moonclock/releases/${latestRelease.tag_name}" &&
-      sudo tar -xzvf ${savePath} --strip-components=1 -C "/usr/local/bin/moonclock/releases/${latestRelease.tag_name}" &&
-      sudo ln -sfn "/usr/local/bin/moonclock/releases/${latestRelease.tag_name}" /usr/local/bin/moonclock/current && 
+      sudo mkdir -p "/usr/local/bin/moonclock/releases/${latestVersion}" &&
+      sudo tar -xzvf ${savePath} --strip-components=1 -C "/usr/local/bin/moonclock/releases/${latestVersion}" &&
+      sudo ln -sfn "/usr/local/bin/moonclock/releases/${latestVersion}" /usr/local/bin/moonclock/current &&
       sudo cp /usr/local/bin/moonclock/current/custom_scenes/* /var/lib/moonclock/custom_scenes/
       sudo mc restart
       sudo rm ${savePath}
-    `,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error("Error occurred:", stderr || error.message);
-        } else {
-          console.log("All commands executed successfully");
-        }
-      }
+    `
     );
+
+    if (stderr) {
+      console.error("Error occurred:", stderr, latestVersion);
+      return false;
+    }
+    console.error("Successfully updated!", latestVersion);
+    return true;
   } catch (e) {
     console.log("Error trying to update!", e);
     return false;

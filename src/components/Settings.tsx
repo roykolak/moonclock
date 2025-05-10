@@ -207,7 +207,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           <Button
             onClick={async () => {
               updatingModalHandler.open();
-              await updateNow();
+              const result = await updateNow();
+              console.log(result);
               window.location.reload();
             }}
           >

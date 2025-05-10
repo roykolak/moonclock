@@ -4,6 +4,7 @@ import {
   ActionIcon,
   Alert,
   AppShell,
+  Box,
   Burger,
   Group,
   NavLink,
@@ -104,7 +105,9 @@ function App({ children }: { children: React.ReactNode }) {
             </ActionIcon>
           }
         />
-        {version}
+
+        <Box flex="auto"></Box>
+        <Text c="dimmed">{version}</Text>
       </AppShell.Navbar>
       <AppShell.Main>
         <ErrorBoundary

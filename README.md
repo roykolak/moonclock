@@ -107,12 +107,13 @@ Download and untar Moonclock
 
 ```
 sudo wget -O release.tar.gz https://github.com/roykolak/moonclock/releases/.../release.tar.gz
-sudo tar -xzvf release.tar.gz -C /usr/local/bin
+sudo tar -xzvf release.tar.gz
 ```
 
-Finally, install Moonclock as a service...
+Finally, install Moonclock...
 
 ```
+cd moonclock
 ./install.sh
 ```
 
