@@ -1,7 +1,7 @@
 "use server";
 
 import { exec } from "child_process";
-import { version } from "../../../package.json";
+import packageInfo from "../../../package.json";
 import fs from "fs";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
@@ -24,7 +24,7 @@ export async function checkForNewRelease() {
     const latestVersion = latestRelease.tag_name.replace("v", "");
 
     // Compare versions
-    return latestVersion !== version;
+    return latestVersion !== packageInfo.version;
   } catch {
     return false;
   }

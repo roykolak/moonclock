@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
-import { version } from "../../package.json";
+import packageInfo from "../../package.json";
 
 function App({ children }: { children: React.ReactNode }) {
   const [navOpened, { toggle: toggleNav }] = useDisclosure();
@@ -107,7 +107,7 @@ function App({ children }: { children: React.ReactNode }) {
         />
 
         <Box flex="auto"></Box>
-        <Text c="dimmed">{version}</Text>
+        <Text c="dimmed">{packageInfo.version}</Text>
       </AppShell.Navbar>
       <AppShell.Main>
         <ErrorBoundary
