@@ -125,6 +125,12 @@ To start Moonclock immediate run...
 mc start
 ```
 
+## Updating
+
+When a new version is available, you will see a banner like the one below in your moonclock app. Just click the update buttons and you'll be all set in a few seconds!
+
+<img src="images/update-prompt.png" width="400" />
+
 ## Data Storage
 
 All data is stored in `/var/lib/moonclock`. This includes...

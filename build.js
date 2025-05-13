@@ -47,16 +47,12 @@ fs.mkdirSync(releaseFolder);
 
 fs.cpSync("dist", `${releaseFolder}/dist`, { recursive: true });
 fs.cpSync("bin", `${releaseFolder}/bin`, { recursive: true });
+fs.cpSync("services", `${releaseFolder}/services`, { recursive: true });
 fs.cpSync("custom_scenes", `${releaseFolder}/custom_scenes`, {
   recursive: true,
 });
 
-const releaseFiles = [
-  "install.sh",
-  "moonclock-app.service",
-  "moonclock-hardware.service",
-  "package.json",
-];
+const releaseFiles = ["install.sh", "package.json"];
 
 for (const file of releaseFiles) {
   fs.copyFileSync(file, `${releaseFolder}/${file}`);

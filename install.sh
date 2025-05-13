@@ -21,8 +21,10 @@ cp -r . "$APP_FOLDER/releases/$MOONCLOCK_VERSION"
 
 echo " -> Copying services to /etc/systemd/system/"
 
-sudo cp moonclock-app.service /etc/systemd/system/
-sudo cp moonclock-hardware.service /etc/systemd/system/
+sudo cp services/moonclock-app.service /etc/systemd/system/
+sudo cp services/moonclock-hardware.service /etc/systemd/system/
+sudo cp services/moonclock-update-checker.service /etc/systemd/system/
+sudo cp services/moonclock-update-checker.timer /etc/systemd/system/
 
 echo " -> Reloading systemd daemons"
 
@@ -32,6 +34,7 @@ echo " -> Enabling services to start on restart"
 
 sudo systemctl enable moonclock-app
 sudo systemctl enable moonclock-hardware
+sudo systemctl enable moonclock-update-checker.timer
 
 echo " -> Seeding database file"
 

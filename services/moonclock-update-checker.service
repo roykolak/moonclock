@@ -1,0 +1,12 @@
+[Unit]
+Description=Check for a Moonclock update
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/usr/local/bin/moonclock
+ExecStart=curl -X PUT -v http://localhost:80/api/check-for-update
+
+[Install]
+WantedBy=multi-user.target

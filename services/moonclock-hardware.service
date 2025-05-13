@@ -2,14 +2,17 @@
 Description=Moonclock
 After=network.target
 Wants=network.target
+
 [Service]
 User=root
 Group=root
 Type=simple
 Restart=always
 RestartSec=5
+RuntimeMaxSec=1d
 TimeoutStopSec=600
-WorkingDirectory=/usr/local/bin/moonclock/current/dist/app
-ExecStart=sudo PORT=80 node server.js
+WorkingDirectory=/usr/local/bin/moonclock/current/dist/hardware
+ExecStart=sudo NODE_ENV=production node index.cjs
+
 [Install]
 WantedBy=default.target

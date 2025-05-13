@@ -2,12 +2,18 @@ export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
+  nextVersion: NextVersion | null;
 }
 
 export interface ScheduledPreset {
   endTime: string | null;
   preset: Preset | null;
   updatedAt?: string;
+}
+
+export interface NextVersion {
+  version: string;
+  releaseNotes: string;
 }
 
 export interface Panel {
