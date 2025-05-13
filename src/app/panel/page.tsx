@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { scheduledPreset, panel, presets } = getData();
+  const { scheduledPreset, panel, presets, nextVersion } = getData();
   const customSceneNames = await getCustomSceneNames();
 
   let formattedEndTime = null;
@@ -29,6 +29,7 @@ export default async function Page() {
   return (
     <App>
       <Panel
+        nextVersion={nextVersion}
         panel={panel}
         scheduledPreset={scheduledPreset}
         formattedEndTime={formattedEndTime}

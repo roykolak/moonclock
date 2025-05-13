@@ -26,6 +26,7 @@ export const defaultData: DataTypes = {
     preset: null,
     endTime: null,
   },
+  nextVersion: null,
   presets: [
     {
       name: "Sleep Mode",

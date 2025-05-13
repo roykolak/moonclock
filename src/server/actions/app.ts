@@ -1,34 +1,13 @@
 "use server";
 
 import { exec } from "child_process";
-import packageInfo from "../../../package.json";
 import fs from "fs";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
+import { setData } from "../db";
 
 const pipelineAsync = promisify(pipeline);
 const execPromise = promisify(exec);
-
-export async function checkForNewRelease() {
-  try {
-    const url = `https://api.github.com/repos/roykolak/moonclock/releases`;
-    const releases = await fetch(url).then((response) => response.json());
-
-    const latestRelease = releases[0];
-
-    if (!latestRelease) {
-      console.log("No releases found.");
-      return;
-    }
-
-    const latestVersion = latestRelease.tag_name.replace("v", "");
-
-    // Compare versions
-    return latestVersion !== packageInfo.version;
-  } catch {
-    return false;
-  }
-}
 
 export async function updateNow() {
   try {
@@ -85,7 +64,11 @@ export async function updateNow() {
       console.error("Error occurred:", stderr, latestVersion);
       return false;
     }
+
+    setData({ nextVersion: null });
+
     console.error("Successfully updated!", latestVersion);
+
     return true;
   } catch (e) {
     console.log("Error trying to update!", e);
