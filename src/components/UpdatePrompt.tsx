@@ -2,92 +2,79 @@
 
 import { updateNow } from "@/server/actions/app";
 import { NextVersion } from "@/types";
-import {
-  Button,
-  Card,
-  Code,
-  Flex,
-  Loader,
-  Modal,
-  Stack,
-  Text,
-  Title,
-  useMantineTheme,
-} from "@mantine/core";
+import { Button, Code, Flex, Loader, Modal, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect } from "react";
 
 interface SettingsProps {
   nextVersion: NextVersion | null;
 }
 
 export function UpdatePrompt({ nextVersion }: SettingsProps) {
-  const [updating, setUpdating] = useState(false);
-  const [updateModalopened, updateModalHandler] = useDisclosure(false);
+  const [updatingModalOpened, updatingModalHandler] = useDisclosure(false);
+  const [releaseNotesModalOpened, releaseNotesModalHandler] =
+    useDisclosure(false);
 
-  const theme = useMantineTheme();
+  useEffect(() => {
+    if (!updatingModalOpened) return;
+
+    (async () => {
+      const result = await updateNow();
+      console.log("Update result", result);
+      window.location.reload();
+    })();
+  }, [updatingModalOpened]);
 
   return (
     <>
       {nextVersion && (
-        <Card bg={theme.colors.teal[9]} p="sm" mb="md">
-          <Flex direction="row" gap="sm" align="center">
-            <Text flex="1" size="sm" fw={500} c="white">
-              Update available!
-            </Text>
-            <Button
-              size="xs"
-              color="white"
-              variant="outline"
-              onClick={async () => {
-                updateModalHandler.open();
-              }}
-            >
-              Update...
-            </Button>
-          </Flex>
-        </Card>
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={async () => {
+            releaseNotesModalHandler.open();
+          }}
+        >
+          Update...
+        </Button>
       )}
       <Modal
-        opened={updateModalopened}
-        onClose={updateModalHandler.close}
+        title={`What's new in v${nextVersion?.version}`}
+        opened={releaseNotesModalOpened}
+        onClose={releaseNotesModalHandler.close}
+      >
+        <Stack gap="xl">
+          <Code style={{ whiteSpace: "pre-line" }}>
+            {nextVersion?.releaseNotes}
+          </Code>
+          <Stack>
+            <Button
+              onClick={async () => {
+                releaseNotesModalHandler.close();
+                updatingModalHandler.open();
+              }}
+            >
+              Update Now!
+            </Button>
+          </Stack>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={updatingModalOpened}
+        onClose={updatingModalHandler.close}
         withCloseButton={false}
         closeOnClickOutside={false}
       >
-        {updating ? (
-          <Flex
-            justify="center"
-            align="center"
-            direction="column"
-            gap="lg"
-            p={100}
-          >
-            <Loader size="xl" />
-            <Text size="lg">Updating...</Text>
-          </Flex>
-        ) : (
-          <Stack gap="xl">
-            <Title order={3}>New in {nextVersion?.version}...</Title>
-            <Code style={{ whiteSpace: "pre-line" }}>
-              {nextVersion?.releaseNotes}
-            </Code>
-            <Stack>
-              <Button
-                onClick={async () => {
-                  setUpdating(true);
-                  const result = await updateNow();
-                  console.log(result);
-                  window.location.reload();
-                }}
-              >
-                Update Now!
-              </Button>
-              <Button variant="outline" onClick={updateModalHandler.close}>
-                Not now
-              </Button>
-            </Stack>
-          </Stack>
-        )}
+        <Flex
+          justify="center"
+          align="center"
+          direction="column"
+          gap="lg"
+          p={100}
+        >
+          <Loader size="xl" />
+          <Text size="lg">Updating...</Text>
+        </Flex>
       </Modal>
     </>
   );

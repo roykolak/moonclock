@@ -15,7 +15,6 @@ import {
   Text,
 } from "@mantine/core";
 import {
-  NextVersion,
   Panel as PanelType,
   Preset,
   PresetField,
@@ -36,7 +35,6 @@ import { reloadHardwareScene } from "@/server/actions/hardware";
 import { showNotification } from "@mantine/notifications";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 import { useState } from "react";
-import { UpdatePrompt } from "./UpdatePrompt";
 
 interface PanelProps {
   panel: PanelType;
@@ -44,7 +42,6 @@ interface PanelProps {
   presets: Preset[];
   formattedEndTime: string | null;
   customSceneNames: string[];
-  nextVersion: NextVersion | null;
 }
 
 export default function Panel({
@@ -53,7 +50,6 @@ export default function Panel({
   formattedEndTime,
   presets,
   customSceneNames,
-  nextVersion,
 }: PanelProps) {
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
 
@@ -67,7 +63,6 @@ export default function Panel({
 
   return (
     <>
-      <UpdatePrompt nextVersion={nextVersion} />
       <Modal
         opened={customPresetModalOpen}
         title={"Set custom preset"}

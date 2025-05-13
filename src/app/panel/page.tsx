@@ -27,9 +27,8 @@ export default async function Page() {
   }
 
   return (
-    <App>
+    <App nextVersion={nextVersion}>
       <Panel
-        nextVersion={nextVersion}
         panel={panel}
         scheduledPreset={scheduledPreset}
         formattedEndTime={formattedEndTime}

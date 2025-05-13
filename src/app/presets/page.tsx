@@ -7,14 +7,14 @@ import { getData } from "@/server/db";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const { presets } = await getData();
+  const { presets, nextVersion } = await getData();
 
   const formattedEndTimes = presets.map((p) => getFriendlyEndTime(p));
 
   const customSceneNames = await getCustomSceneNames();
 
   return (
-    <App>
+    <App nextVersion={nextVersion}>
       <PresetsList
         presets={presets}
         formattedEndTimes={formattedEndTimes}
