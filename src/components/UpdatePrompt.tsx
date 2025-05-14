@@ -11,16 +11,11 @@ import {
   Stack,
   Text,
   ThemeIcon,
-  useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect } from "react";
 import packageInfo from "../../package.json";
-import {
-  IconCheck,
-  IconCircleCheck,
-  IconCircleCheckFilled,
-} from "@tabler/icons-react";
+import { IconCircleCheckFilled } from "@tabler/icons-react";
 
 interface SettingsProps {
   nextVersion: NextVersion | null;
@@ -31,8 +26,6 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
   const [releaseNotesModalOpened, releaseNotesModalHandler] =
     useDisclosure(false);
   const [updatedModalOpened, updatedModalHandler] = useDisclosure(false);
-
-  const theme = useMantineTheme();
 
   useEffect(() => {
     if (!updatingModalOpened) return;
