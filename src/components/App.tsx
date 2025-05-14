@@ -22,8 +22,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
 import packageInfo from "../../package.json";
+import { UpdatePrompt } from "./UpdatePrompt";
+import { NextVersion } from "@/types";
 
-function App({ children }: { children: React.ReactNode }) {
+function App({
+  children,
+  nextVersion,
+}: {
+  children: React.ReactNode;
+  nextVersion: NextVersion | null;
+}) {
   const [navOpened, { toggle: toggleNav }] = useDisclosure();
 
   const pathname = usePathname();
@@ -48,6 +56,7 @@ function App({ children }: { children: React.ReactNode }) {
             data-testid="app-menu"
           />
           <Text flex={1}>Moon Clock</Text>
+          <UpdatePrompt nextVersion={nextVersion} />
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
