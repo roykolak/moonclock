@@ -14,6 +14,7 @@ export interface ScheduledPreset {
 export interface NextVersion {
   version: string;
   releaseNotes: string;
+  updatedAt: string | null;
 }
 
 export interface Panel {

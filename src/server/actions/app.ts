@@ -4,7 +4,7 @@ import { exec } from "child_process";
 import fs from "fs";
 import { pipeline, Readable } from "stream";
 import { promisify } from "util";
-import { setData } from "../db";
+import { getData, setData } from "../db";
 
 const pipelineAsync = promisify(pipeline);
 const execPromise = promisify(exec);
@@ -74,4 +74,17 @@ export async function updateNow() {
     console.log("Error trying to update!", e);
     return false;
   }
+}
+
+export async function markAsUpdated() {
+  const { nextVersion } = getData();
+
+  if (!nextVersion) return;
+
+  setData({
+    nextVersion: {
+      ...nextVersion,
+      updatedAt: new Date().toJSON(),
+    },
+  });
 }

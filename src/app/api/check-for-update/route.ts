@@ -26,6 +26,7 @@ export async function PUT() {
         nextVersion: {
           version: latestVersion,
           releaseNotes: latestRelease.body,
+          updatedAt: null,
         },
       });
       message = "Update available - " + latestVersion;
