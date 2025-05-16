@@ -34,7 +34,6 @@ export async function updateNow() {
 
     console.log(`Downloading ${fileName} from ${downloadUrl}...`);
 
-    // Step 2: Download the asset
     const assetResponse = await fetch(downloadUrl);
     if (!assetResponse.ok) {
       throw new Error(`Failed to download asset: ${assetResponse.status}`);
@@ -57,7 +56,8 @@ export async function updateNow() {
       sudo cp /usr/local/bin/moonclock/current/custom_scenes/* /var/lib/moonclock/custom_scenes/
       sudo mc restart
       sudo rm ${savePath}
-    `
+    `,
+      { maxBuffer: 10 * 1024 * 1024 } // 10 MB
     );
 
     if (stderr) {
