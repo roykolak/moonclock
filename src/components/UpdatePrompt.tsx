@@ -38,15 +38,19 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
   }, [updatingModalOpened]);
 
   useEffect(() => {
-    console.log(nextVersion?.version, packageInfo.version);
-    if (nextVersion?.version == packageInfo.version && !nextVersion.updatedAt) {
+    if (
+      nextVersion?.version === packageInfo.version &&
+      !nextVersion.updatedAt
+    ) {
       updatedModalHandler.open();
     }
   }, []);
 
+  if (!nextVersion) return;
+
   return (
     <>
-      {nextVersion && (
+      {!nextVersion.updatedAt && (
         <Button
           size="xs"
           variant="outline"
