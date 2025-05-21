@@ -31,8 +31,6 @@ import {
 } from "@/server/actions/scheduledPreset";
 import { HardwareSettings } from "./HardwareSettings";
 import { IconDots } from "@tabler/icons-react";
-import { reloadHardwareScene } from "@/server/actions/hardware";
-import { showNotification } from "@mantine/notifications";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 import { useState } from "react";
 
@@ -52,6 +50,7 @@ export default function Panel({
   customSceneNames,
 }: PanelProps) {
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
+  const [hardwareModalOpen, hardwareModalHandlers] = useDisclosure();
 
   const [presetEditting, setPresetEditting] = useState<Preset | null>(null);
 
@@ -77,6 +76,13 @@ export default function Panel({
           }}
           submitLabel="Apply now"
         />
+      </Modal>
+      <Modal
+        title="Hardware Status"
+        opened={hardwareModalOpen}
+        onClose={hardwareModalHandlers.close}
+      >
+        <HardwareSettings />
       </Modal>
       <Card
         shadow="sm"
@@ -122,13 +128,8 @@ export default function Panel({
                 >
                   Clear Scene
                 </Menu.Item>
-                <Menu.Item
-                  onClick={async () => {
-                    showNotification({ message: "Reloaded hardware" });
-                    await reloadHardwareScene();
-                  }}
-                >
-                  Reload Hardware
+                <Menu.Item onClick={hardwareModalHandlers.open}>
+                  Hardware...
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -230,7 +231,6 @@ export default function Panel({
           )}
         </Card.Section>
       </Card>
-      <HardwareSettings />
     </>
   );
 }

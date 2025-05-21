@@ -7,6 +7,8 @@ import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
 
 import express from "express";
 
+let syncSpeed = 0;
+
 (async () => {
   const args = process.argv.slice(2);
   const params: any = { emulate: false };
@@ -24,7 +26,7 @@ import express from "express";
       count: count > 50 ? 75 : count,
     });
 
-    if (queuedFramesSnapshots.length > 100) {
+    if (queuedFramesSnapshots.length > 2000) {
       queuedFramesSnapshots.shift();
     }
   }
@@ -52,6 +54,11 @@ import express from "express";
 
   app.get("/api/state", (req, res) => {
     res.send({ queuedFramesSnapshots, preset, renderedAt, lastLoopRunAt });
+  });
+
+  app.post("/api/throttle", (req, res) => {
+    syncSpeed = req.body.value;
+    res.send(true);
   });
 
   app.listen(port, () => {
@@ -116,7 +123,7 @@ import express from "express";
 
       setTimeout(() => {
         matrix.sync();
-      }, 0);
+      }, syncSpeed);
     });
     matrix.sync();
   } else {
@@ -125,7 +132,7 @@ import express from "express";
 
       recordQueuedFramesSnapshot(updateQueue.length);
 
-      setTimeout(fakeSync, 0);
+      setTimeout(fakeSync, syncSpeed);
     }
     fakeSync();
     console.log("[HARDWARE] Emulating LED Matrix...");
@@ -150,6 +157,8 @@ import express from "express";
       queuedFramesSnapshots = [];
 
       ({ displayConfig, renderedAt, preset } = result);
+
+      syncSpeed = 0;
 
       engine.render(displayConfig);
     }
