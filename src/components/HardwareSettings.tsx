@@ -1,7 +1,29 @@
+import { reloadHardwareScene } from "@/server/actions/hardware";
 import { LineChart } from "@mantine/charts";
-import { Accordion, Alert, Divider, Grid, Stack, Text } from "@mantine/core";
-import { IconExclamationCircleFilled } from "@tabler/icons-react";
+import {
+  Accordion,
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Grid,
+  Group,
+  Slider,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import { useEffect, useState } from "react";
+
+function getTimeFromDate(date: Date) {
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${formattedMinutes}:${formattedSeconds}`;
+}
 
 export function HardwareSettings() {
   const [data, setData] = useState<any>({});
@@ -27,92 +49,123 @@ export function HardwareSettings() {
   const framerateLagging = highestQueuedFrameSnapshot > 4;
 
   return (
-    <Accordion defaultValue="Apples" variant="filled" mt="xs">
-      <Accordion.Item key="hardware" value="hardware">
-        <Accordion.Control
-          icon={
-            framerateLagging && (
-              <IconExclamationCircleFilled color="#ff6b6b" opacity={0.6} />
-            )
-          }
-        >
+    <Stack gap={0}>
+      {framerateLagging && (
+        <Alert color="red" title="Framerate is lagging!" p="xs" mb="md">
+          Try reducing the speed of your scenes or removing scenes
+        </Alert>
+      )}
+      <Stack>
+        <Grid gutter={0}>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" fw="bold">
+              Scenes:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm">
+              {data.preset?.scenes
+                ?.map(({ sceneName }: any) => sceneName)
+                .join(", ")}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" fw="bold">
+              Rendered at:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm">
+              {new Date(data.renderedAt).toLocaleString()}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" mb="xs" fw="bold">
+              Last loop run:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm" mb="xs">
+              {new Date(data.lastLoopRunAt).toLocaleString()}
+            </Text>
+          </Grid.Col>
+        </Grid>
+      </Stack>
+      <Divider my="sm" />
+      <Text mt="md">Framerate health</Text>
+      <Stack gap="xs">
+        <LineChart
+          h={100}
+          data={data.queuedFramesSnapshots}
+          dataKey="timestamp"
+          yAxisProps={{ domain: [0, 80] }}
+          style={{ minWidth: 0 }}
+          series={[
+            {
+              name: "count",
+              color: "cyan.6",
+            },
+          ]}
+          referenceLines={[
+            {
+              y: 50,
+              label: "Frames dropped",
+              color: "red.2",
+              opacity: 0.3,
+            },
+          ]}
+          curveType="linear"
+          tickLine="none"
+          gridAxis="none"
+          withYAxis={false}
+          withXAxis={false}
+          withDots={false}
+          withTooltip={false}
+        />
+        <Group justify="space-between">
           <Text size="sm" c="dimmed">
-            Hardware Details
+            {getTimeFromDate(
+              new Date(data.queuedFramesSnapshots?.[0]?.timestamp)
+            )}
           </Text>
-        </Accordion.Control>
-        <Accordion.Panel>
-          {framerateLagging && (
-            <Alert color="red" title="Framerate is lagging!" p="xs" mb="md">
-              Try reducing the speed of your scenes or removing scenes
-            </Alert>
-          )}
-          <Stack>
-            <Grid gutter={0}>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" fw="bold">
-                  Scenes:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm">
-                  {data.preset?.scenes
-                    ?.map(({ sceneName }: any) => sceneName)
-                    .join(", ")}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" fw="bold">
-                  Rendered at:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm">
-                  {data.renderedAt}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" mb="xs" fw="bold">
-                  Last loop run:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm" mb="xs">
-                  {data.lastLoopRunAt}
-                </Text>
-              </Grid.Col>
-            </Grid>
-          </Stack>
-          <Divider my="sm" />
-          <LineChart
-            h={45}
-            data={data.queuedFramesSnapshots}
-            dataKey="timestamp"
-            yAxisProps={{ domain: [0, 100] }}
-            series={[
-              {
-                name: "count",
-                color: "cyan.6",
-              },
-            ]}
-            referenceLines={[
-              {
-                y: 50,
-                label: "Frames dropped",
-                color: "red.4",
-              },
-            ]}
-            curveType="linear"
-            tickLine="none"
-            gridAxis="none"
-            withYAxis={false}
-            withXAxis={false}
-            withDots={false}
-          />
-          <Text c="dimmed" size="sm" mt="md">
-            Chart for queued frames, flat is good!
+          <Text size="sm" c="dimmed">
+            {getTimeFromDate(
+              new Date(
+                data.queuedFramesSnapshots?.[
+                  data.queuedFramesSnapshots?.length - 1
+                ]?.timestamp
+              )
+            )}
           </Text>
-        </Accordion.Panel>
-      </Accordion.Item>
-    </Accordion>
+        </Group>
+        <Text>Add frame delay (ms)</Text>
+        <Slider
+          color="blue"
+          defaultValue={0}
+          onChangeEnd={(value) => {
+            fetch(`http://${window.location.hostname}:3001/api/throttle`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                value,
+              }),
+            });
+          }}
+        />
+      </Stack>
+      <Divider my="sm" />
+      <Button
+        fullWidth
+        variant="light"
+        onClick={async () => {
+          showNotification({ message: "Reloaded hardware" });
+          await reloadHardwareScene();
+        }}
+      >
+        Reload Hardware
+      </Button>
+    </Stack>
   );
 }
