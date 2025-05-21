@@ -1,10 +1,8 @@
 import { reloadHardwareScene } from "@/server/actions/hardware";
 import { LineChart } from "@mantine/charts";
 import {
-  Accordion,
   Alert,
   Button,
-  Checkbox,
   Divider,
   Grid,
   Group,
