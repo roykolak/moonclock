@@ -2,6 +2,7 @@
 
 import {
   ActionIcon,
+  Alert,
   Badge,
   Box,
   Button,
@@ -13,8 +14,10 @@ import {
   Modal,
   Stack,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 import {
+  HardwareState,
   Panel as PanelType,
   Preset,
   PresetField,
@@ -32,7 +35,8 @@ import {
 import { HardwareSettings } from "./HardwareSettings";
 import { IconDots } from "@tabler/icons-react";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isFrameRateLagging } from "@/helpers/isFrameRateLagging";
 
 interface PanelProps {
   panel: PanelType;
@@ -53,6 +57,22 @@ export default function Panel({
   const [hardwareModalOpen, hardwareModalHandlers] = useDisclosure();
 
   const [presetEditting, setPresetEditting] = useState<Preset | null>(null);
+
+  const [hardwareState, setHardwareState] = useState<HardwareState | null>(
+    null
+  );
+
+  const theme = useMantineTheme();
+
+  useEffect(() => {
+    const loop = setInterval(() => {
+      fetch(`http://${window.location.hostname}:3001/api/state`)
+        .then((response) => response.json())
+        .then(setHardwareState);
+    }, 1000);
+
+    return () => clearInterval(loop);
+  }, []);
 
   const timeAdjustment = parseInt(
     scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
@@ -82,8 +102,29 @@ export default function Panel({
         opened={hardwareModalOpen}
         onClose={hardwareModalHandlers.close}
       >
-        <HardwareSettings />
+        <HardwareSettings hardwareState={hardwareState} />
       </Modal>
+      {isFrameRateLagging(hardwareState) && (
+        <Alert color="red" p="xs" mb="md">
+          <Stack>
+            <Group justify="space-between" w="100%">
+              <Text c={theme.colors.red[5]}>Framerate is lagging!</Text>
+              <Button
+                variant="light"
+                color="red"
+                size="compact-sm"
+                onClick={hardwareModalHandlers.open}
+              >
+                More..
+              </Button>
+            </Group>
+            <Text c={theme.colors.red[1]} size="sm">
+              To improve the framerate, try reducing the speed of your scenes or
+              removing scenes.
+            </Text>
+          </Stack>
+        </Alert>
+      )}
       <Card
         shadow="sm"
         padding="lg"
