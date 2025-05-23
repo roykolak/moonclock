@@ -1,7 +1,8 @@
+import { filterQueuedFramesSnapshotsBySeconds } from "@/helpers/filterQueuedFramesSnapshotsBySeconds";
 import { reloadHardwareScene } from "@/server/actions/hardware";
+import { HardwareState } from "@/types";
 import { LineChart } from "@mantine/charts";
 import {
-  Alert,
   Button,
   Divider,
   Grid,
@@ -11,7 +12,6 @@ import {
   Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { useEffect, useState } from "react";
 
 function getTimeFromDate(date: Date) {
   const minutes = date.getMinutes();
@@ -23,36 +23,22 @@ function getTimeFromDate(date: Date) {
   return `${formattedMinutes}:${formattedSeconds}`;
 }
 
-export function HardwareSettings() {
-  const [data, setData] = useState<any>({});
+export function HardwareSettings({
+  hardwareState = null,
+}: {
+  hardwareState: HardwareState | null;
+}) {
+  if (!hardwareState) return null;
 
-  useEffect(() => {
-    const loop = setInterval(() => {
-      fetch(`http://${window.location.hostname}:3001/api/state`)
-        .then((response) => response.json())
-        .then(setData);
-    }, 1000);
+  const { queuedFramesSnapshots, preset, renderedAt, lastLoopRunAt } =
+    hardwareState;
 
-    return () => clearInterval(loop);
-  }, []);
-
-  let highestQueuedFrameSnapshot = 0;
-
-  if (data?.queuedFramesSnapshots) {
-    highestQueuedFrameSnapshot = Math.max(
-      ...(data.queuedFramesSnapshots.map(({ count }: any) => count) || [])
-    );
-  }
-
-  const framerateLagging = highestQueuedFrameSnapshot > 4;
+  const filteredSnapshots = filterQueuedFramesSnapshotsBySeconds(
+    queuedFramesSnapshots
+  );
 
   return (
     <Stack gap={0}>
-      {framerateLagging && (
-        <Alert color="red" title="Framerate is lagging!" p="xs" mb="md">
-          Try reducing the speed of your scenes or removing scenes
-        </Alert>
-      )}
       <Stack>
         <Grid gutter={0}>
           <Grid.Col span={4}>
@@ -62,7 +48,7 @@ export function HardwareSettings() {
           </Grid.Col>
           <Grid.Col span={8}>
             <Text c="dimmed" size="sm">
-              {data.preset?.scenes
+              {preset?.scenes
                 ?.map(({ sceneName }: any) => sceneName)
                 .join(", ")}
             </Text>
@@ -74,7 +60,7 @@ export function HardwareSettings() {
           </Grid.Col>
           <Grid.Col span={8}>
             <Text c="dimmed" size="sm">
-              {new Date(data.renderedAt).toLocaleString()}
+              {new Date(renderedAt).toLocaleString()}
             </Text>
           </Grid.Col>
           <Grid.Col span={4}>
@@ -84,7 +70,7 @@ export function HardwareSettings() {
           </Grid.Col>
           <Grid.Col span={8}>
             <Text c="dimmed" size="sm" mb="xs">
-              {new Date(data.lastLoopRunAt).toLocaleString()}
+              {new Date(lastLoopRunAt).toLocaleString()}
             </Text>
           </Grid.Col>
         </Grid>
@@ -94,7 +80,7 @@ export function HardwareSettings() {
       <Stack gap="xs">
         <LineChart
           h={100}
-          data={data.queuedFramesSnapshots}
+          data={filteredSnapshots}
           dataKey="timestamp"
           yAxisProps={{ domain: [0, 80] }}
           style={{ minWidth: 0 }}
@@ -122,16 +108,12 @@ export function HardwareSettings() {
         />
         <Group justify="space-between">
           <Text size="sm" c="dimmed">
-            {getTimeFromDate(
-              new Date(data.queuedFramesSnapshots?.[0]?.timestamp)
-            )}
+            {getTimeFromDate(new Date(filteredSnapshots?.[0]?.timestamp))}
           </Text>
           <Text size="sm" c="dimmed">
             {getTimeFromDate(
               new Date(
-                data.queuedFramesSnapshots?.[
-                  data.queuedFramesSnapshots?.length - 1
-                ]?.timestamp
+                filteredSnapshots?.[filteredSnapshots?.length - 1]?.timestamp
               )
             )}
           </Text>
@@ -139,7 +121,7 @@ export function HardwareSettings() {
         <Text>Add frame delay (ms)</Text>
         <Slider
           color="blue"
-          defaultValue={0}
+          defaultValue={hardwareState.syncSpeed}
           onChangeEnd={(value) => {
             fetch(`http://${window.location.hostname}:3001/api/throttle`, {
               method: "POST",

@@ -53,7 +53,13 @@ let syncSpeed = 0;
   app.use(express.json());
 
   app.get("/api/state", (req, res) => {
-    res.send({ queuedFramesSnapshots, preset, renderedAt, lastLoopRunAt });
+    res.send({
+      queuedFramesSnapshots,
+      preset,
+      renderedAt,
+      lastLoopRunAt,
+      syncSpeed,
+    });
   });
 
   app.post("/api/throttle", (req, res) => {

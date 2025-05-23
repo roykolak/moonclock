@@ -58,6 +58,14 @@ export interface QueuedFramesSnapshot {
   count: number;
 }
 
+export interface HardwareState {
+  queuedFramesSnapshots: QueuedFramesSnapshot[];
+  renderedAt: string;
+  lastLoopRunAt: string;
+  preset: Preset;
+  syncSpeed: number;
+}
+
 export enum SceneName {
   Blank = "blank",
   Moon = "moon",
