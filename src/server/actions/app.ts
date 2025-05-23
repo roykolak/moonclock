@@ -48,6 +48,8 @@ export async function updateNow() {
 
     console.log(`Downloaded and saved as ${savePath}, ${latestVersion}`);
 
+    setData({ nextVersion: null });
+
     const { stderr } = await execPromise(
       `
       sudo mkdir -p "/usr/local/bin/moonclock/releases/${latestVersion}" &&
@@ -64,12 +66,6 @@ export async function updateNow() {
       console.error("Error occurred:", stderr, latestVersion);
       return false;
     }
-
-    setData({ nextVersion: null });
-
-    console.error("Successfully updated!", latestVersion);
-
-    return true;
   } catch (e) {
     console.log("Error trying to update!", e);
     return false;

@@ -33,7 +33,10 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
     (async () => {
       const result = await updateNow();
       console.log("Update result", result);
-      window.location.reload();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
     })();
   }, [updatingModalOpened]);
 
