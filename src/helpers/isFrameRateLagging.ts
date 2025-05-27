@@ -13,5 +13,5 @@ export function isFrameRateLagging(hardwareState: HardwareState | null) {
     );
   }
 
-  return highestQueuedFrameSnapshot > 4;
+  return highestQueuedFrameSnapshot > 10;
 }

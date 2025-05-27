@@ -1,11 +1,18 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
-import { createDisplayEngine, Macro, Pixel } from "../src/display-engine";
+import {
+  createDisplayEngine,
+  Macro,
+  marquee,
+  text,
+  Pixel,
+} from "../src/display-engine";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
 
 import express from "express";
+import { getIpAddress } from "./getIpAddress";
 
 let syncSpeed = 0;
 
@@ -151,7 +158,24 @@ let syncSpeed = 0;
     },
   });
 
-  engine.render(displayConfig);
+  engine.render([
+    text({
+      text: "Starting",
+      color: "#AAA",
+      fontSize: 9,
+      startingRow: 1,
+    }),
+    marquee({
+      text: getIpAddress() || "",
+      direction: "horizontal",
+      speed: 20,
+      startingRow: 12,
+      fontSize: 16,
+      color: "#DDD",
+    }),
+  ]);
+
+  await new Promise((resolve) => setTimeout(resolve, 6000));
 
   setInterval(async () => {
     lastLoopRunAt = new Date().toJSON();
