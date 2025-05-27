@@ -66,7 +66,7 @@ export const startMarquee: MacroFn = async ({
     ctx.drawImage(
       textCanvas,
       config.mirrorHorizontally ? offset : -offset,
-      config.startingColumn
+      config.startingRow
     );
 
     if (config.direction === "horizontal") {

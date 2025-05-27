@@ -43,6 +43,8 @@ export async function updateNow() {
 
     const savePath = "/usr/local/bin/moonclock/release.tar.gz";
 
+    await execPromise(`rm -f ${savePath}`);
+
     const fileStream = fs.createWriteStream(savePath);
     await pipelineAsync(readableStream, fileStream);
 
@@ -57,7 +59,6 @@ export async function updateNow() {
       sudo ln -sfn "/usr/local/bin/moonclock/releases/${latestVersion}" /usr/local/bin/moonclock/current &&
       sudo cp /usr/local/bin/moonclock/current/custom_scenes/* /var/lib/moonclock/custom_scenes/
       sudo mc restart
-      sudo rm ${savePath}
     `,
       { maxBuffer: 10 * 1024 * 1024 } // 10 MB
     );
