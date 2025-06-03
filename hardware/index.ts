@@ -168,14 +168,16 @@ let syncSpeed = 0;
     marquee({
       text: getIpAddress() || "",
       direction: "horizontal",
-      speed: 20,
+      speed: 40,
       startingRow: 12,
       fontSize: 16,
       color: "#DDD",
     }),
   ]);
 
-  await new Promise((resolve) => setTimeout(resolve, 6000));
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
+  engine.render([]);
 
   setInterval(async () => {
     lastLoopRunAt = new Date().toJSON();

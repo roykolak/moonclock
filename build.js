@@ -1,6 +1,11 @@
 import * as esbuild from "esbuild";
 import fs from "fs";
 import { exec } from "child_process";
+import packageInfo from "./package.json" with { type: "json" };
+import { promisify } from "util";
+
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
 
 await esbuild.build({
   entryPoints: ["hardware/index.ts"],
@@ -39,11 +44,15 @@ console.log("\n -> Copied RPI canvas.node to /dist/app/node_modules...");
 
 const releaseFolder = "moonclock";
 
+console.log("\n -> Creating release folder");
+
 if (fs.existsSync(releaseFolder)) {
   fs.rmSync(releaseFolder, { recursive: true });
 }
 
 fs.mkdirSync(releaseFolder);
+
+console.log("\n -> Copying folders to release directory");
 
 fs.cpSync("dist", `${releaseFolder}/dist`, { recursive: true });
 fs.cpSync("bin", `${releaseFolder}/bin`, { recursive: true });
@@ -52,7 +61,30 @@ fs.cpSync("custom_scenes", `${releaseFolder}/custom_scenes`, {
   recursive: true,
 });
 
-const releaseFiles = ["install.sh", "package.json"];
+console.log("\n -> Updating systemd services to include version");
+
+const services = [
+  "moonclock-app.service",
+  "moonclock-hardware.service",
+  "moonclock-update-checker.service",
+  "moonclock-update-checker.timer",
+];
+
+const placeholder = "{VERSION}";
+
+for (const service of services) {
+  const file = `${releaseFolder}/services/${service}`
+  const data = await readFile(file, "utf8");
+  const result = data.replace(
+    new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+    packageInfo.version
+  );
+  await writeFile(file, result, "utf8");
+}
+
+console.log("\n -> Copying individual release files");
+
+const releaseFiles = ["install.sh", "install-dependencies.sh", "package.json"];
 
 for (const file of releaseFiles) {
   fs.copyFileSync(file, `${releaseFolder}/${file}`);

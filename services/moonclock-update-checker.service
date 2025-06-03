@@ -1,5 +1,5 @@
 [Unit]
-Description=Check for a Moonclock update
+Description=Moonclock Update Checker ({VERSION})
 
 [Service]
 Type=oneshot

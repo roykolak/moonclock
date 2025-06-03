@@ -67,40 +67,10 @@ Install the latest raspbian (no desktop verions!) on your pi and join it to your
 
 First, you'll need to [disable onboard sound](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound). This is a requirement from `hzeller/rpi-rgb-led-matrix`
 
-Update the system and install git...
+Update the system...
 
 ```
 sudo apt update
-```
-
-```
-sudo apt-get install jq
-```
-
-Install [nvm](https://github.com/nvm-sh/nvm) and Node 22.9.0...
-
-```
-nvm install 22.9.0
-nvm use 22.9.0
-```
-
-_The software that writes to the panel needs to be run with root access and the moonclock app also needs root access because it is served on port 80. We need to do a little bit of magic to make nvm play nice with `sudo`..._
-
-```
-sudo ln -s "$NVM_DIR/versions/node/$(nvm version)/bin/node" "/usr/local/bin/node"
-sudo ln -s "$NVM_DIR/versions/node/$(nvm version)/bin/npm" "/usr/local/bin/npm"
-```
-
-Install Canvas dependencies...
-
-```
-sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-```
-
-Install Emoji font library...
-
-```
-wget -O /usr/share/fonts/AppleColorEmoji.ttf https://github.com/samuelngs/apple-emoji-linux/releases/latest/download/AppleColorEmoji.ttf
 ```
 
 Download and untar Moonclock
@@ -110,10 +80,11 @@ sudo wget -O release.tar.gz https://github.com/roykolak/moonclock/releases/.../r
 sudo tar -xzvf release.tar.gz
 ```
 
-Finally, install Moonclock...
+Install Moonclock...
 
 ```
 cd moonclock
+./install-dependencies.sh
 ./install.sh
 ```
 

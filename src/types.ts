@@ -15,6 +15,7 @@ export interface NextVersion {
   version: string;
   releaseNotes: string;
   updatedAt: string | null;
+  absoluteFilePath: string;
 }
 
 export interface Panel {
