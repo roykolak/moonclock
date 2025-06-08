@@ -7,6 +7,8 @@ import { promisify } from "util";
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
+console.log('Building version:', packageInfo.version)
+
 await esbuild.build({
   entryPoints: ["hardware/index.ts"],
   bundle: true,

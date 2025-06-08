@@ -21,22 +21,25 @@ export async function PUT() {
     const latestRelease = releases[0];
 
     if (!latestRelease) {
-      console.log("No releases found.");
-      return;
+      const message = "No release found.";
+      console.log(message);
+      return Response.json({ message });
     }
 
     const asset = latestRelease.assets[0];
 
     if (!asset) {
-      console.log("No asset found.");
-      return;
+      const message = "No asset found.";
+      console.log(message);
+      return Response.json({ message });
     }
 
     const latestVersion = latestRelease.tag_name.replace("v", "");
 
     if (latestVersion === packageInfo.version) {
-      console.log("Up to date");
-      return;
+      const message = "Up to date.";
+      console.log(message);
+      return Response.json({ message });
     }
 
     const downloadUrl = asset.browser_download_url;

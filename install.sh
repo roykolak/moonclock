@@ -5,6 +5,8 @@ DATA_FOLDER="/var/lib/moonclock"
 APP_FOLDER="/usr/local/bin/moonclock"
 MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
+echo "Installing Moonclock (version: $MOONCLOCK_VERSION)"
+
 echo " -> Creating app folders"
 
 if [ ! -d "$APP_FOLDER" ]; then
@@ -59,7 +61,7 @@ sudo cp "$APP_FOLDER/releases/$MOONCLOCK_VERSION/custom_scenes/"* "$DATA_FOLDER/
 
 echo " -> Symlinking release to moonclock/current"
 
-sudo ln -sf "$APP_FOLDER/releases/$MOONCLOCK_VERSION" $APP_FOLDER/current
+sudo ln -sfn "$APP_FOLDER/releases/$MOONCLOCK_VERSION" $APP_FOLDER/current
 
 echo " -> Symlinking mc to bin/mc"
 
