@@ -8,7 +8,7 @@ fi
 
 case "$1" in
     logs)
-        journalctl -f -u moonclock-app -u moonclock-hardware -u moonclock-update-checker.timer
+        journalctl -f -u moonclock-app -u moonclock-hardware -u moonclock-update-checker.timer -n 100
         ;;
     restart)
         echo "Restarting Moonclock app & hardware client"
@@ -27,6 +27,12 @@ case "$1" in
         systemctl stop moonclock-app
         systemctl stop moonclock-hardware
         systemctl stop moonclock-update-checker.timer
+        ;;
+    status)
+        echo "Starting Moonclock app & hardware client"
+        systemctl status moonclock-app
+        systemctl status moonclock-hardware
+        systemctl status moonclock-update-checker.timer
         ;;
     *)
         echo "Invalid option."
