@@ -5,6 +5,8 @@ DATA_FOLDER="/var/lib/moonclock"
 APP_FOLDER="/usr/local/bin/moonclock"
 MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
+sudo ./install-dependencies.sh
+
 echo "Installing Moonclock (version: $MOONCLOCK_VERSION)"
 
 echo " -> Creating app folders"
