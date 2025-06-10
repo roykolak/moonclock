@@ -30,9 +30,7 @@ case "$1" in
         ;;
     status)
         echo "Starting Moonclock app & hardware client"
-        systemctl status moonclock-app
-        systemctl status moonclock-hardware
-        systemctl status moonclock-update-checker.timer
+        systemctl status moonclock-app moonclock-hardware moonclock-update-checker.timer
         ;;
     *)
         echo "Invalid option."

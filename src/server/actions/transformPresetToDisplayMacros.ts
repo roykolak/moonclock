@@ -4,13 +4,13 @@ import {
   box,
   coordinates,
   countdown,
-  Macro,
   marquee,
   moon,
   ripple,
   text,
   twinkle,
-} from "../../display-engine";
+} from "../../display-engine/marcoConfigs";
+import { Macro } from "../../display-engine/types";
 import { Preset, SceneName } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";

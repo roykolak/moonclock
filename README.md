@@ -139,3 +139,16 @@ To build a release...
 ```
 npm run build
 ```
+
+## Developing on a vm
+
+Would recommend using multipass as it is the quickiest way to start up a vm via the commandline.
+
+```
+multipass start foo
+multipass transfer  release.tar.gz foo:
+multipass shell foo
+tar -xzvf release.tar.gz
+cd ./moonclock
+mv /dist/hardware/vm-canvas.node /dist/hardware/canvas.node
+```

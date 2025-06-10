@@ -1,12 +1,8 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
-import {
-  createDisplayEngine,
-  Macro,
-  marquee,
-  text,
-  Pixel,
-} from "../src/display-engine";
+import { createDisplayEngine } from "../src/display-engine";
+import { Macro, Pixel } from "../src/display-engine/types";
+import { marquee, text } from "../src/display-engine/marcoConfigs";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
