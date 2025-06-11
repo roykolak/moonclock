@@ -16,16 +16,24 @@ export async function updateNow() {
 
     const { absoluteFilePath, version } = nextVersion;
 
-    const { stderr } = await execPromise(
+    const logFile = "/tmp/moonclock-update.log";
+
+    const { stdout, stderr } = await execPromise(
       `
-      sudo mkdir -p "/usr/local/bin/moonclock/releases/${version}" &&
-      sudo tar -xzvf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/releases/${version}" &&
-      sudo ln -sfn "/usr/local/bin/moonclock/releases/${version}" /usr/local/bin/moonclock/current &&
-      sudo cp /usr/local/bin/moonclock/current/custom_scenes/* /var/lib/moonclock/custom_scenes/
-      sudo mc restart
-    `,
-      { maxBuffer: 10 * 1024 * 1024 } // 10 MB
+  {
+    sudo mkdir -p "/usr/local/bin/moonclock/update" &&
+    sudo tar -xzvf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
+    cd /usr/local/bin/moonclock/update/ &&
+    sudo ./install.sh &&
+    cd /usr/local/bin/moonclock &&
+    sudo rm -fr /usr/local/bin/moonclock/update &&
+    sudo mc restart
+  } 2>&1 | tee ${logFile}
+  `,
+      { maxBuffer: 50 * 1024 * 1024 } // Increased to 50 MB
     );
+
+    console.log("Command output:", stdout);
 
     if (stderr) {
       console.error("Error occurred:", stderr, version);
