@@ -1,6 +1,6 @@
 {
   "name": "moonclock",
-  "version": "0.62.0-pre",
+  "version": "0.62.0",
   "private": true,
   "type": "module",
   "scripts": {
