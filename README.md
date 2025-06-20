@@ -40,10 +40,11 @@ The panel communication happens via the incredible [hzeller/rpi-rgb-led-matrix](
 
 The panel rendering is powered by [node-canvas](node-canvas). This allows for text, shapes, and more to easily be rendered on the panel. Additionally panel scenes can be rendered on the server or in the browser.
 
-There are two processes that are run together:
+There are three processes that are run together:
 
 - Nextjs webapp
-- A hardware client
+- Hardware client
+- Update checker
 
 ## Building a Moonclock
 
@@ -63,7 +64,7 @@ Wire the panel according to the wiring chart [here](https://github.com/hzeller/r
 
 ## Installation & Setup
 
-Install the latest raspbian (no desktop verions!) on your pi and join it to your network. Then ssh into the machine and let's get going...
+Install the latest raspbian (not desktop verion!) on your pi and join it to your network. Then ssh into the machine and let's get going...
 
 First, you'll need to [disable onboard sound](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound). This is a requirement from `hzeller/rpi-rgb-led-matrix`
 
@@ -78,19 +79,20 @@ Install Moonclock...
 
 ```
 cd moonclock
-./install-dependencies.sh
 ./install.sh
 ```
 
-Your raspberry pi should now be running and serving your moonclock! Your moonclock will automatically start after any pi restarts.
+Your moonclock will automatically start after any pi restarts.
 
 To start Moonclock immediate run...
 
 ```
-mc start
+sudo mc start
 ```
 
 ## Updating
+
+Your moonclock will check if there is a new version available nightly.
 
 When a new version is available, you will see a banner like the one below in your moonclock app. Just click the update buttons and you'll be all set in a few seconds!
 
@@ -134,7 +136,7 @@ sudo npm install
 sudo npm run start:dev
 ```
 
-To build a release...
+## Build a release
 
 ```
 npm run build
@@ -142,13 +144,17 @@ npm run build
 
 ## Developing on a vm
 
-Would recommend using multipass as it is the quickiest way to start up a vm via the commandline.
+This is useful to test updates to the service files, install scripts, and the update process.
+
+Would recommend using [multipass](https://canonical.com/multipass) as it is the quickiest way to start up a vm via the commandline.
 
 ```
-multipass start foo
-multipass transfer  release.tar.gz foo:
-multipass shell foo
+npm run build
+multipass start moonclock-vm
+multipass transfer  release.tar.gz moonclock-vm:
+multipass shell moonclock-vm
 tar -xzvf release.tar.gz
 cd ./moonclock
 mv dist/hardware/vm-canvas.node dist/hardware/canvas.node
+sudo mc start
 ```
