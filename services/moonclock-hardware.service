@@ -9,7 +9,6 @@ Group=root
 Type=simple
 Restart=always
 RestartSec=5
-RuntimeMaxSec=1d
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock/current/dist/hardware
 ExecStart=sudo NODE_ENV=production node index.cjs
