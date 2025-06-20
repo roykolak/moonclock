@@ -150,5 +150,5 @@ multipass transfer  release.tar.gz foo:
 multipass shell foo
 tar -xzvf release.tar.gz
 cd ./moonclock
-mv /dist/hardware/vm-canvas.node /dist/hardware/canvas.node
+mv dist/hardware/vm-canvas.node dist/hardware/canvas.node
 ```
