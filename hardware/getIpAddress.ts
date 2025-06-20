@@ -3,8 +3,6 @@ import os from "os";
 export function getIpAddress() {
   const networkInterfaces = os.networkInterfaces();
 
-  console.log(networkInterfaces);
-
   for (const interfaceName in networkInterfaces) {
     const interfaces = networkInterfaces[interfaceName] || [];
 
