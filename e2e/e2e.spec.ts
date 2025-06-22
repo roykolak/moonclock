@@ -61,6 +61,8 @@ test.describe("Test", () => {
 
     await page.getByTestId("preset-name").fill("Custom preset");
 
+    await page.getByTestId("change-expiration").click();
+
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "Forever", exact: true }).click();
 
@@ -96,6 +98,8 @@ test.describe("Test", () => {
 
     await page.getByTestId("new-scene-button").click();
 
+    await page.getByTestId("change-expiration").click();
+
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "30 minutes", exact: true }).click();
 
@@ -116,6 +120,8 @@ test.describe("Test", () => {
     await expect(page.getByText("Edit Preset")).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Updated custom preset");
+
+    await page.getByTestId("change-expiration").click();
 
     await page.getByTestId("for-time-select").click();
     await page.getByRole("option", { name: "1 hour 30 minutes" }).click();

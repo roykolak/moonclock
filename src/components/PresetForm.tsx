@@ -7,10 +7,11 @@ import {
   Button,
   Card,
   Checkbox,
+  Collapse,
   ColorInput,
-  Divider,
   Flex,
   Group,
+  Input,
   InputLabel,
   SegmentedControl,
   Select,
@@ -32,6 +33,7 @@ import {
 } from "@/display-engine/types";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 interface PresetFormProps {
   preset: Preset | null;
@@ -61,6 +63,8 @@ export function PresetForm({
   const form = useForm<Preset>({
     initialValues: { ...defaultPreset, ...preset },
   });
+
+  const [expirationOpened, { toggle: expirationToggle }] = useDisclosure(false);
 
   form.watch("scenes.0.sceneName", ({ value }) => {
     const fieldValue = "scenes.0.sceneConfig";
@@ -123,6 +127,36 @@ export function PresetForm({
           {...form.getInputProps(PresetField.Name)}
         />
 
+        <Stack gap={2}>
+          <InputLabel required>Expiration Time</InputLabel>
+          {!expirationOpened && (
+            <Input
+              placeholder=""
+              variant="filled"
+              style={{ flex: 1 }}
+              required
+              readOnly
+              rightSectionPointerEvents="all"
+              value={getFriendlyEndTime(form.getValues())}
+              rightSectionWidth={55}
+              rightSection={
+                <Button
+                  onClick={expirationToggle}
+                  variant="outline"
+                  size="compact-sm"
+                  data-testid="change-expiration"
+                >
+                  Edit
+                </Button>
+              }
+            />
+          )}
+        </Stack>
+
+        <Collapse in={expirationOpened}>
+          <ExpirationTime form={form} />
+        </Collapse>
+
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
           {form.getValues().scenes.map((item, index) => (
@@ -146,80 +180,7 @@ export function PresetForm({
             Add new scene
           </Button>
         </Stack>
-        <Divider />
-        <SegmentedControl
-          fullWidth
-          data={[
-            { label: "For...", value: "for" },
-            { label: "Until...", value: "until" },
-          ]}
-          key={form.key("mode")}
-          {...form.getInputProps("mode")}
-        />
-        {form.values.mode === "for" && (
-          <Select
-            data={[
-              { label: "5 minutes", value: "0:05" },
-              { label: "15 minutes", value: "0:15" },
-              { label: "30 minutes", value: "0:30" },
-              { label: "1 hour", value: "1:00" },
-              { label: "1 hour 30 minutes", value: "1:30" },
-              { label: "2 hours", value: "2:00" },
-              { label: "Forever", value: "0:00" },
-            ]}
-            data-testid="for-time-select"
-            key={form.key(PresetField.ForTime)}
-            {...form.getInputProps(PresetField.ForTime)}
-          />
-        )}
-        {form.values.mode === "until" && (
-          <Flex gap="xs">
-            <Select
-              placeholder="Hour"
-              data={[
-                { label: "Today", value: "0" },
-                { label: "Tomorrow", value: "1" },
-              ]}
-              data-testid="until-hour-select"
-              key={form.key(PresetField.UntilDay)}
-              {...form.getInputProps(PresetField.UntilDay)}
-            />
-            <Text>@</Text>
-            <Select
-              placeholder="Hour"
-              data={[
-                { label: "5 AM", value: "5" },
-                { label: "6 AM", value: "6" },
-                { label: "7 AM", value: "7" },
-                { label: "8 AM", value: "8" },
-                { label: "9 AM", value: "9" },
-                { label: "10 AM", value: "10" },
-                { label: "11 AM", value: "11" },
-                { label: "12 PM", value: "12" },
-                { label: "1 PM", value: "13" },
-              ]}
-              data-testid="until-hour-select"
-              key={form.key(PresetField.UntilHour)}
-              {...form.getInputProps(PresetField.UntilHour)}
-            />
-            <Text>:</Text>
-            <Select
-              placeholder="Minute"
-              data={[
-                { label: "00", value: "00" },
-                { label: "15", value: "15" },
-                { label: "30", value: "30" },
-                { label: "45", value: "45" },
-              ]}
-              data-testid="until-minute-select"
-              key={form.key(PresetField.UntilMinute)}
-              {...form.getInputProps(PresetField.UntilMinute)}
-            />
-          </Flex>
-        )}
-        <Divider />
         <AdvancedSettings form={form} />
-
         <Flex mt="xs">
           <Button type="submit" fullWidth>
             {submitLabel || "Save"}
@@ -455,6 +416,83 @@ export function SceneConfigControls({
         No scene options available
       </Text>
     </Card>
+  );
+}
+
+export function ExpirationTime({ form }: { form: UseFormReturnType<Preset> }) {
+  return (
+    <Stack>
+      <SegmentedControl
+        fullWidth
+        data={[
+          { label: "For...", value: "for" },
+          { label: "Until...", value: "until" },
+        ]}
+        key={form.key("mode")}
+        {...form.getInputProps("mode")}
+      />
+      {form.values.mode === "for" && (
+        <Select
+          data={[
+            { label: "5 minutes", value: "0:05" },
+            { label: "15 minutes", value: "0:15" },
+            { label: "30 minutes", value: "0:30" },
+            { label: "1 hour", value: "1:00" },
+            { label: "1 hour 30 minutes", value: "1:30" },
+            { label: "2 hours", value: "2:00" },
+            { label: "Forever", value: "0:00" },
+          ]}
+          data-testid="for-time-select"
+          key={form.key(PresetField.ForTime)}
+          {...form.getInputProps(PresetField.ForTime)}
+        />
+      )}
+      {form.values.mode === "until" && (
+        <Flex gap="xs">
+          <Select
+            placeholder="Hour"
+            data={[
+              { label: "Today", value: "0" },
+              { label: "Tomorrow", value: "1" },
+            ]}
+            data-testid="until-hour-select"
+            key={form.key(PresetField.UntilDay)}
+            {...form.getInputProps(PresetField.UntilDay)}
+          />
+          <Text>@</Text>
+          <Select
+            placeholder="Hour"
+            data={[
+              { label: "5 AM", value: "5" },
+              { label: "6 AM", value: "6" },
+              { label: "7 AM", value: "7" },
+              { label: "8 AM", value: "8" },
+              { label: "9 AM", value: "9" },
+              { label: "10 AM", value: "10" },
+              { label: "11 AM", value: "11" },
+              { label: "12 PM", value: "12" },
+              { label: "1 PM", value: "13" },
+            ]}
+            data-testid="until-hour-select"
+            key={form.key(PresetField.UntilHour)}
+            {...form.getInputProps(PresetField.UntilHour)}
+          />
+          <Text>:</Text>
+          <Select
+            placeholder="Minute"
+            data={[
+              { label: "00", value: "00" },
+              { label: "15", value: "15" },
+              { label: "30", value: "30" },
+              { label: "45", value: "45" },
+            ]}
+            data-testid="until-minute-select"
+            key={form.key(PresetField.UntilMinute)}
+            {...form.getInputProps(PresetField.UntilMinute)}
+          />
+        </Flex>
+      )}
+    </Stack>
   );
 }
 
