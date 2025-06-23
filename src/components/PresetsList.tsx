@@ -24,7 +24,7 @@ export function PresetsList({
   customSceneNames,
 }: PresetsListProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
-  const [selectedPresetIndex, setSelectedPresetIndex] = useState(-1);
+  const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
 
   return (
     <>
@@ -33,25 +33,23 @@ export function PresetsList({
       </Title>
       <Modal
         opened={presetModalOpen}
-        title={selectedPresetIndex >= 0 ? "Edit Preset" : "Create New Preset"}
+        title={selectedPreset !== null ? "Edit Preset" : "Create New Preset"}
         onClose={presetModalHandlers.close}
       >
         <PresetForm
           customSceneNames={customSceneNames}
-          preset={presets[selectedPresetIndex]}
+          preset={selectedPreset || null}
           action={async (preset) => {
-            if (selectedPresetIndex >= 0) {
-              updatePreset(selectedPresetIndex, preset);
+            if (selectedPreset) {
+              updatePreset(preset);
             } else {
               createPreset(preset);
             }
             presetModalHandlers.close();
           }}
-          submitLabel={
-            selectedPresetIndex >= 0 ? "Update Preset" : "Create Preset"
-          }
+          submitLabel={selectedPreset ? "Update Preset" : "Create Preset"}
         />
-        {selectedPresetIndex >= 0 && (
+        {selectedPreset && (
           <Button
             color="red"
             variant="outline"
@@ -59,8 +57,9 @@ export function PresetsList({
             fullWidth
             mt="xl"
             onClick={() => {
+              if (!selectedPreset.id) return;
               presetModalHandlers.close();
-              deletePreset(selectedPresetIndex);
+              deletePreset(selectedPreset.id);
             }}
           >
             Delete Preset
@@ -74,7 +73,7 @@ export function PresetsList({
             preset={preset}
             formattedEndTime={formattedEndTimes[i]}
             onEditClick={() => {
-              setSelectedPresetIndex(i);
+              setSelectedPreset(preset);
               presetModalHandlers.open();
             }}
           />
@@ -86,7 +85,7 @@ export function PresetsList({
         mt="lg"
         size="md"
         onClick={() => {
-          setSelectedPresetIndex(-1);
+          setSelectedPreset(null);
           presetModalHandlers.open();
         }}
       >

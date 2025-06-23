@@ -79,6 +79,7 @@ export enum SceneName {
 }
 
 export interface Preset {
+  id?: string;
   [PresetField.Name]: string;
   [PresetField.Mode]: "for" | "until";
   [PresetField.UntilDay]: string;

@@ -1,6 +1,7 @@
 import fs from "fs";
 import { DataTypes, Preset, SceneName } from "../types";
 import { databaseFile } from "./utils";
+import { randomUUID } from "crypto";
 
 const defaultPreset: Preset = {
   name: "Default",
@@ -29,6 +30,7 @@ export const defaultData: DataTypes = {
   nextVersion: null,
   presets: [
     {
+      id: randomUUID(),
       name: "Sleep Mode",
       scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
       mode: "until",
@@ -38,6 +40,7 @@ export const defaultData: DataTypes = {
       forTime: "",
     },
     {
+      id: randomUUID(),
       name: "Nap Mode",
       scenes: [{ sceneName: "bunny", sceneConfig: {} }],
       mode: "for",
@@ -47,6 +50,7 @@ export const defaultData: DataTypes = {
       forTime: "2:00",
     },
     {
+      id: randomUUID(),
       name: "Timeout",
       scenes: [{ sceneName: SceneName.Countdown, sceneConfig: {} }],
       mode: "for",
@@ -70,7 +74,8 @@ function readDb(): DataTypes {
     const file = fs.readFileSync(dbFile).toString();
     return JSON.parse(file);
   } catch {
-    console.log(`trouble loading ${dbFile}, loading default data`);
+    console.log(`trouble loading/parsing ${dbFile}, seeding default data`);
+    writeDb(defaultData);
     return JSON.parse(JSON.stringify(defaultData));
   }
 }
@@ -81,7 +86,7 @@ function writeDb(db: DataTypes) {
   });
 }
 
-export function getData(): DataTypes {
+export function getData() {
   return readDb();
 }
 
