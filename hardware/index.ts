@@ -8,7 +8,7 @@ import { transformPresetToDisplayMacros } from "@/server/actions/transformPreset
 import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
 
 import express from "express";
-import { getIpAddress } from "./getIpAddress";
+import { waitForIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 
 let syncSpeed = 0;
@@ -157,6 +157,24 @@ let syncSpeed = 0;
 
   if (shouldRunBootCode()) {
     console.log("[HARDWARE] Running boot message");
+
+    let loadingBit = true;
+
+    const connectionLoadingInterval = setInterval(() => {
+      loadingBit = loadingBit ? false : true;
+      engine.render([
+        coordinates({
+          coordinates: loadingBit
+            ? { "0:0": "#6495ED", "0:1": "#000000" }
+            : { "0:0": "#000000", "0:1": "#facc0d" },
+        }),
+      ]);
+    }, 500);
+
+    const ipAddress = await waitForIpAddress();
+
+    clearInterval(connectionLoadingInterval);
+
     engine.render([
       text({
         text: "Starting",
@@ -165,12 +183,12 @@ let syncSpeed = 0;
         startingRow: 1,
       }),
       marquee({
-        text: getIpAddress() || "",
+        text: ipAddress || "",
         direction: "horizontal",
         speed: 40,
         startingRow: 12,
         fontSize: 16,
-        color: "#DDD",
+        color: "#008000",
       }),
     ]);
 
