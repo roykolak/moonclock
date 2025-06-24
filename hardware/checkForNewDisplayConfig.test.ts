@@ -1,4 +1,3 @@
-import fs from "fs";
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert";
 import { defaultData, getData, setData } from "@/server/db";
