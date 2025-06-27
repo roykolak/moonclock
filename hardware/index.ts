@@ -12,6 +12,7 @@ import { waitForIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 
 let syncSpeed = 0;
+const virtualPanel: { [k: string]: string } = {};
 
 (async () => {
   const args = process.argv.slice(2);
@@ -63,6 +64,7 @@ let syncSpeed = 0;
       renderedAt,
       lastLoopRunAt,
       syncSpeed,
+      virtualPanel,
     });
   });
 
@@ -122,11 +124,12 @@ let syncSpeed = 0;
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
+          const { x, y, rgba } = pixel;
+          const hexA = rgba ? RGBAToHexA(rgba, true) : "000000";
+          virtualPanel[x + ":" + y] = hexA;
           matrix
             .brightness(panel[PanelField.Brightness])
-            .fgColor(
-              parseInt(pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000", 16)
-            )
+            .fgColor(parseInt(hexA, 16))
             .setPixel(pixel.x, pixel.y);
         }
       }
@@ -138,9 +141,17 @@ let syncSpeed = 0;
     matrix.sync();
   } else {
     function fakeSync() {
-      updateQueue.shift();
+      const pixelUpdates = updateQueue.shift();
 
       recordQueuedFramesSnapshot(updateQueue.length);
+
+      if (pixelUpdates) {
+        for (const pixel of pixelUpdates) {
+          const { x, y, rgba } = pixel;
+          const hexA = rgba ? RGBAToHexA(rgba, true) : "000000";
+          virtualPanel[x + ":" + y] = "#" + hexA;
+        }
+      }
 
       setTimeout(fakeSync, syncSpeed);
     }

@@ -84,6 +84,10 @@ export async function transformPresetToDisplayMacros(
         ];
       }
 
+      if (sceneName === SceneName.Hardware) {
+        return [coordinates({ ...sceneConfig })];
+      }
+
       const customScenes = await getCustomScenes();
       const customScene = customScenes.find(
         (scene) => scene.name === sceneName
