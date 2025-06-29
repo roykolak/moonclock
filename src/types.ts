@@ -65,6 +65,7 @@ export interface HardwareState {
   lastLoopRunAt: string;
   preset: Preset;
   syncSpeed: number;
+  virtualPanel: { [k: string]: string };
 }
 
 export enum SceneName {
@@ -76,6 +77,7 @@ export enum SceneName {
   Marquee = "marquee",
   Emoji = "emoji",
   Color = "color",
+  Hardware = "hardware",
 }
 
 export interface Preset {
