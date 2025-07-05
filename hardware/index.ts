@@ -14,6 +14,23 @@ import { shouldRunBootCode } from "./shouldRunBootCode";
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
 
+function updateVirtualPanel(pixel: Pixel) {
+  const hexA = pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000";
+  virtualPanel[pixel.x + ":" + pixel.y] = "#" + hexA;
+  return hexA;
+}
+
+function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
+  const hexValues = [...rgba]
+    .filter((_number, index) => !forceRemoveAlpha || index !== 3)
+    .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
+    .map((number) => number.toString(16));
+
+  return hexValues
+    .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
+    .join("");
+}
+
 (async () => {
   const args = process.argv.slice(2);
   const params: any = { emulate: false };
@@ -89,17 +106,6 @@ const virtualPanel: { [k: string]: string } = {};
   let updateQueue: Pixel[][] = [];
   let queuedFramesSnapshots: QueuedFramesSnapshot[] = [];
 
-  function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
-    const hexValues = [...rgba]
-      .filter((_number, index) => !forceRemoveAlpha || index !== 3)
-      .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
-      .map((number) => number.toString(16));
-
-    return hexValues
-      .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
-      .join("");
-  }
-
   if (!params.emulate) {
     console.log("[HARDWARE] Initing LED Matrix...");
     const matrix = new LedMatrix(
@@ -124,9 +130,7 @@ const virtualPanel: { [k: string]: string } = {};
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
-          const { x, y, rgba } = pixel;
-          const hexA = rgba ? RGBAToHexA(rgba, true) : "000000";
-          virtualPanel[x + ":" + y] = hexA;
+          const hexA = updateVirtualPanel(pixel);
           matrix
             .brightness(panel[PanelField.Brightness])
             .fgColor(parseInt(hexA, 16))
@@ -147,9 +151,7 @@ const virtualPanel: { [k: string]: string } = {};
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
-          const { x, y, rgba } = pixel;
-          const hexA = rgba ? RGBAToHexA(rgba, true) : "000000";
-          virtualPanel[x + ":" + y] = "#" + hexA;
+          updateVirtualPanel(pixel);
         }
       }
 

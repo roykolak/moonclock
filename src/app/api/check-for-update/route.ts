@@ -67,7 +67,8 @@ export async function PUT() {
       nextVersion: {
         version: latestVersion,
         releaseNotes: latestRelease.body,
-        updatedAt: null,
+        updateFinishedAt: null,
+        updateStartedAt: null,
         absoluteFilePath: savePath,
       },
     });

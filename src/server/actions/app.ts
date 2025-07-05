@@ -1,46 +1,35 @@
 "use server";
 
 import { exec } from "child_process";
-import { promisify } from "util";
 import { getData, setData } from "../db";
 
-const execPromise = promisify(exec);
-
-export async function updateNow() {
+export async function startUpdate() {
   try {
     const { nextVersion } = getData();
+
+    if (nextVersion?.updateStartedAt) return;
 
     if (!nextVersion) {
       throw new Error("No next version");
     }
 
-    const { absoluteFilePath, version } = nextVersion;
+    setData({
+      nextVersion: {
+        ...nextVersion,
+        updateStartedAt: new Date().toJSON(),
+      },
+    });
 
-    const logFile = "/tmp/moonclock-update.log";
+    const { absoluteFilePath } = nextVersion;
 
-    const { stdout, stderr } = await execPromise(
-      `
-  {
-    sudo mkdir -p "/usr/local/bin/moonclock/update" &&
-    sudo tar -xzvf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
-    cd /usr/local/bin/moonclock/update/ &&
-    sudo ./install.sh &&
-    cd /usr/local/bin/moonclock &&
-    sudo rm -fr /usr/local/bin/moonclock/update &&
-    sudo mc restart
-  } 2>&1 | tee ${logFile}
-  `,
-      { maxBuffer: 50 * 1024 * 1024 } // Increased to 50 MB
-    );
-
-    console.log("Command output:", stdout);
-
-    if (stderr) {
-      console.error("Error occurred:", stderr, version);
-      return false;
-    }
-
-    setData({ nextVersion: null });
+    exec(`{
+      sudo mkdir -p "/usr/local/bin/moonclock/update" &&
+      sudo tar -xzvf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
+      cd /usr/local/bin/moonclock/update/ &&
+      sudo ./install.sh &&
+      sudo mc restart &&
+      sudo rm -fr /usr/local/bin/moonclock/update
+    } 2>&1 | tee /tmp/moonclock-update.log`);
   } catch (e) {
     console.log("Error trying to update!", e);
     return false;
@@ -55,7 +44,7 @@ export async function markAsUpdated() {
   setData({
     nextVersion: {
       ...nextVersion,
-      updatedAt: new Date().toJSON(),
+      updateFinishedAt: new Date().toJSON(),
     },
   });
 }

@@ -20,3 +20,9 @@ export function databaseFile() {
     ? "/var/lib/moonclock/database.json"
     : "./database.json";
 }
+
+export function currentInstallStepFile() {
+  return process.env.NODE_ENV === "production"
+    ? "/var/lib/moonclock/current_install_step.txt"
+    : "./current_install_step.txt";
+}
