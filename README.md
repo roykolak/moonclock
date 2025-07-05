@@ -150,11 +150,14 @@ Would recommend using [multipass](https://canonical.com/multipass) as it is the 
 
 ```
 npm run build
+multipass launch --name moonclock-vm
 multipass start moonclock-vm
-multipass transfer  release.tar.gz moonclock-vm:
+multipass transfer release.tar.gz moonclock-vm:
 multipass shell moonclock-vm
 tar -xzvf release.tar.gz
 cd ./moonclock
 mv dist/hardware/vm-canvas.node dist/hardware/canvas.node
-sudo mc start
+sudo ./install.sh
+
+multipass info moonclock-vm
 ```

@@ -1,21 +1,10 @@
 "use client";
 
-import { markAsUpdated, updateNow } from "@/server/actions/app";
+import { markAsUpdated, startUpdate } from "@/server/actions/app";
 import { NextVersion } from "@/types";
-import {
-  Button,
-  Code,
-  Flex,
-  Loader,
-  Modal,
-  Stack,
-  Text,
-  ThemeIcon,
-} from "@mantine/core";
+import { Button, Code, Flex, Loader, Modal, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect } from "react";
-import packageInfo from "../../package.json";
-import { IconCircleCheckFilled } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 interface SettingsProps {
   nextVersion: NextVersion | null;
@@ -25,27 +14,33 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
   const [updatingModalOpened, updatingModalHandler] = useDisclosure(false);
   const [releaseNotesModalOpened, releaseNotesModalHandler] =
     useDisclosure(false);
-  const [updatedModalOpened, updatedModalHandler] = useDisclosure(false);
+  const [currentInstallStep, setCurrentInstallStep] = useState();
 
   useEffect(() => {
     if (!updatingModalOpened) return;
 
     (async () => {
-      const result = await updateNow();
-      console.log("Update result", result);
+      await startUpdate();
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+      const loop = setInterval(async () => {
+        const response = await fetch(`/api/current-install-step`);
+        const data = await response.json();
+        setCurrentInstallStep(data.step);
+
+        if (data.step.includes("Starting")) {
+          markAsUpdated();
+          clearInterval(loop);
+          setTimeout(() => {
+            window.location.reload();
+          }, 10000);
+        }
+      }, 1000);
     })();
   }, [updatingModalOpened]);
 
   useEffect(() => {
-    if (
-      nextVersion?.version === packageInfo.version &&
-      !nextVersion.updatedAt
-    ) {
-      updatedModalHandler.open();
+    if (nextVersion?.updateStartedAt && !nextVersion?.updateFinishedAt) {
+      updatingModalHandler.open();
     }
   }, []);
 
@@ -53,7 +48,7 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
 
   return (
     <>
-      {!nextVersion.updatedAt && (
+      {!nextVersion.updateStartedAt && (
         <Button
           size="xs"
           variant="outline"
@@ -64,35 +59,6 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
           Update...
         </Button>
       )}
-
-      <Modal
-        title="You're up to date!"
-        opened={updatedModalOpened}
-        onClose={updatedModalHandler.close}
-        withCloseButton={false}
-        closeOnClickOutside={false}
-      >
-        <Flex justify="center" align="center" direction="column" gap="lg">
-          <ThemeIcon variant="transparent" size={200}>
-            <IconCircleCheckFilled size={200} />
-          </ThemeIcon>
-        </Flex>
-        <Stack gap="xl">
-          <Code style={{ whiteSpace: "pre-line" }}>
-            {nextVersion?.releaseNotes}
-          </Code>
-          <Stack>
-            <Button
-              onClick={() => {
-                markAsUpdated();
-                updatedModalHandler.close();
-              }}
-            >
-              Continue
-            </Button>
-          </Stack>
-        </Stack>
-      </Modal>
 
       <Modal
         title={`What's new in v${nextVersion?.version}`}
@@ -126,10 +92,12 @@ export function UpdatePrompt({ nextVersion }: SettingsProps) {
           align="center"
           direction="column"
           gap="lg"
-          p={100}
+          p={10}
+          mih={400}
         >
           <Loader size="xl" />
-          <Text size="lg">Updating...</Text>
+          <Text size="lg">Update in Progress</Text>
+          <Text size="sm">{currentInstallStep}</Text>
         </Flex>
       </Modal>
     </>

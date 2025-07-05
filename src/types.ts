@@ -14,7 +14,8 @@ export interface ScheduledPreset {
 export interface NextVersion {
   version: string;
   releaseNotes: string;
-  updatedAt: string | null;
+  updateStartedAt: string | null;
+  updateFinishedAt: string | null;
   absoluteFilePath: string;
 }
 

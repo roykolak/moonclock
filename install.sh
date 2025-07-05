@@ -5,9 +5,23 @@ DATA_FOLDER="/var/lib/moonclock"
 APP_FOLDER="/usr/local/bin/moonclock"
 MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
+if [ ! -d "$DATA_FOLDER" ]; then
+    sudo mkdir -p "$DATA_FOLDER"
+fi 
+
+sudo touch $DATA_FOLDER/current_install_step.txt
+sudo chmod 666 $DATA_FOLDER/current_install_step.txt
+
+message="Installing Dependencies"
+echo "$message"
+echo "$message" > $DATA_FOLDER/current_install_step.txt
+
 sudo ./install-dependencies.sh
 
-echo "Installing Moonclock (version: $MOONCLOCK_VERSION)"
+message="Installing Moonclock ($MOONCLOCK_VERSION)"
+echo "$message"
+echo "$message" > $DATA_FOLDER/current_install_step.txt
+
 
 echo " -> Creating app folders"
 
@@ -42,12 +56,6 @@ sudo systemctl enable moonclock-update-checker.timer
 
 echo " -> Seeding database file"
 
-if [ ! -d "$DATA_FOLDER" ]; then
-    sudo mkdir -p "$DATA_FOLDER"
-else
-    echo "   -> data directory exists, skipping"
-fi 
-
 sudo touch $DATA_FOLDER/database.json
 sudo chmod 666 $DATA_FOLDER/database.json
 
@@ -61,6 +69,12 @@ fi
 
 sudo cp "$APP_FOLDER/releases/$MOONCLOCK_VERSION/custom_scenes/"* "$DATA_FOLDER/custom_scenes/"
 
+message="Starting Moonclock"
+echo "$message"
+echo "$message" > $DATA_FOLDER/current_install_step.txt
+
+sleep 5
+
 echo " -> Symlinking release to moonclock/current"
 
 sudo ln -sfn "$APP_FOLDER/releases/$MOONCLOCK_VERSION" $APP_FOLDER/current
@@ -68,3 +82,7 @@ sudo ln -sfn "$APP_FOLDER/releases/$MOONCLOCK_VERSION" $APP_FOLDER/current
 echo " -> Symlinking mc to bin/mc"
 
 sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
+
+sudo mc start
+
+echo "Upgrade Complete!" > $DATA_FOLDER/current_install_step.txt
