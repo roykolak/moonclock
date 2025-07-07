@@ -31,7 +31,7 @@ export async function transformPresetToDisplayMacros(
       }
 
       if (sceneName === SceneName.Moon) {
-        return [moon({})];
+        return [moon({ ...sceneConfig })];
       }
 
       if (sceneName === SceneName.Ripple) {

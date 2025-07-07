@@ -83,6 +83,6 @@ echo " -> Symlinking mc to bin/mc"
 
 sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
 
-sudo mc start
+sudo mc restart
 
 echo "Upgrade Complete!" > $DATA_FOLDER/current_install_step.txt

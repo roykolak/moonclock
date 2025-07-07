@@ -109,6 +109,7 @@ export interface MacroCoordinatesConfig {
 
 export interface MacroMoonConfig {
   optional?: any;
+  animateStarTwinkle: boolean;
 }
 
 export type MacroConfig =

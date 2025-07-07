@@ -17,6 +17,7 @@ import {
   Select,
   Slider,
   Stack,
+  Switch,
   Text,
   TextInput,
   Title,
@@ -103,6 +104,12 @@ export function PresetForm({
     if (value === SceneName.Color) {
       return form.setFieldValue(fieldValue, {
         color: "#ff0000",
+      } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Moon) {
+      return form.setFieldValue(fieldValue, {
+        animateStarTwinkle: true,
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -280,6 +287,22 @@ export function SceneConfigControls({
     );
   }
 
+  if (sceneName === "moon") {
+    return (
+      <Card w="100%">
+        <Switch
+          label="Animate star twinkle"
+          labelPosition="left"
+          key={form.key(`scenes.${index}.sceneConfig.animateStarTwinkle`)}
+          checked={form.values.scenes[index].sceneConfig.animateStarTwinkle}
+          {...form.getInputProps(
+            `scenes.${index}.sceneConfig.animateStarTwinkle`
+          )}
+        />
+      </Card>
+    );
+  }
+
   if (sceneName === "twinkle") {
     return (
       <Card w="100%">
@@ -378,6 +401,7 @@ export function SceneConfigControls({
           </Stack>
           <Checkbox
             label="Mirror horizontally"
+            checked={form.values.scenes[index].sceneConfig.mirrorHorizontally}
             key={form.key(`scenes.${index}.sceneConfig.mirrorHorizontally`)}
             {...form.getInputProps(
               `scenes.${index}.sceneConfig.mirrorHorizontally`

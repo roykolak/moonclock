@@ -29,6 +29,7 @@ function shuffle(unshuffled: any[]) {
 }
 
 export const startMoon: MacroFn = async ({
+  macroConfig,
   dimensions,
   ctx,
   index,
@@ -129,9 +130,11 @@ export const startMoon: MacroFn = async ({
     }
   }
 
-  const startTime = performance.now();
+  if (macroConfig.animateStarTwinkle) {
+    const startTime = performance.now();
 
-  runMoon(startTime);
+    runMoon(startTime);
+  }
 
   return () => {
     running = false;
