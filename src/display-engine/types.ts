@@ -84,6 +84,7 @@ export interface MacroMarqueeConfig {
   startingColumn: number;
   startingRow: number;
   height: number;
+  mirrorHorizontally: boolean;
   direction: "horizontal" | "vertical";
 }
 
@@ -109,21 +110,19 @@ export interface MacroCoordinatesConfig {
 
 export interface MacroMoonConfig {
   optional?: any;
-  animateStarTwinkle: boolean;
+  animateStarTwinkle?: boolean;
 }
 
-export type MacroConfig =
-  | MacroBoxConfig
-  | MacroTextConfig
-  | MacroMarqueeConfig
-  | MacroTwinkleConfig
+export type MacroConfig = MacroBoxConfig &
+  MacroTextConfig &
+  MacroMarqueeConfig &
+  MacroTwinkleConfig &
   // | MacroMeteorsConfig
-  | MacroImageConfig
-  | MacroCustomConfig
-  | MacroCoordinatesConfig
-  | MacroMoonConfig
-  | MacroCountdownConfig
-  | any;
+  MacroImageConfig &
+  MacroCustomConfig &
+  MacroCoordinatesConfig &
+  MacroMoonConfig &
+  MacroCountdownConfig;
 
 export interface Macro {
   macroName: MacroName;

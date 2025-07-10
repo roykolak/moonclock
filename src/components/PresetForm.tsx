@@ -535,6 +535,27 @@ export function AdvancedSettings({
         </Accordion.Control>
         <Accordion.Panel>
           <Stack>
+            <Stack gap={8}>
+              <Group justify="space-between">
+                <Text size="sm">Override Display Brightness</Text>
+                <Switch
+                  checked={!!form.getValues()[PresetField.Brightness]}
+                  onChange={(event) => {
+                    const { checked } = event.currentTarget;
+                    form.setValues({
+                      [PresetField.Brightness]: checked ? 25 : null,
+                    });
+                  }}
+                />
+              </Group>
+              <Slider
+                label={null}
+                disabled={!form.getValues()[PresetField.Brightness]}
+                key={form.key(PresetField.Brightness)}
+                {...form.getInputProps(PresetField.Brightness)}
+              />
+            </Stack>
+
             <Select
               label="Time adjustment interval"
               description="Configure a custom time adjustment interval in the UI"
