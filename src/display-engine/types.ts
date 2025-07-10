@@ -48,6 +48,7 @@ export interface MacroTwinkleConfig {
   speed: number;
   width: number;
   height: number;
+  amount: number;
 }
 
 export interface MacroRippleConfig {
@@ -122,6 +123,7 @@ export type MacroConfig = MacroBoxConfig &
   MacroCustomConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
+  MacroRippleConfig &
   MacroCountdownConfig;
 
 export interface Macro {
