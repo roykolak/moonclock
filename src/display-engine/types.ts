@@ -101,6 +101,8 @@ export interface MacroImageConfig {
 export interface MacroCountdownConfig {
   color: string;
   endDate: string;
+  cycleBackgroundColor: boolean;
+  unit: "minute" | "second";
 }
 
 export interface MacroCoordinatesConfig {
