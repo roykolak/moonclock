@@ -31,8 +31,13 @@ export function HardwareSettings({
 }) {
   if (!hardwareState) return null;
 
-  const { queuedFramesSnapshots, preset, renderedAt, lastLoopRunAt } =
-    hardwareState;
+  const {
+    queuedFramesSnapshots,
+    preset,
+    renderedAt,
+    lastLoopRunAt,
+    brightness,
+  } = hardwareState;
 
   const filteredSnapshots = filterQueuedFramesSnapshotsBySeconds(
     queuedFramesSnapshots
@@ -85,13 +90,23 @@ export function HardwareSettings({
                 </Text>
               </Grid.Col>
               <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" mb="xs" fw="bold">
+                <Text c="dimmed" size="sm" fw="bold">
                   Last loop run:
                 </Text>
               </Grid.Col>
               <Grid.Col span={8}>
-                <Text c="dimmed" size="sm" mb="xs">
+                <Text c="dimmed" size="sm">
                   {new Date(lastLoopRunAt).toLocaleString()}
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={4}>
+                <Text c="dimmed" size="sm" mb="xs" fw="bold">
+                  Brightness:
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={8}>
+                <Text c="dimmed" size="sm" mb="xs">
+                  {brightness}
                 </Text>
               </Grid.Col>
             </Grid>

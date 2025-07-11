@@ -35,13 +35,7 @@ export async function transformPresetToDisplayMacros(
       }
 
       if (sceneName === SceneName.Ripple) {
-        return [
-          ripple({
-            ...sceneConfig,
-            speed: sceneConfig.speed,
-            waveHeight: sceneConfig.waveHeight / 10,
-          }),
-        ];
+        return [ripple({ ...sceneConfig })];
       }
 
       if (sceneName === SceneName.Marquee) {
@@ -59,7 +53,7 @@ export async function transformPresetToDisplayMacros(
             startingRow: 3,
             startingColumn: 1,
             fontSize: 30,
-            text: sceneConfig.emoji,
+            text: sceneConfig.text,
           }),
         ];
       }
@@ -75,13 +69,7 @@ export async function transformPresetToDisplayMacros(
       }
 
       if (sceneName === SceneName.Twinkle) {
-        return [
-          twinkle({
-            ...sceneConfig,
-            speed: sceneConfig.speed,
-            amount: sceneConfig.amount * 10,
-          }),
-        ];
+        return [twinkle({ ...sceneConfig })];
       }
 
       if (sceneName === SceneName.Hardware) {

@@ -105,7 +105,7 @@ export function PresetForm({
 
     if (value === SceneName.Emoji) {
       return form.setFieldValue(fieldValue, {
-        emoji: "😁",
+        text: "😁",
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -289,7 +289,7 @@ export function SceneConfigControls({
         navPosition="none"
         maxFrequentRows="1"
         onEmojiSelect={(emoji: any) => {
-          form.setFieldValue(`scenes.${index}.sceneConfig.emoji`, emoji.native);
+          form.setFieldValue(`scenes.${index}.sceneConfig.text`, emoji.native);
         }}
       />
     );
@@ -329,6 +329,7 @@ export function SceneConfigControls({
             <Text size="sm">Twinkle Amount</Text>
             <Slider
               label={null}
+              max={1000}
               key={form.key(`scenes.${index}.sceneConfig.amount`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.amount`)}
             />
@@ -375,6 +376,9 @@ export function SceneConfigControls({
             <Text size="sm">Wave height</Text>
             <Slider
               label={null}
+              step={1}
+              max={10}
+              min={1}
               key={form.key(`scenes.${index}.sceneConfig.waveHeight`)}
               {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
             />
@@ -568,6 +572,27 @@ export function AdvancedSettings({
         </Accordion.Control>
         <Accordion.Panel>
           <Stack>
+            <Stack gap={8}>
+              <Group justify="space-between">
+                <Text size="sm">Override Display Brightness</Text>
+                <Switch
+                  checked={!!form.getValues()[PresetField.Brightness]}
+                  onChange={(event) => {
+                    const { checked } = event.currentTarget;
+                    form.setValues({
+                      [PresetField.Brightness]: checked ? 25 : null,
+                    });
+                  }}
+                />
+              </Group>
+              <Slider
+                label={null}
+                disabled={!form.getValues()[PresetField.Brightness]}
+                key={form.key(PresetField.Brightness)}
+                {...form.getInputProps(PresetField.Brightness)}
+              />
+            </Stack>
+
             <Select
               label="Time adjustment interval"
               description="Configure a custom time adjustment interval in the UI"

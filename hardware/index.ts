@@ -5,7 +5,7 @@ import { Macro, Pixel } from "../src/display-engine/types";
 import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
-import { PanelField, Preset, QueuedFramesSnapshot } from "@/types";
+import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
 
 import express from "express";
 import { waitForIpAddress } from "./getIpAddress";
@@ -13,6 +13,8 @@ import { shouldRunBootCode } from "./shouldRunBootCode";
 
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
+
+let brightness: number | null = null;
 
 function updateVirtualPanel(pixel: Pixel) {
   const hexA = pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000";
@@ -82,6 +84,7 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
       lastLoopRunAt,
       syncSpeed,
       virtualPanel,
+      brightness: brightness || panel[PanelField.Brightness],
     });
   });
 
@@ -132,7 +135,7 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
         for (const pixel of pixelUpdates) {
           const hexA = updateVirtualPanel(pixel);
           matrix
-            .brightness(panel[PanelField.Brightness])
+            .brightness(brightness || panel[PanelField.Brightness])
             .fgColor(parseInt(hexA, 16))
             .setPixel(pixel.x, pixel.y);
         }
@@ -233,6 +236,8 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
       queuedFramesSnapshots = [];
 
       ({ displayConfig, renderedAt, preset } = result);
+
+      brightness = preset[PresetField.Brightness] || null;
 
       syncSpeed = 0;
 

@@ -1,3 +1,5 @@
+import { MacroConfig } from "./display-engine";
+
 export interface DataTypes {
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
@@ -53,6 +55,7 @@ export enum PresetField {
   UntilMinute = "untilMinute",
   ForTime = "forTime",
   TimeAdjustmentAmount = "timeAdjustmentAmount",
+  Brightness = "brightness",
 }
 
 export interface QueuedFramesSnapshot {
@@ -67,6 +70,7 @@ export interface HardwareState {
   preset: Preset;
   syncSpeed: number;
   virtualPanel: { [k: string]: string };
+  brightness: number;
 }
 
 export enum SceneName {
@@ -90,12 +94,13 @@ export interface Preset {
   [PresetField.UntilMinute]: string;
   [PresetField.ForTime]: string;
   [PresetField.TimeAdjustmentAmount]?: string;
+  [PresetField.Brightness]?: number | null;
   scenes: Scene[];
 }
 
 export interface Scene {
   sceneName: string;
-  sceneConfig: any;
+  sceneConfig: Partial<MacroConfig>;
 }
 
 export interface CustomScene {

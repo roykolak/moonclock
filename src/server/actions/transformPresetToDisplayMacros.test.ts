@@ -31,7 +31,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: SceneName.Emoji, sceneConfig: { emoji: "☕️" } }],
+      scenes: [{ sceneName: SceneName.Emoji, sceneConfig: { text: "☕️" } }],
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -85,7 +85,7 @@ describe("transformPresetToDisplayConfig", () => {
 
     assert.equal(displayConfig.length, 1);
     assert.equal(displayConfig[0].macroName, "twinkle");
-    assert.equal(displayConfig[0].macroConfig.amount, 50);
+    assert.equal(displayConfig[0].macroConfig.amount, 5);
     assert.equal(displayConfig[0].macroConfig.speed, 75);
     assert.equal(displayConfig[0].macroConfig.color, "#ff0000");
   });
@@ -149,7 +149,7 @@ describe("transformPresetToDisplayConfig", () => {
 
     assert.equal(displayConfig[0].macroName, "coordinates");
     assert.equal(
-      Object.keys(displayConfig[0].macroConfig.coordinates).length,
+      Object.keys(displayConfig[0].macroConfig.coordinates as object).length,
       471
     );
   });
