@@ -32,7 +32,12 @@ export const defaultData: DataTypes = {
     {
       id: randomUUID(),
       name: "Sleep Mode",
-      scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+      scenes: [
+        {
+          sceneName: SceneName.Moon,
+          sceneConfig: { animateStarTwinkle: true },
+        },
+      ],
       mode: "until",
       untilDay: "1",
       untilHour: "7",
