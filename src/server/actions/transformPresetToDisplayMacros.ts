@@ -68,7 +68,7 @@ export async function transformPresetToDisplayMacros(
         const endDate = getEndDate(preset);
 
         if (endDate) {
-          return [countdown({ endDate: endDate.toJSON() })];
+          return [countdown({ ...sceneConfig, endDate: endDate.toJSON() })];
         } else {
           return [text({ text: "no\n date" })];
         }
