@@ -85,7 +85,7 @@ describe("transformPresetToDisplayConfig", () => {
 
     assert.equal(displayConfig.length, 1);
     assert.equal(displayConfig[0].macroName, "twinkle");
-    assert.equal(displayConfig[0].macroConfig.amount, 50);
+    assert.equal(displayConfig[0].macroConfig.amount, 5);
     assert.equal(displayConfig[0].macroConfig.speed, 75);
     assert.equal(displayConfig[0].macroConfig.color, "#ff0000");
   });
