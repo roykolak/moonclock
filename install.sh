@@ -3,7 +3,6 @@
 CURRENT_DIR=$(pwd)
 DATA_FOLDER="/var/lib/moonclock"
 APP_FOLDER="/usr/local/bin/moonclock"
-MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
 if [ ! -d "$DATA_FOLDER" ]; then
     sudo mkdir -p "$DATA_FOLDER"
@@ -17,6 +16,8 @@ echo "$message"
 echo "$message" > $DATA_FOLDER/current_install_step.txt
 
 sudo ./install-dependencies.sh
+
+MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
 message="Installing Moonclock ($MOONCLOCK_VERSION)"
 echo "$message"
