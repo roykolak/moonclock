@@ -40,7 +40,7 @@ The panel communication happens via the incredible [hzeller/rpi-rgb-led-matrix](
 
 The panel rendering is powered by [node-canvas](node-canvas). This allows for text, shapes, and more to easily be rendered on the panel. Additionally panel scenes can be rendered on the server or in the browser.
 
-There are three processes that are run together:
+There are three processes (via systemd) that are run together:
 
 - Nextjs webapp
 - Hardware client
