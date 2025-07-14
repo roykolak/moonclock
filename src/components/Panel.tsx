@@ -173,7 +173,7 @@ export default function Panel({
                     });
                   }}
                 >
-                  Clear Display
+                  Clear Panel
                 </Menu.Item>
                 <Menu.Item onClick={hardwareModalHandlers.open}>
                   Hardware...
