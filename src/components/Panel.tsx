@@ -37,6 +37,7 @@ import { IconDots } from "@tabler/icons-react";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 import { useEffect, useState } from "react";
 import { isFrameRateLagging } from "@/helpers/isFrameRateLagging";
+import { updatePreset } from "@/server/actions/presets";
 
 interface PanelProps {
   panel: PanelType;
@@ -84,7 +85,9 @@ export default function Panel({
     <>
       <Modal
         opened={customPresetModalOpen}
-        title={"Set custom preset"}
+        title={
+          scheduledPreset?.preset?.id ? "Update Preset" : "Set Custom Preset"
+        }
         onClose={customPresetModalHandlers.close}
       >
         <PresetForm
@@ -92,9 +95,12 @@ export default function Panel({
           preset={presetEditting}
           action={async (preset) => {
             await createCustomScheduledPreset(preset);
+            if (preset.id) {
+              updatePreset(preset);
+            }
             customPresetModalHandlers.close();
           }}
-          submitLabel="Apply now"
+          submitLabel={scheduledPreset?.preset?.id ? "Update" : "Apply now"}
         />
       </Modal>
       <Modal
@@ -140,7 +146,7 @@ export default function Panel({
             <Menu withinPortal position="bottom-end" shadow="sm">
               <Menu.Target>
                 <ActionIcon
-                  variant="subtle"
+                  variant="light"
                   color="gray"
                   data-testid="panel-menu"
                 >
@@ -156,7 +162,7 @@ export default function Panel({
                     customPresetModalHandlers.open();
                   }}
                 >
-                  Edit Scene
+                  Edit Preset
                 </Menu.Item>
                 <Menu.Item
                   disabled={!scheduledPreset?.preset}
@@ -167,7 +173,7 @@ export default function Panel({
                     });
                   }}
                 >
-                  Clear Scene
+                  Clear Panel
                 </Menu.Item>
                 <Menu.Item onClick={hardwareModalHandlers.open}>
                   Hardware...
