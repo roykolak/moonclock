@@ -211,17 +211,6 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
     await new Promise((resolve) => setTimeout(resolve, 10000));
   } else {
     console.log("[HARDWARE] Skipping boot message");
-    engine.render([
-      coordinates({
-        coordinates: {
-          "0:0": "#FFFFFF",
-          "0:31": "#FFFFFF",
-          "31:0": "#FFFFFF",
-          "31:31": "#FFFFFF",
-        },
-      }),
-    ]);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   engine.render([]);

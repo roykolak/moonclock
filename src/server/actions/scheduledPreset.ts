@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getData, setData } from "../db";
 import { Preset, ScheduledPreset } from "@/types";
 import { getEndDate } from "@/helpers/getEndDate";
+import { reloadHardware } from "../utils";
 
 export async function updateScheduledPreset(
   scheduledPreset: Partial<ScheduledPreset>
@@ -53,6 +54,8 @@ export async function createCustomScheduledPreset(preset: Preset) {
       updatedAt: new Date().toJSON(),
     },
   });
+
+  reloadHardware();
 
   revalidatePath("/panel");
 }
