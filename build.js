@@ -33,6 +33,7 @@ fs.writeFileSync(filePath, content, "utf8");
 console.log("\n -> canvas.node dependency path rewritten");
 
 fs.cpSync(".next/standalone", "dist/app", { recursive: true });
+fs.cpSync("public", "dist/app/public", { recursive: true });
 fs.cpSync(".next/static", "dist/app/.next/static", { recursive: true });
 
 console.log("\n -> Copied Next.js app with static assets to /dist");
