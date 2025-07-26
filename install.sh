@@ -86,4 +86,4 @@ sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
 
 sudo mc restart
 
-echo "Upgrade Complete!" > $DATA_FOLDER/current_install_step.txt
+echo "" > $DATA_FOLDER/current_install_step.txt
