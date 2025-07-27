@@ -68,6 +68,12 @@ Install the latest raspbian (not desktop verion!) on your pi and join it to your
 
 First, you'll need to [disable onboard sound](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound). This is a requirement from `hzeller/rpi-rgb-led-matrix`
 
+Update the system
+
+```
+sudo apt-get update
+```
+
 Download and untar Moonclock
 
 ```
