@@ -215,7 +215,7 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
 
   engine.render([]);
 
-  setInterval(async () => {
+  async function runConditionalRenderUpdate() {
     lastLoopRunAt = new Date().toJSON();
 
     const result = await checkForNewDisplayConfig(preset);
@@ -241,5 +241,11 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
       updateQueue = [];
       console.log(`[HARDWARE] Reset update queue`);
     }
+  }
+
+  setInterval(async () => {
+    await runConditionalRenderUpdate();
   }, 2000);
+
+  await runConditionalRenderUpdate();
 })();
