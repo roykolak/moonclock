@@ -38,14 +38,29 @@ test.describe("Test", () => {
     ).toBeVisible();
   });
 
+  test("activating a preset and editting it", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
+    await page.getByRole("button", { name: "Sleep Mode" }).click();
+
+    await page.getByTestId("panel-menu").click();
+    await page.getByRole("menuitem", { name: "Edit Preset" }).click();
+
+    await expect(page.getByText("Update Preset")).toBeVisible();
+
+    await page.getByTestId("preset-name").fill("Preset 123");
+
+    await page.getByRole("button", { name: "Update" }).click();
+
+    await expect(page.getByText("Preset 123 until...")).toBeVisible();
+  });
+
   test("activating a custom preset and clearing it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
     await page.getByRole("button", { name: "Custom" }).click();
 
     await expect(page.getByText("Set custom preset")).toBeVisible();
-
-    await page.getByTestId("preset-name").fill("Custom preset");
 
     await page.getByTestId("change-expiration").click();
 

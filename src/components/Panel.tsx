@@ -218,7 +218,7 @@ export default function Panel({
                   variant="light"
                   fullWidth
                   onClick={() => {
-                    setPresetEditting({ name: "Custom Preset" } as Preset);
+                    setPresetEditting({ name: "Custom" } as Preset);
                     customPresetModalHandlers.open();
                   }}
                 >

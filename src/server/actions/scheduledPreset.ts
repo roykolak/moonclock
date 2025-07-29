@@ -49,7 +49,7 @@ export async function createCustomScheduledPreset(preset: Preset) {
 
   setData({
     scheduledPreset: {
-      preset: { ...preset, name: "Custom" },
+      preset: { ...preset },
       endTime: endDate ? endDate.toJSON() : null,
       updatedAt: new Date().toJSON(),
     },
