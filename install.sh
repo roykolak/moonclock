@@ -84,6 +84,6 @@ echo " -> Symlinking mc to bin/mc"
 
 sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
 
-sudo mc restart
-
 echo "" > $DATA_FOLDER/current_install_step.txt
+
+sudo mc restart
