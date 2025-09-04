@@ -45,7 +45,7 @@ export const startMarquee: MacroFn = async ({
   textCtx.textBaseline = "top";
   textCtx.font = `${config.fontSize}px ${config.font}`;
   textCtx.fillStyle = config.color;
-  textCtx.textDrawingMode = "glyph";
+  textCtx.textDrawingMode = "glyph"; // for emojis
   textCtx.fillText(config.text, 0, 0);
 
   let offset =

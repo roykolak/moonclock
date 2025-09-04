@@ -25,6 +25,7 @@ export const startText: MacroFn = async ({
   ctx.textBaseline = "top";
   ctx.font = `${config.fontSize}px ${config.font}`;
   ctx.fillStyle = config.color;
+  ctx.textDrawingMode = "glyph"; // for emojis
 
   const textMetrics = ctx.measureText(config.text);
 
