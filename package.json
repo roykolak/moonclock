@@ -18,22 +18,20 @@
     "test": "APP_ENV=test tsx --test"
   },
   "dependencies": {
-    "@emoji-mart/data": "^1.2.1",
-    "@emoji-mart/react": "^1.1.1",
     "@mantine/charts": "^8.0.0",
     "@mantine/core": "^8.0.0",
     "@mantine/form": "^8.0.0",
     "@mantine/hooks": "^8.0.0",
     "@mantine/notifications": "^8.0.0",
     "@tabler/icons-react": "^3.24.0",
-    "canvas": "3.1.0",
     "emoji-mart": "^5.6.0",
     "express": "^5.1.0",
     "next": "15.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
-    "rpi-led-matrix": "^1.14.0"
+    "rpi-led-matrix": "^1.14.0",
+    "skia-canvas": "^3.0.6"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

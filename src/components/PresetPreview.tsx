@@ -1,13 +1,30 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { createDisplayEngine, Macro } from "../display-engine";
-import { createCanvas } from "canvas";
+import { createDisplayEngine, Dimensions, Macro } from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { Overlay } from "@mantine/core";
 
 const dimensions = { height: 32, width: 32 };
+
+export async function createCanvas(dimensions: Dimensions) {
+  const { width, height } = dimensions;
+
+  const tiny5Font = new FontFace("Tiny5", "url(/fonts/Tiny5-Regular.ttf)");
+  const loadedTiny5Font = await tiny5Font.load();
+
+  document.fonts.add(loadedTiny5Font);
+
+  await document.fonts.ready;
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  return canvas;
+}
 
 interface DisplayProps {
   preset?: Preset;
@@ -31,31 +48,40 @@ export function PresetPreview({
   }, [JSON.stringify(preset)]);
 
   useEffect(() => {
-    const canvas = createCanvas(dimensions.width, dimensions.height);
-    const ctx = canvas.getContext("2d");
+    (async () => {
+      const canvas = await createCanvas(dimensions);
+      const ctx = canvas.getContext("2d");
 
-    const displayEngine = createDisplayEngine({
-      dimensions,
-      onPixelsChange: (pixels) => {
-        pixels.forEach((pixel) => {
-          if (!pixel.rgba) return;
+      const displayEngine = createDisplayEngine({
+        dimensions,
+        createCanvas,
+        onPixelsChange: (pixels) => {
+          for (const pixel of pixels) {
+            if (!pixel.rgba) return;
 
-          const id = ctx.createImageData(1, 1);
-          const d = id.data;
-          d[0] = pixel.rgba[0];
-          d[1] = pixel.rgba[1];
-          d[2] = pixel.rgba[2];
-          d[3] = pixel.rgba[3];
-          ctx.putImageData(id, pixel.x, pixel.y);
-        });
+            const id = ctx?.createImageData(1, 1);
 
-        const dataURL = canvas.toDataURL("image/png");
-        setImageData(dataURL);
-      },
-    });
+            if (!id) continue;
 
-    setEngine(displayEngine);
-    return () => displayEngine.stop();
+            const d = id.data;
+
+            d[0] = pixel.rgba[0];
+            d[1] = pixel.rgba[1];
+            d[2] = pixel.rgba[2];
+            d[3] = pixel.rgba[3];
+
+            ctx?.putImageData(id, pixel.x, pixel.y);
+          }
+
+          const dataURL = canvas.toDataURL("png");
+          setImageData(dataURL);
+        },
+      });
+
+      setEngine(displayEngine);
+    })();
+
+    return () => engine?.stop();
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { buildCanvas, syncFromCanvas } from "../canvas";
+import { syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 import { getAnimationFrame, stopAnimationFrame } from "../animation";
 
@@ -8,6 +8,7 @@ export const startMarquee: MacroFn = async ({
   ctx,
   index,
   updatePixels,
+  createCanvas,
 }) => {
   const config = {
     color: "#fff",
@@ -37,15 +38,15 @@ export const startMarquee: MacroFn = async ({
 
   const textMetrics = ctx.measureText(config.text);
 
-  const { canvas: textCanvas, ctx: textCtx } = buildCanvas({
+  const textCanvas = await createCanvas({
     width: textMetrics.width,
     height: 32,
   });
+  const textCtx = textCanvas.getContext("2d") as CanvasRenderingContext2D;
 
   textCtx.textBaseline = "top";
   textCtx.font = `${config.fontSize}px ${config.font}`;
   textCtx.fillStyle = config.color;
-  textCtx.textDrawingMode = "glyph"; // for emojis
   textCtx.fillText(config.text, 0, 0);
 
   let offset =

@@ -31,7 +31,7 @@ describe("transformPresetToDisplayConfig", () => {
     const preset: Preset = {
       name: "test preset",
       mode: "for",
-      scenes: [{ sceneName: SceneName.Emoji, sceneConfig: { text: "☕️" } }],
+      scenes: [{ sceneName: SceneName.Emoji, sceneConfig: { name: "smile" } }],
       forTime: "0:05",
       untilDay: "0",
       untilHour: "0",
@@ -41,8 +41,8 @@ describe("transformPresetToDisplayConfig", () => {
     const displayConfig = await transformPresetToDisplayMacros(preset);
 
     assert.equal(displayConfig.length, 1);
-    assert.equal(displayConfig[0].macroName, "text");
-    assert.equal(displayConfig[0].macroConfig.text, "☕️");
+    assert.equal(displayConfig[0].macroName, "emoji");
+    assert.equal(displayConfig[0].macroConfig.name, "smile");
   });
 
   it("returns marquee macro config", async () => {

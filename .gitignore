@@ -49,6 +49,7 @@ release.tar.gz
 
 /dist/app
 /dist/hardware/index.cjs
+/dist/hardware/public
 
 /test-results/
 /playwright-report/

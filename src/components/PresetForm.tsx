@@ -33,8 +33,6 @@ import {
   MacroRippleConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 interface PresetFormProps {
@@ -105,7 +103,7 @@ export function PresetForm({
 
     if (value === SceneName.Emoji) {
       return form.setFieldValue(fieldValue, {
-        text: "😁",
+        name: "smile",
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -279,19 +277,36 @@ export function SceneConfigControls({
   form: UseFormReturnType<Preset>;
   index: number;
 }) {
-  const { sceneName } = form.getValues().scenes[index];
+  const { sceneName, sceneConfig } = form.getValues().scenes[index];
+
+  const supportedEmojis = [
+    ["🎉", "tada"],
+    ["✅", "checkmark"],
+    ["😄", "smile"],
+    ["🔥", "flame"],
+    ["👍", "thumbsup"],
+    ["👎", "thumbsdown"],
+    ["❌", "x"],
+  ];
 
   if (sceneName === "emoji") {
     return (
-      <Picker
-        data={data}
-        previewPosition="none"
-        navPosition="none"
-        maxFrequentRows="1"
-        onEmojiSelect={(emoji: any) => {
-          form.setFieldValue(`scenes.${index}.sceneConfig.text`, emoji.native);
-        }}
-      />
+      <Group gap="xs">
+        {supportedEmojis.map((supportedEmoji) => {
+          const [emoji, name] = supportedEmoji;
+          return (
+            <ActionIcon
+              key={name}
+              color={sceneConfig.name === name ? "cyan" : "gray"}
+              onClick={() =>
+                form.setFieldValue(`scenes.${index}.sceneConfig.name`, name)
+              }
+            >
+              {emoji}
+            </ActionIcon>
+          );
+        })}
+      </Group>
     );
   }
 

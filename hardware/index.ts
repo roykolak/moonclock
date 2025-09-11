@@ -1,7 +1,7 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
-import { Macro, Pixel } from "../src/display-engine/types";
+import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
 import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
@@ -31,6 +31,16 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
   return hexValues
     .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
     .join("");
+}
+
+export async function createCanvas(dimensions: Dimensions) {
+  const { width, height } = dimensions;
+
+  const { Canvas, FontLibrary } = await import("skia-canvas");
+
+  FontLibrary.use("Tiny5", "./public/fonts/Tiny5-Regular.ttf");
+
+  return new Canvas(width, height) as unknown as HTMLCanvasElement;
 }
 
 (async () => {
@@ -166,6 +176,7 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
 
   const engine = createDisplayEngine({
     dimensions: { width: 32, height: 32 },
+    createCanvas,
     onPixelsChange: (pixels) => {
       updateQueue.push(pixels);
     },
@@ -194,8 +205,9 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
     engine.render([
       text({
         text: "Starting",
+        font: "Tiny5",
         color: "#AAA",
-        fontSize: 9,
+        fontSize: 8,
         startingRow: 1,
       }),
       marquee({

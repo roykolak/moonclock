@@ -1,4 +1,3 @@
-import { CanvasRenderingContext2D } from "canvas";
 import { Dimensions, MacroBoxConfig, MacroFn } from "../types";
 import { syncFromCanvas } from "../canvas";
 

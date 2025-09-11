@@ -1,13 +1,12 @@
-import { loadImage } from "canvas";
 import { MacroFn } from "../types";
-import { syncFromCanvas } from "../canvas";
+// import { syncFromCanvas } from "../canvas";
 
 export const startImage: MacroFn = async ({
   macroConfig,
   dimensions,
-  ctx,
-  index,
-  updatePixels,
+  // ctx,
+  // index,
+  // updatePixels,
 }) => {
   const config = {
     url: "data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7",
@@ -19,13 +18,15 @@ export const startImage: MacroFn = async ({
     ...macroConfig,
   };
 
-  const img = await loadImage(config.url);
+  console.log(config);
 
-  ctx?.drawImage(img, 0, 0);
-  const pixels = syncFromCanvas(ctx, dimensions);
-  updatePixels(pixels, index);
+  // const img = await loadImage(config.url);
 
-  img.src = config.url;
+  // ctx?.drawImage(img as unknown as CanvasImageSource, 0, 0);
+  // const pixels = syncFromCanvas(ctx, dimensions);
+  // updatePixels(pixels, index);
+
+  // img.src = config.url;
 
   return () => {};
 };

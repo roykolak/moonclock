@@ -29,3 +29,11 @@ export function mixColors({
 
   return new Uint8ClampedArray(mix);
 }
+
+export function toHex(uint8ClampedArray: Uint8ClampedArray) {
+  let hex = "";
+  for (let i = 0; i < uint8ClampedArray.length; i++) {
+    hex += uint8ClampedArray[i].toString(16).padStart(2, "0");
+  }
+  return "#" + hex;
+}

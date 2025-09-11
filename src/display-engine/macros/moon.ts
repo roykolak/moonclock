@@ -34,6 +34,7 @@ export const startMoon: MacroFn = async ({
   ctx,
   index,
   updatePixels,
+  createCanvas,
 }) => {
   const coordinatesConfig: MacroCoordinatesConfig = {
     coordinates: moon,
@@ -53,6 +54,7 @@ export const startMoon: MacroFn = async ({
     index,
     updatePixels,
     macroConfig: coordinatesConfig,
+    createCanvas,
   });
 
   function runMoon(currentTime: number) {

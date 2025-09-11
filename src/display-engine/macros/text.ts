@@ -1,6 +1,23 @@
 import { syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 
+// function logPixels(pixels: Pixel[]) {
+//   const output: { [k: string]: string } = {};
+
+//   for (const pixel of pixels) {
+//     output[`${pixel.x}:${pixel.y}`] = toHex(pixel.rgba as Uint8ClampedArray);
+//   }
+
+//   console.log(JSON.stringify(output, null, 2));
+// }
+
+// logPixels(
+//   pixels.filter(
+//     (pixel) =>
+//       !(pixel.rgba[0] === 0 && pixel.rgba[2] === 0 && pixel.rgba[3] === 0)
+//   )
+// );
+
 export const startText: MacroFn = async ({
   macroConfig,
   dimensions,
@@ -25,7 +42,6 @@ export const startText: MacroFn = async ({
   ctx.textBaseline = "top";
   ctx.font = `${config.fontSize}px ${config.font}`;
   ctx.fillStyle = config.color;
-  ctx.textDrawingMode = "glyph"; // for emojis
 
   const textMetrics = ctx.measureText(config.text);
 
