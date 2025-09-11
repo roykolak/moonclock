@@ -4,6 +4,7 @@ import {
   box,
   coordinates,
   countdown,
+  emoji,
   marquee,
   moon,
   ripple,
@@ -49,11 +50,14 @@ export async function transformPresetToDisplayMacros(
 
       if (sceneName === SceneName.Emoji) {
         return [
-          text({
-            startingRow: 3,
-            startingColumn: 1,
-            fontSize: 30,
-            text: sceneConfig.text,
+          // text({
+          //   startingRow: 4,
+          //   startingColumn: 1,
+          //   fontSize: 30,
+          //   text: "❌",
+          // }),
+          emoji({
+            ...sceneConfig,
           }),
         ];
       }

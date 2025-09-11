@@ -4,6 +4,7 @@ import {
   MacroCoordinatesConfig,
   MacroCountdownConfig,
   MacroCustomConfig,
+  MacroEmojiConfig,
   MacroImageConfig,
   MacroMarqueeConfig,
   MacroMeteorsConfig,
@@ -36,6 +37,11 @@ export const text = (macroConfig: Partial<MacroTextConfig>): Macro => ({
 
 export const marquee = (macroConfig: Partial<MacroMarqueeConfig>): Macro => ({
   macroName: MacroName.Marquee,
+  macroConfig,
+});
+
+export const emoji = (macroConfig: Partial<MacroEmojiConfig>): Macro => ({
+  macroName: MacroName.Emoji,
   macroConfig,
 });
 

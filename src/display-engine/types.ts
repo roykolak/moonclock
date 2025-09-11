@@ -1,5 +1,3 @@
-import { CanvasRenderingContext2D } from "canvas";
-
 export type Alignment = "left" | "center" | "right";
 
 export enum MacroName {
@@ -14,6 +12,7 @@ export enum MacroName {
   Coordinates = "coordinates",
   Moon = "moon",
   Countdown = "countdown",
+  Emoji = "emoji",
 }
 export interface Gradient {
   direction: "vertical" | "horizontal";
@@ -89,6 +88,10 @@ export interface MacroMarqueeConfig {
   direction: "horizontal" | "vertical";
 }
 
+export interface MacroEmojiConfig {
+  name: string;
+}
+
 export interface MacroImageConfig {
   url: string;
   speed: number;
@@ -126,7 +129,8 @@ export type MacroConfig = MacroBoxConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
   MacroRippleConfig &
-  MacroCountdownConfig;
+  MacroCountdownConfig &
+  MacroEmojiConfig;
 
 export interface Macro {
   macroName: MacroName;
@@ -155,6 +159,9 @@ export type InternalPixelsChangeCallback = (
 ) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
 export type MacroStopCallback = () => void;
+export type CreateCanvas = (
+  dimensions: Dimensions
+) => Promise<HTMLCanvasElement>;
 
 export type MacroFn = ({
   macroConfig,
@@ -162,10 +169,12 @@ export type MacroFn = ({
   ctx,
   index,
   updatePixels,
+  createCanvas,
 }: {
   macroConfig: Partial<MacroConfig>;
   dimensions: Dimensions;
   ctx: CanvasRenderingContext2D;
   index: number;
   updatePixels: InternalPixelsChangeCallback;
+  createCanvas: CreateCanvas;
 }) => Promise<MacroStopCallback>;

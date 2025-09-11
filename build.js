@@ -16,6 +16,7 @@ await esbuild.build({
   loader: {
     ".node": "file",
   },
+  keepNames: true,
   external: ["*.node"],
   outfile: "dist/hardware/index.cjs",
 });
@@ -25,8 +26,8 @@ console.log("\n -> Hardware script built");
 // update canvas.node path in hardware output
 const filePath = "dist/hardware/index.cjs";
 let content = fs.readFileSync(filePath, "utf8");
-const oldString = "../build/Release/canvas.node";
-const newString = "./canvas.node";
+const oldString = "../skia.node";
+const newString = "./skia.node";
 content = content.replace(oldString, newString);
 fs.writeFileSync(filePath, content, "utf8");
 
@@ -35,6 +36,8 @@ console.log("\n -> canvas.node dependency path rewritten");
 fs.cpSync(".next/standalone", "dist/app", { recursive: true });
 fs.cpSync("public", "dist/app/public", { recursive: true });
 fs.cpSync(".next/static", "dist/app/.next/static", { recursive: true });
+
+fs.cpSync("public", "dist/hardware/public", { recursive: true });
 
 console.log("\n -> Copied Next.js app with static assets to /dist");
 
