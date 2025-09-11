@@ -41,13 +41,6 @@ fs.cpSync("public", "dist/hardware/public", { recursive: true });
 
 console.log("\n -> Copied Next.js app with static assets to /dist");
 
-fs.cpSync(
-  "dist/hardware/canvas.node",
-  "dist/app/node_modules/canvas/build/Release/canvas.node"
-);
-
-console.log("\n -> Copied RPI canvas.node to /dist/app/node_modules...");
-
 const releaseFolder = "moonclock";
 
 console.log("\n -> Creating release folder");
