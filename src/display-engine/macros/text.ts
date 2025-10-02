@@ -1,68 +1,91 @@
-import { syncFromCanvas } from "../canvas";
-import { MacroFn } from "../types";
-
-// function logPixels(pixels: Pixel[]) {
-//   const output: { [k: string]: string } = {};
-
-//   for (const pixel of pixels) {
-//     output[`${pixel.x}:${pixel.y}`] = toHex(pixel.rgba as Uint8ClampedArray);
-//   }
-
-//   console.log(JSON.stringify(output, null, 2));
-// }
-
-// logPixels(
-//   pixels.filter(
-//     (pixel) =>
-//       !(pixel.rgba[0] === 0 && pixel.rgba[2] === 0 && pixel.rgba[3] === 0)
-//   )
-// );
+import { MacroFn, Pixel } from "../types";
+import { $Font } from "bdfparser";
 
 export const startText: MacroFn = async ({
   macroConfig,
   dimensions,
-  ctx,
+  fonts,
   index,
   updatePixels,
 }) => {
   const config = {
     color: "#fff",
     text: "hello WORLD!",
-    font: "Arial",
+    font: "Tiny5",
     fontSize: 12,
-    alignment: "left",
-    spaceBetweenLetters: 1,
-    spaceBetweenLines: 1,
     startingColumn: 0,
     startingRow: 0,
     width: dimensions.width,
+    alignment: "left" as const,
+    spaceBetweenLetters: 1,
+    spaceBetweenLines: 1,
     ...macroConfig,
   };
 
-  ctx.textBaseline = "top";
-  ctx.font = `${config.fontSize}px ${config.font}`;
-  ctx.fillStyle = config.color;
+  let pixels: Pixel[] = [];
 
-  const textMetrics = ctx.measureText(config.text);
+  try {
+    const font = await $Font(fonts["4x6"]);
 
-  if (config.alignment === "left") {
-    ctx.fillText(config.text, config.startingColumn, config.startingRow);
-  } else if (config.alignment === "right") {
-    ctx.fillText(
-      config.text,
-      config.width - textMetrics.width,
-      config.startingRow
+    function hexRowsToOnPixels(
+      hexRows: string[],
+      width: number,
+      cursor: number,
+      line: number
+    ) {
+      const bytesPerRow = Math.ceil(width / 8);
+
+      for (let y = 0; y < hexRows.length; y++) {
+        const hex = hexRows[y];
+        const padded = hex.padStart(bytesPerRow * 2, "0");
+
+        let bits = "";
+        for (let i = 0; i < padded.length; i += 2) {
+          const byte = parseInt(padded.slice(i, i + 2), 16);
+          bits += byte.toString(2).padStart(8, "0");
+        }
+
+        for (let x = 0; x < width; x++) {
+          if (bits[x] === "1")
+            pixels.push({
+              x: x + cursor,
+              y: y + line,
+              rgba: new Uint8ClampedArray([255, 255, 255, 255]),
+            });
+        }
+      }
+    }
+
+    let cursor = 0;
+    let lineCursor = 0;
+
+    for (const line of "hello\nWorld!".split("\n")) {
+      for (const character of line) {
+        const glyph = font.glyph(character);
+        hexRowsToOnPixels(
+          glyph?.meta?.hexdata as string[],
+          glyph?.meta.bbw as number,
+          cursor,
+          lineCursor
+        );
+
+        cursor += glyph?.meta.bbw || 0;
+      }
+      lineCursor += font.headers?.fbby || 0;
+      cursor = 0;
+    }
+
+    //rgba: new Uint8ClampedArray([255, 255, 255, 255]),
+  } catch (error) {
+    console.error(
+      `Failed to render text with bitmap font ${config.font}:`,
+      error
     );
-  } else if (config.alignment === "center") {
-    ctx.fillText(
-      config.text,
-      config.width / 2 - textMetrics.width / 2,
-      config.startingRow
-    );
+    // Fall back to empty pixels array
+    pixels = [];
   }
 
-  const pixels = syncFromCanvas(ctx, dimensions);
   updatePixels(pixels, index);
 
-  return () => {};
+  return async () => {};
 };

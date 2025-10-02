@@ -1,15 +1,15 @@
 import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
-import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
-import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
+import { Macro, Pixel } from "../src/display-engine/types";
+import { coordinates, text } from "../src/display-engine/marcoConfigs";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
-
-import express from "express";
+import express, { Response } from "express";
 import { waitForIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
+import getline from "readlineiter";
 
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
@@ -31,16 +31,6 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
   return hexValues
     .map((string) => (string.length === 1 ? "0" + string : string)) // Adds 0 when length of one number is 1
     .join("");
-}
-
-export async function createCanvas(dimensions: Dimensions) {
-  const { width, height } = dimensions;
-
-  const { Canvas, FontLibrary } = await import("skia-canvas");
-
-  FontLibrary.use("Tiny5", "./public/fonts/Tiny5-Regular.ttf");
-
-  return new Canvas(width, height) as unknown as HTMLCanvasElement;
 }
 
 (async () => {
@@ -93,14 +83,60 @@ export async function createCanvas(dimensions: Dimensions) {
       renderedAt,
       lastLoopRunAt,
       syncSpeed,
-      virtualPanel,
       brightness: brightness || panel[PanelField.Brightness],
     });
+  });
+
+  app.get("/api/reload", (req, res) => {
+    runConditionalRenderUpdate();
+    res.send(true);
   });
 
   app.post("/api/throttle", (req, res) => {
     syncSpeed = req.body.value;
     res.send(true);
+  });
+
+  function broadcast(data: any) {
+    const message = `data: ${JSON.stringify(data)}\n\n`;
+    clients.forEach((client) => {
+      try {
+        client.write(message);
+      } catch (error) {
+        console.log(error);
+        clients.delete(client);
+      }
+    });
+  }
+
+  const clients = new Set<Response>();
+
+  app.get("/api/events", (req, res) => {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Cache-Control",
+    });
+
+    clients.add(res);
+    console.log(`Client connected. Total: ${clients.size}`);
+
+    broadcast({
+      type: "update",
+      timestamp: new Date().toISOString(),
+      data: virtualPanel,
+    });
+
+    res.write(
+      'data: {"type": "connected", "message": "Connected to server"}\n\n'
+    );
+
+    req.on("close", () => {
+      clients.delete(res);
+      console.log(`Client disconnected. Total: ${clients.size}`);
+    });
   });
 
   app.listen(port, () => {
@@ -162,10 +198,16 @@ export async function createCanvas(dimensions: Dimensions) {
 
       recordQueuedFramesSnapshot(updateQueue.length);
 
-      if (pixelUpdates) {
+      if (pixelUpdates && pixelUpdates?.length > 0) {
         for (const pixel of pixelUpdates) {
           updateVirtualPanel(pixel);
         }
+
+        broadcast({
+          type: "update",
+          timestamp: new Date().toISOString(),
+          data: virtualPanel,
+        });
       }
 
       setTimeout(fakeSync, syncSpeed);
@@ -176,7 +218,9 @@ export async function createCanvas(dimensions: Dimensions) {
 
   const engine = createDisplayEngine({
     dimensions: { width: 32, height: 32 },
-    createCanvas,
+    fonts: {
+      "4x6": getline("public/fonts/4x6.bdf"),
+    },
     onPixelsChange: (pixels) => {
       updateQueue.push(pixels);
     },
@@ -210,10 +254,8 @@ export async function createCanvas(dimensions: Dimensions) {
         fontSize: 8,
         startingRow: 1,
       }),
-      marquee({
-        text: ipAddress || "",
-        direction: "horizontal",
-        speed: 40,
+      text({
+        text: ipAddress,
         startingRow: 12,
         fontSize: 16,
         color: "#008000",

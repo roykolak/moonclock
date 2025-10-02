@@ -66,7 +66,7 @@ if [ ! -d "$DATA_FOLDER/custom_scenes" ]; then
     sudo mkdir -p "$DATA_FOLDER/custom_scenes"
 else
     echo "   -> custom scenes directory exists, skipping"
-fi 
+fi
 
 sudo cp "$APP_FOLDER/releases/$MOONCLOCK_VERSION/custom_scenes/"* "$DATA_FOLDER/custom_scenes/"
 

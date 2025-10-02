@@ -1,29 +1,38 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { createDisplayEngine, Dimensions, Macro } from "../display-engine";
+import { createDisplayEngine, Macro, Pixel } from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { Overlay } from "@mantine/core";
+import fetchline from "fetchline";
 
 const dimensions = { height: 32, width: 32 };
 
-export async function createCanvas(dimensions: Dimensions) {
-  const { width, height } = dimensions;
+export function getRenderedCanvasDataUrl(
+  canvas: HTMLCanvasElement,
+  pixels: Pixel[]
+) {
+  const ctx = canvas.getContext("2d");
 
-  const tiny5Font = new FontFace("Tiny5", "url(/fonts/Tiny5-Regular.ttf)");
-  const loadedTiny5Font = await tiny5Font.load();
+  for (const pixel of pixels) {
+    if (!pixel.rgba) return;
 
-  document.fonts.add(loadedTiny5Font);
+    const id = ctx?.createImageData(1, 1);
 
-  await document.fonts.ready;
+    if (!id) continue;
 
-  const canvas = document.createElement("canvas");
+    const d = id.data;
 
-  canvas.width = width;
-  canvas.height = height;
+    d[0] = pixel.rgba[0];
+    d[1] = pixel.rgba[1];
+    d[2] = pixel.rgba[2];
+    d[3] = pixel.rgba[3];
 
-  return canvas;
+    ctx?.putImageData(id, pixel.x, pixel.y);
+  }
+
+  return canvas.toDataURL("png");
 }
 
 interface DisplayProps {
@@ -48,40 +57,29 @@ export function PresetPreview({
   }, [JSON.stringify(preset)]);
 
   useEffect(() => {
-    (async () => {
-      const canvas = await createCanvas(dimensions);
-      const ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
 
+    canvas.width = 32;
+    canvas.height = 32;
+
+    (async () => {
       const displayEngine = createDisplayEngine({
         dimensions,
-        createCanvas,
+        fonts: {
+          "4x6": await fetchline(`/fonts/4x6.bdf`),
+        },
         onPixelsChange: (pixels) => {
-          for (const pixel of pixels) {
-            if (!pixel.rgba) return;
-
-            const id = ctx?.createImageData(1, 1);
-
-            if (!id) continue;
-
-            const d = id.data;
-
-            d[0] = pixel.rgba[0];
-            d[1] = pixel.rgba[1];
-            d[2] = pixel.rgba[2];
-            d[3] = pixel.rgba[3];
-
-            ctx?.putImageData(id, pixel.x, pixel.y);
-          }
-
-          const dataURL = canvas.toDataURL("png");
-          setImageData(dataURL);
+          const dataUrl = getRenderedCanvasDataUrl(canvas, pixels);
+          setImageData(dataUrl);
         },
       });
 
       setEngine(displayEngine);
     })();
 
-    return () => engine?.stop();
+    // return () => {
+    //   displayEngine?.stop();
+    // };
   }, []);
 
   useEffect(() => {

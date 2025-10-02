@@ -12,18 +12,17 @@ import { startText } from "./text";
 export const startEmoji: MacroFn = async ({
   macroConfig,
   dimensions,
-  ctx,
+  fonts,
   index,
   updatePixels,
-  createCanvas,
 }) => {
   const coordinates = getEmojiCoordinates(macroConfig.name);
 
   if (!coordinates) {
     startText({
       dimensions,
-      ctx,
       index,
+      fonts,
       updatePixels,
       macroConfig: {
         text: "?",
@@ -32,22 +31,20 @@ export const startEmoji: MacroFn = async ({
         fontSize: 20,
         color: "#888",
       },
-      createCanvas,
     });
   } else {
     startCoordinates({
       dimensions,
-      ctx,
+      fonts,
       index,
       updatePixels,
       macroConfig: {
         coordinates,
       },
-      createCanvas,
     });
   }
 
-  return () => {};
+  return async () => {};
 };
 
 function getEmojiCoordinates(name?: string) {

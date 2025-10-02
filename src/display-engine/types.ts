@@ -4,14 +4,14 @@ export enum MacroName {
   Box = "box",
   Text = "text",
   Twinkle = "twinkle",
-  Meteors = "meteors",
-  Marquee = "marquee",
-  Image = "image",
-  Ripple = "ripple",
-  Custom = "custom",
+  // Meteors = "meteors",
+  // Marquee = "marquee",
+  // Image = "image",
+  // Ripple = "ripple",
+  // Custom = "custom",
   Coordinates = "coordinates",
-  Moon = "moon",
-  Countdown = "countdown",
+  // Moon = "moon",
+  // Countdown = "countdown",
   Emoji = "emoji",
 }
 export interface Gradient {
@@ -56,10 +56,6 @@ export interface MacroRippleConfig {
   speed: number;
   color: string;
   waveHeight: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-}
-
-export interface MacroCustomConfig {
-  customFunc: (ctx: CanvasRenderingContext2D, dimensions: Dimensions) => void;
 }
 
 export interface MacroMeteorsConfig {
@@ -125,7 +121,6 @@ export type MacroConfig = MacroBoxConfig &
   MacroTwinkleConfig &
   // | MacroMeteorsConfig
   MacroImageConfig &
-  MacroCustomConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
   MacroRippleConfig &
@@ -158,23 +153,21 @@ export type InternalPixelsChangeCallback = (
   index: number
 ) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
-export type MacroStopCallback = () => void;
-export type CreateCanvas = (
-  dimensions: Dimensions
-) => Promise<HTMLCanvasElement>;
+export interface Fonts {
+  "4x6": any;
+}
+export type MacroStopCallback = () => Promise<void>;
 
 export type MacroFn = ({
   macroConfig,
   dimensions,
-  ctx,
+  fonts,
   index,
   updatePixels,
-  createCanvas,
 }: {
   macroConfig: Partial<MacroConfig>;
   dimensions: Dimensions;
-  ctx: CanvasRenderingContext2D;
+  fonts: Fonts;
   index: number;
   updatePixels: InternalPixelsChangeCallback;
-  createCanvas: CreateCanvas;
 }) => Promise<MacroStopCallback>;

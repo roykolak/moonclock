@@ -18,6 +18,7 @@ case "$1" in
         ;;
     start)
         echo "Starting Moonclock app & hardware client"
+        export PUPPETEER_EXECUTABLE_PATH="/usr/local/bin/moonclock/current/dist/hardware/.local-chromium/chrome-linux/chrome"
         systemctl start moonclock-app
         systemctl start moonclock-hardware
         systemctl start moonclock-update-checker.timer

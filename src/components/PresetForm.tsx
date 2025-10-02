@@ -19,6 +19,7 @@ import {
   Stack,
   Switch,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -116,6 +117,12 @@ export function PresetForm({
     if (value === SceneName.Moon) {
       return form.setFieldValue(fieldValue, {
         animateStarTwinkle: true,
+      } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Message) {
+      return form.setFieldValue(fieldValue, {
+        text: "Hello\nWorld!",
       } as Partial<MacroMarqueeConfig>);
     }
 
@@ -233,6 +240,7 @@ function Scene({
                 SceneName.Ripple,
                 SceneName.Marquee,
                 SceneName.Emoji,
+                SceneName.Message,
               ],
             },
             {
@@ -481,6 +489,29 @@ export function SceneConfigControls({
             key={form.key(`scenes.${index}.sceneConfig.color`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
           />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (sceneName === "message") {
+    return (
+      <Card w="100%">
+        <Stack>
+          <Textarea
+            label="Message"
+            key={form.key(`scenes.${index}.sceneConfig.text`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
+          />
+          <Stack gap={4}>
+            <Text size="sm">Font size</Text>
+            <Slider
+              min={12}
+              max={60}
+              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
+            />
+          </Stack>
         </Stack>
       </Card>
     );

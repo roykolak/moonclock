@@ -3,17 +3,17 @@
 import {
   box,
   coordinates,
-  countdown,
-  emoji,
-  marquee,
-  moon,
-  ripple,
+  // countdown,
+  // emoji,
+  // marquee,
+  // moon,
+  // ripple,
   text,
   twinkle,
 } from "../../display-engine/marcoConfigs";
 import { Macro } from "../../display-engine/types";
 import { Preset, SceneName } from "@/types";
-import { getEndDate } from "@/helpers/getEndDate";
+// import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
 export async function transformPresetToDisplayMacros(
@@ -31,46 +31,57 @@ export async function transformPresetToDisplayMacros(
         return [box({ backgroundColor: sceneConfig.color })];
       }
 
-      if (sceneName === SceneName.Moon) {
-        return [moon({ ...sceneConfig })];
-      }
+      // if (sceneName === SceneName.Moon) {
+      //   return [moon({ ...sceneConfig })];
+      // }
 
-      if (sceneName === SceneName.Ripple) {
-        return [ripple({ ...sceneConfig })];
-      }
+      // if (sceneName === SceneName.Ripple) {
+      //   return [ripple({ ...sceneConfig })];
+      // }
 
-      if (sceneName === SceneName.Marquee) {
+      // if (sceneName === SceneName.Marquee) {
+      //   return [
+      //     marquee({
+      //       ...sceneConfig,
+      //       direction: "horizontal",
+      //     }),
+      //   ];
+      // }
+
+      if (sceneName === SceneName.Message) {
         return [
-          marquee({
+          text({
             ...sceneConfig,
-            direction: "horizontal",
+            startingRow: 0,
+            font: "Tiny5",
+            fontSize: 8,
           }),
         ];
       }
 
       if (sceneName === SceneName.Emoji) {
         return [
-          // text({
-          //   startingRow: 4,
-          //   startingColumn: 1,
-          //   fontSize: 30,
-          //   text: "❌",
-          // }),
-          emoji({
-            ...sceneConfig,
+          text({
+            startingRow: 4,
+            startingColumn: 1,
+            fontSize: 30,
+            text: "👍",
           }),
+          // emoji({
+          //   ...sceneConfig,
+          // }),
         ];
       }
 
-      if (sceneName === SceneName.Countdown) {
-        const endDate = getEndDate(preset);
+      // if (sceneName === SceneName.Countdown) {
+      //   const endDate = getEndDate(preset);
 
-        if (endDate) {
-          return [countdown({ ...sceneConfig, endDate: endDate.toJSON() })];
-        } else {
-          return [text({ text: "no\n date" })];
-        }
-      }
+      //   if (endDate) {
+      //     return [countdown({ ...sceneConfig, endDate: endDate.toJSON() })];
+      //   } else {
+      //     return [text({ text: "no\n date" })];
+      //   }
+      // }
 
       if (sceneName === SceneName.Twinkle) {
         return [twinkle({ ...sceneConfig })];
