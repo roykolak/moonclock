@@ -3,12 +3,10 @@ import {
   MacroBoxConfig,
   MacroCoordinatesConfig,
   // MacroCountdownConfig,
-  // MacroCustomConfig,
   MacroEmojiConfig,
-  // MacroImageConfig,
   // MacroMarqueeConfig,
   // MacroMeteorsConfig,
-  // MacroMoonConfig,
+  MacroMoonConfig,
   MacroName,
   // MacroRippleConfig,
   MacroTextConfig,
@@ -45,25 +43,15 @@ export const emoji = (macroConfig: Partial<MacroEmojiConfig>): Macro => ({
   macroConfig,
 });
 
-// export const image = (macroConfig: Partial<MacroImageConfig>): Macro => ({
-//   macroName: MacroName.Image,
-//   macroConfig,
-// });
-
 // export const ripple = (macroConfig: Partial<MacroRippleConfig>): Macro => ({
 //   macroName: MacroName.Ripple,
 //   macroConfig,
 // });
 
-// export const custom = (macroConfig: Partial<MacroCustomConfig>): Macro => ({
-//   macroName: MacroName.Custom,
-//   macroConfig,
-// });
-
-// export const moon = (macroConfig: Partial<MacroMoonConfig>): Macro => ({
-//   macroName: MacroName.Moon,
-//   macroConfig,
-// });
+export const moon = (macroConfig: Partial<MacroMoonConfig>): Macro => ({
+  macroName: MacroName.Moon,
+  macroConfig,
+});
 
 export const coordinates = (
   macroConfig: Partial<MacroCoordinatesConfig>

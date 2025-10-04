@@ -6,7 +6,7 @@ import {
   // countdown,
   // emoji,
   // marquee,
-  // moon,
+  moon,
   // ripple,
   text,
   twinkle,
@@ -31,9 +31,9 @@ export async function transformPresetToDisplayMacros(
         return [box({ backgroundColor: sceneConfig.color })];
       }
 
-      // if (sceneName === SceneName.Moon) {
-      //   return [moon({ ...sceneConfig })];
-      // }
+      if (sceneName === SceneName.Moon) {
+        return [moon({ ...sceneConfig })];
+      }
 
       // if (sceneName === SceneName.Ripple) {
       //   return [ripple({ ...sceneConfig })];

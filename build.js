@@ -23,16 +23,6 @@ await esbuild.build({
 
 console.log("\n -> Hardware script built");
 
-// update canvas.node path in hardware output
-const filePath = "dist/hardware/index.cjs";
-let content = fs.readFileSync(filePath, "utf8");
-const oldString = "../skia.node";
-const newString = "./skia.node";
-content = content.replace(oldString, newString);
-fs.writeFileSync(filePath, content, "utf8");
-
-console.log("\n -> canvas.node dependency path rewritten");
-
 fs.cpSync(".next/standalone", "dist/app", { recursive: true });
 fs.cpSync("public", "dist/app/public", { recursive: true });
 fs.cpSync(".next/static", "dist/app/.next/static", { recursive: true });

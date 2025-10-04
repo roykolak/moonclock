@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createDisplayEngine, Macro, Pixel } from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
@@ -46,7 +46,7 @@ export function PresetPreview({
 }: DisplayProps) {
   const [imageData, setImageData] = useState<string | null>();
 
-  const [engine, setEngine] = useState<any>();
+  const engine = useRef<any>(null);
 
   const [displayConfig, setDisplayConfig] = useState<Macro[]>([]);
 
@@ -74,12 +74,12 @@ export function PresetPreview({
         },
       });
 
-      setEngine(displayEngine);
+      engine.current = displayEngine;
     })();
 
-    // return () => {
-    //   displayEngine?.stop();
-    // };
+    return () => {
+      engine.current?.stop();
+    };
   }, []);
 
   useEffect(() => {
@@ -87,8 +87,7 @@ export function PresetPreview({
   }, [engine, JSON.stringify(displayConfig)]);
 
   const renderDisplay = useCallback(() => {
-    if (!engine) return;
-    engine?.render(displayConfig);
+    engine.current?.render(displayConfig);
   }, [engine, JSON.stringify(displayConfig)]);
 
   return (

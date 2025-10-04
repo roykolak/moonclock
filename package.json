@@ -52,10 +52,6 @@
     "tsx": "^4.19.2",
     "typescript": "^5"
   },
-  "config": {
-    "puppeteer_download_base_url": "https://storage.googleapis.com/chromium-browser-snapshots/",
-    "puppeteer_download_host": "https://storage.googleapis.com/chromium-browser-snapshots/"
-  },
   "overrides": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

@@ -11,7 +11,7 @@ Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock/current/dist/hardware
-ExecStart=sudo PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser NODE_ENV=production node index.cjs
+ExecStart=sudo NODE_ENV=production node index.cjs
 
 [Install]
 WantedBy=default.target

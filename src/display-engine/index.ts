@@ -15,10 +15,8 @@ import {
   PixelsChangeCallback,
   UpdatePixels,
 } from "./types";
-// import { startImage } from "./macros/image";
-// import { startCustom } from "./macros/custom";
 import { startCoordinates } from "./macros/coordinates";
-// import { startMoon } from "./macros/moon";
+import { startMoon } from "./macros/moon";
 // import { startCountdown } from "./macros/countdown";
 import { startEmoji } from "./macros/emoji";
 
@@ -45,7 +43,7 @@ async function startMacros({
     // [MacroName.Meteors]: startMeteors,
     // [MacroName.Custom]: startCustom,
     [MacroName.Coordinates]: startCoordinates,
-    // [MacroName.Moon]: startMoon,
+    [MacroName.Moon]: startMoon,
     // [MacroName.Countdown]: startCountdown,
     [MacroName.Emoji]: startEmoji,
   };

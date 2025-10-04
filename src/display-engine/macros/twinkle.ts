@@ -32,37 +32,6 @@ export const startTwinkle: MacroFn = async ({
 
   let running = true;
 
-  // async function evaluateCanvas(canvasHarness, callback, params = {}) {
-  //   return await canvasHarness.page.evaluate(
-  //     async ({ canvasId, callback, params }) => {
-  //       const c = document.getElementById(canvasId) as HTMLCanvasElement;
-  //       const ctx = c?.getContext("2d");
-
-  //       if (!ctx) return null;
-
-  //       // Execute the callback with context and parameters
-  //       return callback(ctx, params);
-  //     },
-  //     {
-  //       canvasId: canvasHarness.canvasId,
-  //       callback: callback.toString(),
-  //       params
-  //     }
-  //   );
-  // }
-
-  // // Usage
-  // twinklingCoordinates = await evaluateCanvas(
-  //   canvasHarness,
-  //   (ctx, { config, twinklingCoordinates, stepAmount }) => {
-  //     // Your canvas manipulation code here
-  //     // ctx is already available
-  //     // Return whatever you need
-  //     return twinklingCoordinates;
-  //   },
-  //   { config, twinklingCoordinates, stepAmount }
-  // );
-
   async function drawTwinkle() {
     if (!running) return;
 
@@ -84,7 +53,7 @@ export const startTwinkle: MacroFn = async ({
       pixels.push({
         x,
         y,
-        rgba: new Uint8ClampedArray([rgba?.r, rgba?.g, rgba?.b, a]),
+        rgba: new Uint8ClampedArray([rgba.r, rgba.g, rgba.b, a]),
       });
 
       if (a <= -1) {

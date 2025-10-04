@@ -24,13 +24,11 @@ export const startCoordinates: MacroFn = async ({
 
     const [x, y] = coordinate.split(":");
 
-    if (rgba?.r && rgba?.g && rgba?.b && rgba?.a) {
-      pixels.push({
-        y: parseInt(y, 10),
-        x: parseInt(x, 10),
-        rgba: new Uint8ClampedArray([rgba?.r, rgba?.g, rgba?.b, rgba?.a]),
-      });
-    }
+    pixels.push({
+      y: parseInt(y, 10),
+      x: parseInt(x, 10),
+      rgba: new Uint8ClampedArray([rgba.r, rgba.g, rgba.b, rgba.a]),
+    });
   }
 
   updatePixels(pixels, index);

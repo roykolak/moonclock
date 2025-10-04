@@ -6,11 +6,9 @@ export enum MacroName {
   Twinkle = "twinkle",
   // Meteors = "meteors",
   // Marquee = "marquee",
-  // Image = "image",
   // Ripple = "ripple",
-  // Custom = "custom",
   Coordinates = "coordinates",
-  // Moon = "moon",
+  Moon = "moon",
   // Countdown = "countdown",
   Emoji = "emoji",
 }
