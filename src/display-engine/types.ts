@@ -11,7 +11,6 @@ export enum MacroName {
   Custom = "custom",
   Coordinates = "coordinates",
   Moon = "moon",
-  Countdown = "countdown",
   Emoji = "emoji",
 }
 export interface Gradient {
@@ -101,13 +100,6 @@ export interface MacroImageConfig {
   startingRow: number;
 }
 
-export interface MacroCountdownConfig {
-  color: string;
-  endDate: string;
-  cycleBackgroundColor: boolean;
-  unit: "minute" | "second";
-}
-
 export interface MacroCoordinatesConfig {
   coordinates: {
     [key: string]: string;
@@ -129,7 +121,6 @@ export type MacroConfig = MacroBoxConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
   MacroRippleConfig &
-  MacroCountdownConfig &
   MacroEmojiConfig;
 
 export interface Macro {

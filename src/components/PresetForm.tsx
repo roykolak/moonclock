@@ -28,7 +28,6 @@ import { PresetPreview } from "./PresetPreview";
 import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  MacroCountdownConfig,
   MacroMarqueeConfig,
   MacroRippleConfig,
   MacroTwinkleConfig,
@@ -83,13 +82,6 @@ export function PresetForm({
         speed: 30,
         waveHeight: 6,
       } as Partial<MacroRippleConfig>);
-    }
-
-    if (value === SceneName.Countdown) {
-      return form.setFieldValue(fieldValue, {
-        unit: "second",
-        cycleBackgroundColor: true,
-      } as Partial<MacroCountdownConfig>);
     }
 
     if (value === SceneName.Marquee) {
@@ -228,7 +220,6 @@ function Scene({
               items: [
                 SceneName.Moon,
                 SceneName.Color,
-                SceneName.Countdown,
                 SceneName.Twinkle,
                 SceneName.Ripple,
                 SceneName.Marquee,
@@ -402,31 +393,6 @@ export function SceneConfigControls({
             placeholder="Select a twinkle color"
             key={form.key(`scenes.${index}.sceneConfig.color`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "countdown") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Time Unit</Text>
-            <SegmentedControl
-              data={["minute", "second"]}
-              key={form.key(`scenes.${index}.sceneConfig.unit`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.unit`)}
-            />
-          </Stack>
-          <Checkbox
-            label="Cycle background color"
-            checked={form.values.scenes[index].sceneConfig.cycleBackgroundColor}
-            key={form.key(`scenes.${index}.sceneConfig.cycleBackgroundColor`)}
-            {...form.getInputProps(
-              `scenes.${index}.sceneConfig.cycleBackgroundColor`
-            )}
           />
         </Stack>
       </Card>

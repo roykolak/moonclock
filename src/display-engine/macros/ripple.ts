@@ -29,7 +29,7 @@ export function colorToRgba(hexOrRgbString: string) {
     }
   }
 
-  return null;
+  return { r: 0, g: 0, b: 0, a: 0 };
 }
 
 export const startRipple: MacroFn = async ({

@@ -2,7 +2,6 @@ import {
   Macro,
   MacroBoxConfig,
   MacroCoordinatesConfig,
-  MacroCountdownConfig,
   MacroCustomConfig,
   MacroEmojiConfig,
   MacroImageConfig,
@@ -69,12 +68,5 @@ export const coordinates = (
   macroConfig: Partial<MacroCoordinatesConfig>
 ): Macro => ({
   macroName: MacroName.Coordinates,
-  macroConfig,
-});
-
-export const countdown = (
-  macroConfig: Partial<MacroCountdownConfig>
-): Macro => ({
-  macroName: MacroName.Countdown,
   macroConfig,
 });
