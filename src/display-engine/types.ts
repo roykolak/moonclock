@@ -107,16 +107,23 @@ export interface Fonts {
 }
 export type MacroStopCallback = () => void;
 
+export type CreateCanvas = (
+  dimensions: Dimensions
+) => Promise<HTMLCanvasElement>;
+
 export type MacroFn = ({
   macroConfig,
   dimensions,
+  ctx,
   fonts,
   index,
   updatePixels,
 }: {
   macroConfig: Partial<MacroConfig>;
   dimensions: Dimensions;
+  ctx: CanvasRenderingContext2D;
   fonts: Fonts;
   index: number;
   updatePixels: InternalPixelsChangeCallback;
+  createCanvas: CreateCanvas;
 }) => Promise<MacroStopCallback>;

@@ -32,6 +32,8 @@ export const startMoon: MacroFn = async ({
   macroConfig,
   dimensions,
   fonts,
+  ctx,
+  createCanvas,
   index,
   updatePixels,
 }) => {
@@ -50,6 +52,8 @@ export const startMoon: MacroFn = async ({
   startCoordinates({
     dimensions,
     fonts,
+    ctx,
+    createCanvas,
     index,
     updatePixels,
     macroConfig: coordinatesConfig,

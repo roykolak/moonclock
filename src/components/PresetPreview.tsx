@@ -1,13 +1,29 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { createDisplayEngine, Macro, Pixel } from "../display-engine";
+import {
+  createDisplayEngine,
+  Dimensions,
+  Macro,
+  Pixel,
+} from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { Overlay } from "@mantine/core";
 import fetchline from "fetchline";
 
 const dimensions = { height: 32, width: 32 };
+
+export async function createCanvas(dimensions: Dimensions) {
+  const { width, height } = dimensions;
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = width;
+  canvas.height = height;
+
+  return canvas;
+}
 
 export function getRenderedCanvasDataUrl(
   canvas: HTMLCanvasElement,
@@ -65,6 +81,7 @@ export function PresetPreview({
     (async () => {
       const displayEngine = createDisplayEngine({
         dimensions,
+        createCanvas,
         fonts: {
           "4x6": await fetchline(`/fonts/4x6.bdf`),
         },

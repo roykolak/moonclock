@@ -33,7 +33,8 @@
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
     "readlineiter": "^1.0.1",
-    "rpi-led-matrix": "^1.14.0"
+    "rpi-led-matrix": "^1.14.0",
+    "skia-canvas": "^3.0.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
