@@ -1,6 +1,5 @@
 import { getAnimationFrame, stopAnimationFrame } from "../animation";
-import { syncFromCanvas } from "../canvas";
-import { MacroFn } from "../types";
+import { MacroFn, Pixel } from "../types";
 
 export function colorToRgba(hexOrRgbString: string) {
   if (hexOrRgbString.includes("rgb")) {
@@ -35,7 +34,6 @@ export function colorToRgba(hexOrRgbString: string) {
 export const startRipple: MacroFn = async ({
   macroConfig,
   dimensions,
-  ctx,
   index,
   updatePixels,
 }) => {
@@ -52,10 +50,9 @@ export const startRipple: MacroFn = async ({
 
   let timeoutId: NodeJS.Timeout;
 
-  const pixelimageData = ctx.createImageData(1, 1);
-  const imageData = pixelimageData.data;
-
   function drawRipple(timestamp: number) {
+    const pixels: Pixel[] = [];
+
     const elapsedTimeUnits = (timestamp - startTime) / (240 - speed * 20);
 
     for (let y = 0; y < height; y++) {
@@ -71,17 +68,16 @@ export const startRipple: MacroFn = async ({
         const adjustedHeight = calculatedWaveHeight * 60 + 100 / 2;
 
         const rgba = colorToRgba(color);
+        const alpha = (adjustedHeight / 100) * (rgba?.a as number);
 
-        imageData[0] = rgba?.r as number;
-        imageData[1] = rgba?.g as number;
-        imageData[2] = rgba?.b as number;
-        imageData[3] = (adjustedHeight / 100) * (rgba?.a as number);
-
-        ctx.putImageData(pixelimageData, x, y);
+        pixels.push({
+          x,
+          y,
+          rgba: new Uint8ClampedArray([rgba.r, rgba.g, rgba.b, alpha]),
+        });
       }
     }
 
-    const pixels = syncFromCanvas(ctx, dimensions);
     updatePixels(pixels, index);
 
     timeoutId = getAnimationFrame(drawRipple, { framesPerSecond: speed });
