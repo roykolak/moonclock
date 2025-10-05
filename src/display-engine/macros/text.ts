@@ -87,5 +87,5 @@ export const startText: MacroFn = async ({
 
   updatePixels(pixels, index);
 
-  return async () => {};
+  return () => {};
 };

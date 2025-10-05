@@ -154,7 +154,7 @@ export type PixelsChangeCallback = (pixels: Pixel[]) => void;
 export interface Fonts {
   "4x6": any;
 }
-export type MacroStopCallback = () => Promise<void>;
+export type MacroStopCallback = () => void;
 
 export type MacroFn = ({
   macroConfig,

@@ -33,5 +33,5 @@ export const startCoordinates: MacroFn = async ({
 
   updatePixels(pixels, index);
 
-  return async () => {};
+  return () => {};
 };

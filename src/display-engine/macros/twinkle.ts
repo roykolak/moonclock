@@ -30,11 +30,7 @@ export const startTwinkle: MacroFn = async ({
 
   const stepAmount = Math.floor(255 / 10);
 
-  let running = true;
-
   async function drawTwinkle() {
-    if (!running) return;
-
     const pixels: Pixel[] = [];
 
     const availableSlots = config.amount - twinklingCoordinates.length;
@@ -78,8 +74,7 @@ export const startTwinkle: MacroFn = async ({
 
   drawTwinkle();
 
-  return async () => {
-    running = false;
+  return () => {
     stopAnimationFrame(timeoutId);
   };
 };

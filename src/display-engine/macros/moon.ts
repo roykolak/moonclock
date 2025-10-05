@@ -136,7 +136,7 @@ export const startMoon: MacroFn = async ({
     runMoon(startTime);
   }
 
-  return async () => {
+  return () => {
     running = false;
     stopAnimationFrame(timeoutId);
   };

@@ -27,5 +27,5 @@ export const startBox: MacroFn = async ({
 
   updatePixels(pixels, index);
 
-  return async () => {};
+  return () => {};
 };

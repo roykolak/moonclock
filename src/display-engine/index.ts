@@ -39,9 +39,7 @@ async function startMacros({
     // [MacroName.Marquee]: startMarquee,
     [MacroName.Twinkle]: startTwinkle,
     // [MacroName.Ripple]: startRipple,
-    // [MacroName.Image]: startImage,
     // [MacroName.Meteors]: startMeteors,
-    // [MacroName.Custom]: startCustom,
     [MacroName.Coordinates]: startCoordinates,
     [MacroName.Moon]: startMoon,
     // [MacroName.Countdown]: startCountdown,
@@ -62,9 +60,9 @@ async function startMacros({
     })
   );
 
-  return async () => {
+  return () => {
     for (const stop of stops) {
-      await stop();
+      stop();
     }
   };
 }
@@ -94,7 +92,7 @@ export function createDisplayEngine({
 
   return {
     render: async (macros: Macro[]) => {
-      await stopMacros();
+      stopMacros();
 
       const resetPixels: Pixel[] = [];
 

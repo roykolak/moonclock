@@ -44,7 +44,7 @@ export const startEmoji: MacroFn = async ({
     });
   }
 
-  return async () => {};
+  return () => {};
 };
 
 function getEmojiCoordinates(name?: string) {
