@@ -54,21 +54,6 @@ export const defaultData: DataTypes = {
       untilMinute: "0",
       forTime: "2:00",
     },
-    {
-      id: randomUUID(),
-      name: "Timeout",
-      scenes: [
-        {
-          sceneName: SceneName.Countdown,
-          sceneConfig: { cycleBackgroundColor: true },
-        },
-      ],
-      mode: "for",
-      untilDay: "0",
-      untilHour: "0",
-      untilMinute: "0",
-      forTime: "0:05",
-    },
   ],
 };
 

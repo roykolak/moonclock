@@ -4,12 +4,8 @@ export enum MacroName {
   Box = "box",
   Text = "text",
   Twinkle = "twinkle",
-  // Meteors = "meteors",
-  // Marquee = "marquee",
-  // Ripple = "ripple",
   Coordinates = "coordinates",
   Moon = "moon",
-  // Countdown = "countdown",
   Emoji = "emoji",
 }
 export interface Gradient {
@@ -48,40 +44,6 @@ export interface MacroTwinkleConfig {
   amount: number;
 }
 
-export interface MacroRippleConfig {
-  width: number;
-  height: number;
-  speed: number;
-  color: string;
-  waveHeight: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-}
-
-export interface MacroMeteorsConfig {
-  color: string;
-  meteorCount: number;
-  maxTailLength: number;
-  minTailLength: number;
-  maxDepth: number;
-  minSpeed: number;
-  maxSpeed: number;
-  width: number;
-  height: number;
-}
-
-export interface MacroMarqueeConfig {
-  color: string;
-  fontSize: number;
-  font: string;
-  text: string;
-  speed: number;
-  width: number;
-  startingColumn: number;
-  startingRow: number;
-  height: number;
-  mirrorHorizontally: boolean;
-  direction: "horizontal" | "vertical";
-}
-
 export interface MacroEmojiConfig {
   name: string;
 }
@@ -93,13 +55,6 @@ export interface MacroImageConfig {
   height: number;
   startingColumn: number;
   startingRow: number;
-}
-
-export interface MacroCountdownConfig {
-  color: string;
-  endDate: string;
-  cycleBackgroundColor: boolean;
-  unit: "minute" | "second";
 }
 
 export interface MacroCoordinatesConfig {
@@ -115,14 +70,10 @@ export interface MacroMoonConfig {
 
 export type MacroConfig = MacroBoxConfig &
   MacroTextConfig &
-  MacroMarqueeConfig &
   MacroTwinkleConfig &
-  // | MacroMeteorsConfig
   MacroImageConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
-  MacroRippleConfig &
-  MacroCountdownConfig &
   MacroEmojiConfig;
 
 export interface Macro {

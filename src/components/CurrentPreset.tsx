@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { Preset } from "@/types";
 import { Overlay } from "@mantine/core";
-import { colorToRgba } from "@/display-engine/macros/ripple";
+import { colorToRgba } from "@/display-engine/colors";
 
 interface DisplayProps {
   preset?: Preset;

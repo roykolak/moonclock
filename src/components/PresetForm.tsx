@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Card,
-  Checkbox,
   Collapse,
   ColorInput,
   Flex,
@@ -29,9 +28,10 @@ import { PresetPreview } from "./PresetPreview";
 import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  MacroCountdownConfig,
-  MacroMarqueeConfig,
-  MacroRippleConfig,
+  MacroBoxConfig,
+  MacroEmojiConfig,
+  MacroMoonConfig,
+  MacroTextConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
@@ -78,52 +78,28 @@ export function PresetForm({
       } as Partial<MacroTwinkleConfig>);
     }
 
-    if (value === SceneName.Ripple) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        waveHeight: 6,
-      } as Partial<MacroRippleConfig>);
-    }
-
-    if (value === SceneName.Countdown) {
-      return form.setFieldValue(fieldValue, {
-        unit: "second",
-        cycleBackgroundColor: true,
-      } as Partial<MacroCountdownConfig>);
-    }
-
-    if (value === SceneName.Marquee) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        fontSize: 16,
-        text: "hello",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
     if (value === SceneName.Emoji) {
       return form.setFieldValue(fieldValue, {
         name: "smile",
-      } as Partial<MacroMarqueeConfig>);
+      } as Partial<MacroEmojiConfig>);
     }
 
     if (value === SceneName.Color) {
       return form.setFieldValue(fieldValue, {
         color: "#ff0000",
-      } as Partial<MacroMarqueeConfig>);
+      } as Partial<MacroBoxConfig>);
     }
 
     if (value === SceneName.Moon) {
       return form.setFieldValue(fieldValue, {
         animateStarTwinkle: true,
-      } as Partial<MacroMarqueeConfig>);
+      } as Partial<MacroMoonConfig>);
     }
 
     if (value === SceneName.Message) {
       return form.setFieldValue(fieldValue, {
         text: "Hello\nWorld!",
-      } as Partial<MacroMarqueeConfig>);
+      } as Partial<MacroTextConfig>);
     }
 
     form.setFieldValue(fieldValue, {});
@@ -373,119 +349,6 @@ export function SceneConfigControls({
         <Stack>
           <ColorInput
             placeholder="Select a color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "ripple") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Speed</Text>
-            <Slider
-              label={null}
-              min={5}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.speed`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
-            />
-          </Stack>
-          <Stack gap={4}>
-            <Text size="sm">Wave height</Text>
-            <Slider
-              label={null}
-              step={1}
-              max={10}
-              min={1}
-              key={form.key(`scenes.${index}.sceneConfig.waveHeight`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
-            />
-          </Stack>
-          <ColorInput
-            placeholder="Select a twinkle color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "countdown") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Time Unit</Text>
-            <SegmentedControl
-              data={["minute", "second"]}
-              key={form.key(`scenes.${index}.sceneConfig.unit`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.unit`)}
-            />
-          </Stack>
-          <Checkbox
-            label="Cycle background color"
-            checked={form.values.scenes[index].sceneConfig.cycleBackgroundColor}
-            key={form.key(`scenes.${index}.sceneConfig.cycleBackgroundColor`)}
-            {...form.getInputProps(
-              `scenes.${index}.sceneConfig.cycleBackgroundColor`
-            )}
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "marquee") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <TextInput
-            label="Message"
-            key={form.key(`scenes.${index}.sceneConfig.text`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
-          />
-          <Stack gap={4}>
-            <Text size="sm">Font size</Text>
-            <Slider
-              min={12}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
-            />
-          </Stack>
-          <Checkbox
-            label="Mirror horizontally"
-            checked={form.values.scenes[index].sceneConfig.mirrorHorizontally}
-            key={form.key(`scenes.${index}.sceneConfig.mirrorHorizontally`)}
-            {...form.getInputProps(
-              `scenes.${index}.sceneConfig.mirrorHorizontally`
-            )}
-          />
-          <Stack gap={4}>
-            <Text size="sm">Speed</Text>
-            <Slider
-              min={5}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.speed`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
-            />
-          </Stack>
-          <Stack gap={4}>
-            <Text size="sm">Starting row</Text>
-            <Slider
-              max={32}
-              key={form.key(`scenes.${index}.sceneConfig.startingRow`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.startingRow`)}
-            />
-          </Stack>
-          <ColorInput
-            placeholder="Select a twinkle color"
             key={form.key(`scenes.${index}.sceneConfig.color`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
           />

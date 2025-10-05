@@ -1,5 +1,5 @@
 import { MacroCoordinatesConfig, MacroFn, Pixel } from "../types";
-import { colorToRgba } from "./ripple";
+import { colorToRgba } from "../colors";
 
 export const startCoordinates: MacroFn = async ({
   macroConfig,

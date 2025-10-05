@@ -1,6 +1,6 @@
 import { getAnimationFrame, stopAnimationFrame } from "../animation";
 import { MacroFn, Pixel } from "../types";
-import { colorToRgba } from "./ripple";
+import { colorToRgba } from "../colors";
 
 export const startTwinkle: MacroFn = async ({
   macroConfig,
