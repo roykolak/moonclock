@@ -1,13 +1,11 @@
 import { mixColors } from "./colors";
 import { startBox } from "./macros/box";
-import { startMarquee } from "./macros/marquee";
-import { startMeteors } from "./macros/meteors";
-import { startRipple } from "./macros/ripple";
 import { startText } from "./macros/text";
 import { startTwinkle } from "./macros/twinkle";
 import {
   CreateCanvas,
   Dimensions,
+  Fonts,
   Macro,
   MacroFn,
   MacroName,
@@ -15,11 +13,8 @@ import {
   PixelsChangeCallback,
   UpdatePixels,
 } from "./types";
-import { startImage } from "./macros/image";
-import { startCustom } from "./macros/custom";
 import { startCoordinates } from "./macros/coordinates";
 import { startMoon } from "./macros/moon";
-import { startCountdown } from "./macros/countdown";
 import { startEmoji } from "./macros/emoji";
 
 export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
@@ -27,6 +22,7 @@ export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
 async function startMacros({
   macros,
   dimensions,
+  fonts,
   updatePixels,
   createCanvas,
 }: {
@@ -34,19 +30,14 @@ async function startMacros({
   dimensions: Dimensions;
   updatePixels: UpdatePixels;
   createCanvas: CreateCanvas;
+  fonts: Fonts;
 }) {
   const MacroMap: { [k in MacroName]: MacroFn } = {
     [MacroName.Box]: startBox,
     [MacroName.Text]: startText,
-    [MacroName.Marquee]: startMarquee,
     [MacroName.Twinkle]: startTwinkle,
-    [MacroName.Ripple]: startRipple,
-    [MacroName.Image]: startImage,
-    [MacroName.Meteors]: startMeteors,
-    [MacroName.Custom]: startCustom,
     [MacroName.Coordinates]: startCoordinates,
     [MacroName.Moon]: startMoon,
-    [MacroName.Countdown]: startCountdown,
     [MacroName.Emoji]: startEmoji,
   };
 
@@ -54,11 +45,13 @@ async function startMacros({
     macros.map(async ({ macroName, macroConfig }, index) => {
       const canvas = await createCanvas(dimensions);
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
       const macroFn = MacroMap[macroName];
 
       return macroFn({
         macroConfig,
         dimensions,
+        fonts,
         ctx,
         index,
         updatePixels,
@@ -90,9 +83,11 @@ export function createDisplayEngine({
   dimensions,
   onPixelsChange,
   createCanvas,
+  fonts,
 }: {
   dimensions: { height: number; width: number };
   onPixelsChange: PixelsChangeCallback;
+  fonts: Fonts;
   createCanvas: CreateCanvas;
 }) {
   let stopMacros: () => void = () => {};
@@ -121,6 +116,7 @@ export function createDisplayEngine({
         macros,
         dimensions,
         createCanvas,
+        fonts,
         updatePixels: (updatePixels, index) => {
           const pixelsToUpdate: Pixel[] = [];
           updatePixels.forEach((pixelToUpdate) => {
@@ -150,8 +146,8 @@ export function createDisplayEngine({
 
       return stopMacros;
     },
-    stop: () => {
-      stopMacros();
+    stop: async () => {
+      await stopMacros();
     },
   };
 }

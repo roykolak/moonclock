@@ -4,14 +4,8 @@ export enum MacroName {
   Box = "box",
   Text = "text",
   Twinkle = "twinkle",
-  Meteors = "meteors",
-  Marquee = "marquee",
-  Image = "image",
-  Ripple = "ripple",
-  Custom = "custom",
   Coordinates = "coordinates",
   Moon = "moon",
-  Countdown = "countdown",
   Emoji = "emoji",
 }
 export interface Gradient {
@@ -50,44 +44,6 @@ export interface MacroTwinkleConfig {
   amount: number;
 }
 
-export interface MacroRippleConfig {
-  width: number;
-  height: number;
-  speed: number;
-  color: string;
-  waveHeight: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-}
-
-export interface MacroCustomConfig {
-  customFunc: (ctx: CanvasRenderingContext2D, dimensions: Dimensions) => void;
-}
-
-export interface MacroMeteorsConfig {
-  color: string;
-  meteorCount: number;
-  maxTailLength: number;
-  minTailLength: number;
-  maxDepth: number;
-  minSpeed: number;
-  maxSpeed: number;
-  width: number;
-  height: number;
-}
-
-export interface MacroMarqueeConfig {
-  color: string;
-  fontSize: number;
-  font: string;
-  text: string;
-  speed: number;
-  width: number;
-  startingColumn: number;
-  startingRow: number;
-  height: number;
-  mirrorHorizontally: boolean;
-  direction: "horizontal" | "vertical";
-}
-
 export interface MacroEmojiConfig {
   name: string;
 }
@@ -99,13 +55,6 @@ export interface MacroImageConfig {
   height: number;
   startingColumn: number;
   startingRow: number;
-}
-
-export interface MacroCountdownConfig {
-  color: string;
-  endDate: string;
-  cycleBackgroundColor: boolean;
-  unit: "minute" | "second";
 }
 
 export interface MacroCoordinatesConfig {
@@ -121,15 +70,10 @@ export interface MacroMoonConfig {
 
 export type MacroConfig = MacroBoxConfig &
   MacroTextConfig &
-  MacroMarqueeConfig &
   MacroTwinkleConfig &
-  // | MacroMeteorsConfig
   MacroImageConfig &
-  MacroCustomConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
-  MacroRippleConfig &
-  MacroCountdownConfig &
   MacroEmojiConfig;
 
 export interface Macro {
@@ -158,7 +102,11 @@ export type InternalPixelsChangeCallback = (
   index: number
 ) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
+export interface Fonts {
+  "4x6": any;
+}
 export type MacroStopCallback = () => void;
+
 export type CreateCanvas = (
   dimensions: Dimensions
 ) => Promise<HTMLCanvasElement>;
@@ -167,13 +115,14 @@ export type MacroFn = ({
   macroConfig,
   dimensions,
   ctx,
+  fonts,
   index,
   updatePixels,
-  createCanvas,
 }: {
   macroConfig: Partial<MacroConfig>;
   dimensions: Dimensions;
   ctx: CanvasRenderingContext2D;
+  fonts: Fonts;
   index: number;
   updatePixels: InternalPixelsChangeCallback;
   createCanvas: CreateCanvas;

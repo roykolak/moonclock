@@ -24,7 +24,6 @@ import {
   ScheduledPreset,
 } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
-import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import {
@@ -38,6 +37,7 @@ import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjust
 import { useEffect, useState } from "react";
 import { isFrameRateLagging } from "@/helpers/isFrameRateLagging";
 import { updatePreset } from "@/server/actions/presets";
+import { CurrentPreset } from "./CurrentPreset";
 
 interface PanelProps {
   panel: PanelType;
@@ -71,7 +71,6 @@ export default function Panel({
         .then((response) => response.json())
         .then(setHardwareState);
     }, 1000);
-
     return () => clearInterval(loop);
   }, []);
 
@@ -184,7 +183,7 @@ export default function Panel({
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <PresetPreview
+            <CurrentPreset
               preset={scheduledPreset?.preset || panel.defaultPreset}
               isDefaultPreset={!scheduledPreset?.preset}
             />

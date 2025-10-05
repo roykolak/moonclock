@@ -31,10 +31,11 @@ function shuffle(unshuffled: any[]) {
 export const startMoon: MacroFn = async ({
   macroConfig,
   dimensions,
+  fonts,
   ctx,
+  createCanvas,
   index,
   updatePixels,
-  createCanvas,
 }) => {
   const coordinatesConfig: MacroCoordinatesConfig = {
     coordinates: moon,
@@ -50,11 +51,12 @@ export const startMoon: MacroFn = async ({
 
   startCoordinates({
     dimensions,
+    fonts,
     ctx,
+    createCanvas,
     index,
     updatePixels,
     macroConfig: coordinatesConfig,
-    createCanvas,
   });
 
   function runMoon(currentTime: number) {

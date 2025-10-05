@@ -82,6 +82,7 @@ export enum SceneName {
   Marquee = "marquee",
   Emoji = "emoji",
   Color = "color",
+  Message = "message",
   Hardware = "hardware",
 }
 

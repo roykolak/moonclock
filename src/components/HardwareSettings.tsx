@@ -1,6 +1,6 @@
 import { filterQueuedFramesSnapshotsBySeconds } from "@/helpers/filterQueuedFramesSnapshotsBySeconds";
 import { reloadHardwareScene } from "@/server/actions/hardware";
-import { HardwareState, SceneName } from "@/types";
+import { HardwareState } from "@/types";
 import { LineChart } from "@mantine/charts";
 import {
   Button,
@@ -12,7 +12,6 @@ import {
   Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { PresetPreview } from "./PresetPreview";
 
 function getTimeFromDate(date: Date) {
   const minutes = date.getMinutes();
@@ -46,70 +45,48 @@ export function HardwareSettings({
   return (
     <Stack gap={0}>
       <Stack>
-        <Grid>
-          <Grid.Col span={3}>
-            <PresetPreview
-              preset={{
-                name: "hardware",
-                mode: "for",
-                forTime: "0:00",
-                untilDay: "0",
-                untilHour: "0",
-                untilMinute: "0",
-                scenes: [
-                  {
-                    sceneName: SceneName.Hardware,
-                    sceneConfig: { coordinates: hardwareState.virtualPanel },
-                  },
-                ],
-              }}
-            />
+        <Grid gutter={0}>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" fw="bold">
+              Scenes:
+            </Text>
           </Grid.Col>
-          <Grid.Col span={9}>
-            <Grid gutter={0}>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" fw="bold">
-                  Scenes:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm">
-                  {preset?.scenes
-                    ?.map(({ sceneName }: any) => sceneName)
-                    .join(", ")}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" fw="bold">
-                  Rendered at:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm">
-                  {new Date(renderedAt).toLocaleString()}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" fw="bold">
-                  Last loop run:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm">
-                  {new Date(lastLoopRunAt).toLocaleString()}
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text c="dimmed" size="sm" mb="xs" fw="bold">
-                  Brightness:
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={8}>
-                <Text c="dimmed" size="sm" mb="xs">
-                  {brightness}
-                </Text>
-              </Grid.Col>
-            </Grid>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm">
+              {preset?.scenes
+                ?.map(({ sceneName }: any) => sceneName)
+                .join(", ")}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" fw="bold">
+              Rendered at:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm">
+              {new Date(renderedAt).toLocaleString()}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" fw="bold">
+              Last loop run:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm">
+              {new Date(lastLoopRunAt).toLocaleString()}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text c="dimmed" size="sm" mb="xs" fw="bold">
+              Brightness:
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={8}>
+            <Text c="dimmed" size="sm" mb="xs">
+              {brightness}
+            </Text>
           </Grid.Col>
         </Grid>
       </Stack>

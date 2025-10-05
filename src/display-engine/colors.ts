@@ -37,3 +37,33 @@ export function toHex(uint8ClampedArray: Uint8ClampedArray) {
   }
   return "#" + hex;
 }
+
+export function colorToRgba(hexOrRgbString: string) {
+  if (hexOrRgbString.includes("rgb")) {
+    const result = hexOrRgbString.match(
+      /^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i
+    );
+    if (result) {
+      return {
+        r: parseInt(result[1], 10),
+        g: parseInt(result[2], 10),
+        b: parseInt(result[3], 10),
+        a: parseInt(result[4], 10) || 255,
+      };
+    }
+  } else {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+      hexOrRgbString
+    );
+    if (result) {
+      return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+        a: 255,
+      };
+    }
+  }
+
+  return { r: 0, g: 0, b: 0, a: 0 };
+}

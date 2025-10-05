@@ -1,22 +1,21 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { createDisplayEngine, Dimensions, Macro } from "../display-engine";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createDisplayEngine,
+  Dimensions,
+  Macro,
+  Pixel,
+} from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { Overlay } from "@mantine/core";
+import fetchline from "fetchline";
 
 const dimensions = { height: 32, width: 32 };
 
 export async function createCanvas(dimensions: Dimensions) {
   const { width, height } = dimensions;
-
-  const tiny5Font = new FontFace("Tiny5", "url(/fonts/Tiny5-Regular.ttf)");
-  const loadedTiny5Font = await tiny5Font.load();
-
-  document.fonts.add(loadedTiny5Font);
-
-  await document.fonts.ready;
 
   const canvas = document.createElement("canvas");
 
@@ -24,6 +23,32 @@ export async function createCanvas(dimensions: Dimensions) {
   canvas.height = height;
 
   return canvas;
+}
+
+export function getRenderedCanvasDataUrl(
+  canvas: HTMLCanvasElement,
+  pixels: Pixel[]
+) {
+  const ctx = canvas.getContext("2d");
+
+  for (const pixel of pixels) {
+    if (!pixel.rgba) return;
+
+    const id = ctx?.createImageData(1, 1);
+
+    if (!id) continue;
+
+    const d = id.data;
+
+    d[0] = pixel.rgba[0];
+    d[1] = pixel.rgba[1];
+    d[2] = pixel.rgba[2];
+    d[3] = pixel.rgba[3];
+
+    ctx?.putImageData(id, pixel.x, pixel.y);
+  }
+
+  return canvas.toDataURL("png");
 }
 
 interface DisplayProps {
@@ -37,7 +62,7 @@ export function PresetPreview({
 }: DisplayProps) {
   const [imageData, setImageData] = useState<string | null>();
 
-  const [engine, setEngine] = useState<any>();
+  const engine = useRef<any>(null);
 
   const [displayConfig, setDisplayConfig] = useState<Macro[]>([]);
 
@@ -48,40 +73,30 @@ export function PresetPreview({
   }, [JSON.stringify(preset)]);
 
   useEffect(() => {
-    (async () => {
-      const canvas = await createCanvas(dimensions);
-      const ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
 
+    canvas.width = 32;
+    canvas.height = 32;
+
+    (async () => {
       const displayEngine = createDisplayEngine({
         dimensions,
         createCanvas,
+        fonts: {
+          "4x6": await fetchline(`/fonts/4x6.bdf`),
+        },
         onPixelsChange: (pixels) => {
-          for (const pixel of pixels) {
-            if (!pixel.rgba) return;
-
-            const id = ctx?.createImageData(1, 1);
-
-            if (!id) continue;
-
-            const d = id.data;
-
-            d[0] = pixel.rgba[0];
-            d[1] = pixel.rgba[1];
-            d[2] = pixel.rgba[2];
-            d[3] = pixel.rgba[3];
-
-            ctx?.putImageData(id, pixel.x, pixel.y);
-          }
-
-          const dataURL = canvas.toDataURL("png");
-          setImageData(dataURL);
+          const dataUrl = getRenderedCanvasDataUrl(canvas, pixels);
+          setImageData(dataUrl);
         },
       });
 
-      setEngine(displayEngine);
+      engine.current = displayEngine;
     })();
 
-    return () => engine?.stop();
+    return () => {
+      engine.current?.stop();
+    };
   }, []);
 
   useEffect(() => {
@@ -89,8 +104,7 @@ export function PresetPreview({
   }, [engine, JSON.stringify(displayConfig)]);
 
   const renderDisplay = useCallback(() => {
-    if (!engine) return;
-    engine?.render(displayConfig);
+    engine.current?.render(displayConfig);
   }, [engine, JSON.stringify(displayConfig)]);
 
   return (
