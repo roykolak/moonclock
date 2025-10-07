@@ -17,6 +17,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import { TouchDisplay } from "./TouchDisplay";
 import { updateCustomSceneData } from "@/server/actions/customScenes";
+import { generatePixelArt } from "@/server/actions/generatePixelArt";
 import { CustomScene } from "@/types";
 
 function Color({
@@ -106,8 +107,13 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
   const [activeColor, setActiveColor] = useState(null);
   const [matrix, setMatrix] = useState({});
   const [rawMatrix, setRawMatrix] = useState("");
+  const [aiDescription, setAiDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState("");
 
   const [opened, { open, close }] = useDisclosure();
+  const [aiModalOpened, { open: openAiModal, close: closeAiModal }] =
+    useDisclosure();
 
   const form = useForm({
     mode: "uncontrolled",
@@ -169,13 +175,85 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
         </form>
       </Modal>
 
+      <Modal
+        title="AI Generate Pixel Art"
+        opened={aiModalOpened}
+        onClose={() => {
+          if (!isGenerating) {
+            closeAiModal();
+            setAiDescription("");
+            setGenerationError("");
+          }
+        }}
+        closeOnClickOutside={!isGenerating}
+        closeOnEscape={!isGenerating}
+        withCloseButton={!isGenerating}
+      >
+        <Stack>
+          <Textarea
+            placeholder="Describe the pixel art you want to generate... (e.g., 'a blue moon with yellow stars', 'a red heart', 'a green tree')"
+            value={aiDescription}
+            onChange={(event) => setAiDescription(event.currentTarget.value)}
+            rows={4}
+            data-testid="ai-description-input"
+            disabled={isGenerating}
+          />
+          {generationError && (
+            <Alert variant="light" color="red">
+              {generationError}
+            </Alert>
+          )}
+          <Group justify="flex-end">
+            <Button
+              variant="subtle"
+              onClick={() => {
+                closeAiModal();
+                setAiDescription("");
+                setGenerationError("");
+              }}
+              disabled={isGenerating}
+            >
+              Cancel
+            </Button>
+            <Button
+              loading={isGenerating}
+              onClick={async () => {
+                setIsGenerating(true);
+                setGenerationError("");
+                try {
+                  const result = await generatePixelArt(aiDescription);
+                  if (result.success && result.coordinates) {
+                    setMatrix(result.coordinates);
+                    closeAiModal();
+                    setAiDescription("");
+                  } else {
+                    setGenerationError(
+                      result.error || "Failed to generate pixel art"
+                    );
+                  }
+                } catch (error) {
+                  console.log(error);
+                  setGenerationError("An unexpected error occurred");
+                } finally {
+                  setIsGenerating(false);
+                }
+              }}
+              disabled={!aiDescription.trim() || isGenerating}
+            >
+              Generate
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       {matrix && selectedScene && (
         <Tabs
           defaultValue="editor"
           variant="outline"
           onChange={(tab) => {
-            if (tab !== "raw-data") return;
-            setRawMatrix(JSON.stringify(matrix, null, 2));
+            if (tab === "raw-data") {
+              setRawMatrix(JSON.stringify(matrix, null, 2));
+            }
           }}
         >
           <Tabs.List mb="md">
@@ -204,16 +282,27 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
                 onChange={() => setShowGrid((v) => !v)}
                 label="Show grid lines"
               ></Checkbox>
-              <Button
-                onClick={() => {
-                  updateCustomSceneData({
-                    name: selectedScene.name,
-                    coordinates: matrix,
-                  });
-                }}
-              >
-                Save Scene
-              </Button>
+              <Group>
+                <Button
+                  onClick={() => {
+                    updateCustomSceneData({
+                      name: selectedScene.name,
+                      coordinates: matrix,
+                    });
+                  }}
+                  style={{ flex: 1 }}
+                >
+                  Save Scene
+                </Button>
+                <Button
+                  variant="light"
+                  onClick={openAiModal}
+                  style={{ flex: 1 }}
+                  data-testid="ai-generate-button"
+                >
+                  AI Generate
+                </Button>
+              </Group>
             </Stack>
           </Tabs.Panel>
           <Tabs.Panel value="raw-data">
