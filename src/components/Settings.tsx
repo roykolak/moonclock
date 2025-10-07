@@ -98,6 +98,24 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
         <Divider />
 
         <Title order={5} mt="md">
+          AI Settings
+        </Title>
+
+        <TextInput
+          placeholder="sk-ant-..."
+          variant="filled"
+          style={{ flex: 1 }}
+          label="Anthropic API Key"
+          description="Required for AI pixel art generation"
+          type="password"
+          data-testid="anthropic-api-key-input"
+          key={form.key(PanelField.AnthropicApiKey)}
+          {...form.getInputProps(PanelField.AnthropicApiKey)}
+        />
+
+        <Divider />
+
+        <Title order={5} mt="md">
           Hardware Settings
         </Title>
 
