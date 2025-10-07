@@ -193,9 +193,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
           <Textarea
             placeholder="Describe the pixel art you want to generate... (e.g., 'a blue moon with yellow stars', 'a red heart', 'a green tree')"
             value={aiDescription}
-            onChange={(event) =>
-              setAiDescription(event.currentTarget.value)
-            }
+            onChange={(event) => setAiDescription(event.currentTarget.value)}
             rows={4}
             data-testid="ai-description-input"
             disabled={isGenerating}
@@ -234,6 +232,7 @@ export function Editor({ customScenes }: { customScenes: CustomScene[] }) {
                     );
                   }
                 } catch (error) {
+                  console.log(error);
                   setGenerationError("An unexpected error occurred");
                 } finally {
                   setIsGenerating(false);
