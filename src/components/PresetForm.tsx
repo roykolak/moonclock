@@ -19,6 +19,7 @@ import {
   Stack,
   Switch,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -28,9 +29,9 @@ import { PresetPreview } from "./PresetPreview";
 import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  MacroCountdownConfig,
   MacroMarqueeConfig,
   MacroRippleConfig,
+  MacroTextConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
@@ -85,13 +86,6 @@ export function PresetForm({
       } as Partial<MacroRippleConfig>);
     }
 
-    if (value === SceneName.Countdown) {
-      return form.setFieldValue(fieldValue, {
-        unit: "second",
-        cycleBackgroundColor: true,
-      } as Partial<MacroCountdownConfig>);
-    }
-
     if (value === SceneName.Marquee) {
       return form.setFieldValue(fieldValue, {
         color: "#ffffff",
@@ -117,6 +111,12 @@ export function PresetForm({
       return form.setFieldValue(fieldValue, {
         animateStarTwinkle: true,
       } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Message) {
+      return form.setFieldValue(fieldValue, {
+        text: "Hello\nWorld!",
+      } as Partial<MacroTextConfig>);
     }
 
     form.setFieldValue(fieldValue, {});
@@ -227,8 +227,8 @@ function Scene({
               group: "Built-in Scenes",
               items: [
                 SceneName.Moon,
+                SceneName.Message,
                 SceneName.Color,
-                SceneName.Countdown,
                 SceneName.Twinkle,
                 SceneName.Ripple,
                 SceneName.Marquee,
@@ -408,31 +408,6 @@ export function SceneConfigControls({
     );
   }
 
-  if (sceneName === "countdown") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Time Unit</Text>
-            <SegmentedControl
-              data={["minute", "second"]}
-              key={form.key(`scenes.${index}.sceneConfig.unit`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.unit`)}
-            />
-          </Stack>
-          <Checkbox
-            label="Cycle background color"
-            checked={form.values.scenes[index].sceneConfig.cycleBackgroundColor}
-            key={form.key(`scenes.${index}.sceneConfig.cycleBackgroundColor`)}
-            {...form.getInputProps(
-              `scenes.${index}.sceneConfig.cycleBackgroundColor`
-            )}
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
   if (sceneName === "marquee") {
     return (
       <Card w="100%">
@@ -480,6 +455,39 @@ export function SceneConfigControls({
             placeholder="Select a twinkle color"
             key={form.key(`scenes.${index}.sceneConfig.color`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (sceneName === "message") {
+    return (
+      <Card w="100%">
+        <Stack>
+          <Textarea
+            label="Message"
+            key={form.key(`scenes.${index}.sceneConfig.text`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
+          />
+          <Stack gap={4}>
+            <Text size="sm">Font size</Text>
+            <Slider
+              min={7}
+              max={20}
+              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
+            />
+          </Stack>
+          <SegmentedControl
+            fullWidth
+            data={[
+              { label: "Left", value: "left" },
+              { label: "Center", value: "center" },
+              { label: "Right", value: "right" },
+            ]}
+            key={form.key(`scenes.${index}.sceneConfig.alignment`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.alignment`)}
           />
         </Stack>
       </Card>

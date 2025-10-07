@@ -6,6 +6,7 @@ import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
 import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
+import { Canvas, FontLibrary } from "skia-canvas";
 
 import express from "express";
 import { waitForIpAddress } from "./getIpAddress";
@@ -36,11 +37,13 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
 export async function createCanvas(dimensions: Dimensions) {
   const { width, height } = dimensions;
 
-  const { Canvas, FontLibrary } = await import("skia-canvas");
-
   FontLibrary.use("Tiny5", "./public/fonts/Tiny5-Regular.ttf");
 
-  return new Canvas(width, height) as unknown as HTMLCanvasElement;
+  const canvas = new Canvas(width, height);
+
+  canvas.gpu = false;
+
+  return canvas as unknown as HTMLCanvasElement;
 }
 
 (async () => {
@@ -96,6 +99,11 @@ export async function createCanvas(dimensions: Dimensions) {
       virtualPanel,
       brightness: brightness || panel[PanelField.Brightness],
     });
+  });
+
+  app.get("/api/reload", (req, res) => {
+    runConditionalRenderUpdate();
+    res.send(true);
   });
 
   app.post("/api/throttle", (req, res) => {
@@ -198,6 +206,8 @@ export async function createCanvas(dimensions: Dimensions) {
       ]);
     }, 500);
 
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     const ipAddress = await waitForIpAddress();
 
     clearInterval(connectionLoadingInterval);
@@ -211,12 +221,13 @@ export async function createCanvas(dimensions: Dimensions) {
         startingRow: 1,
       }),
       marquee({
-        text: ipAddress || "",
+        text: ipAddress || "Not connected :(",
         direction: "horizontal",
-        speed: 40,
+        speed: 20,
         startingRow: 12,
-        fontSize: 16,
-        color: "#008000",
+        font: "Arial",
+        fontSize: 15,
+        color: "#FFFFFF",
       }),
     ]);
 

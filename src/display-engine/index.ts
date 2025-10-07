@@ -19,7 +19,6 @@ import { startImage } from "./macros/image";
 import { startCustom } from "./macros/custom";
 import { startCoordinates } from "./macros/coordinates";
 import { startMoon } from "./macros/moon";
-import { startCountdown } from "./macros/countdown";
 import { startEmoji } from "./macros/emoji";
 
 export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
@@ -46,7 +45,6 @@ async function startMacros({
     [MacroName.Custom]: startCustom,
     [MacroName.Coordinates]: startCoordinates,
     [MacroName.Moon]: startMoon,
-    [MacroName.Countdown]: startCountdown,
     [MacroName.Emoji]: startEmoji,
   };
 

@@ -43,22 +43,23 @@ export const startText: MacroFn = async ({
   ctx.font = `${config.fontSize}px ${config.font}`;
   ctx.fillStyle = config.color;
 
-  const textMetrics = ctx.measureText(config.text);
+  const lineHeight = 7;
+  let y = config.startingRow;
 
-  if (config.alignment === "left") {
-    ctx.fillText(config.text, config.startingColumn, config.startingRow);
-  } else if (config.alignment === "right") {
-    ctx.fillText(
-      config.text,
-      config.width - textMetrics.width,
-      config.startingRow
-    );
-  } else if (config.alignment === "center") {
-    ctx.fillText(
-      config.text,
-      config.width / 2 - textMetrics.width / 2,
-      config.startingRow
-    );
+  for (const line of config.text.split(/\r?\n/)) {
+    const textMetrics = ctx.measureText(line);
+    if (config.alignment === "left") {
+      ctx.fillText(line, config.startingColumn, y);
+    } else if (config.alignment === "right") {
+      ctx.fillText(line, config.width - textMetrics.width, y);
+    } else if (config.alignment === "center") {
+      ctx.fillText(
+        line,
+        Math.floor(config.width / 2) - Math.floor(textMetrics.width / 2),
+        y
+      );
+    }
+    y += lineHeight;
   }
 
   const pixels = syncFromCanvas(ctx, dimensions);

@@ -1,4 +1,3 @@
-import { syncFromCanvas } from "../canvas";
 import { MacroFn } from "../types";
 import { getAnimationFrame, stopAnimationFrame } from "../animation";
 
@@ -30,17 +29,12 @@ export const startMarquee: MacroFn = async ({
 
   ctx.textBaseline = "top";
   ctx.font = `bold ${config.fontSize}px ${config.font}`;
-  ctx.fillStyle = config.color;
-
-  if (config.mirrorHorizontally) {
-    ctx.scale(-1, 1);
-  }
 
   const textMetrics = ctx.measureText(config.text);
 
   const textCanvas = await createCanvas({
-    width: textMetrics.width,
-    height: 32,
+    width: Math.ceil(textMetrics.width),
+    height: config.fontSize + 4,
   });
   const textCtx = textCanvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -49,54 +43,67 @@ export const startMarquee: MacroFn = async ({
   textCtx.fillStyle = config.color;
   textCtx.fillText(config.text, 0, 0);
 
+  const textImageData = textCtx.getImageData(
+    0,
+    0,
+    textCanvas.width,
+    textCanvas.height
+  );
+  const textPixels = textImageData.data;
+  const textWidth = textCanvas.width;
+  const textHeight = textCanvas.height;
+
   let offset =
-    config.direction === "horizontal"
-      ? config.mirrorHorizontally
-        ? 0
-        : -config.width
-      : -config.height;
+    config.direction === "horizontal" ? -config.width : -config.height;
 
   function runMarquee() {
-    ctx.clearRect(
-      0,
-      0,
-      config.mirrorHorizontally ? -config.width : config.width,
-      config.height
-    );
+    const pixels = [];
 
-    ctx.drawImage(
-      textCanvas,
-      config.mirrorHorizontally ? offset : -offset,
-      config.startingRow
-    );
+    for (let y = 0; y < config.height; y++) {
+      for (let x = 0; x < config.width; x++) {
+        let sourceX: number;
+        let sourceY: number;
 
-    if (config.direction === "horizontal") {
-      if (config.mirrorHorizontally) {
-        if (offset < -(config.width + textMetrics.width)) {
-          offset = config.width;
+        if (config.direction === "horizontal") {
+          sourceX = x + offset;
+          sourceY = y - config.startingRow;
+        } else {
+          sourceX = x - config.startingColumn;
+          sourceY = y - offset;
         }
-      } else {
-        if (offset > config.width + textMetrics.width) {
-          offset = -config.width;
+
+        if (
+          sourceX >= 0 &&
+          sourceX < textWidth &&
+          sourceY >= 0 &&
+          sourceY < textHeight
+        ) {
+          const textIndex = (sourceY * textWidth + sourceX) * 4;
+          const rgba = new Uint8ClampedArray(4);
+
+          rgba[0] = textPixels[textIndex];
+          rgba[1] = textPixels[textIndex + 1];
+          rgba[2] = textPixels[textIndex + 2];
+          rgba[3] = textPixels[textIndex + 3];
+
+          pixels.push({ x, y, rgba });
         }
       }
+    }
+
+    if (config.direction === "horizontal") {
+      if (offset > config.width + textWidth) {
+        offset = -config.width;
+      }
     } else if (config.direction === "vertical") {
-      const height =
-        textMetrics.actualBoundingBoxAscent +
-        textMetrics.actualBoundingBoxDescent;
-      if (offset > config.height + height) {
+      if (offset > config.height + textHeight) {
         offset = -config.height;
       }
     }
 
-    if (config.mirrorHorizontally) {
-      offset -= 1;
-    } else {
-      offset += 1;
-    }
+    offset += 1;
 
     if (running) {
-      const pixels = syncFromCanvas(ctx, dimensions);
       updatePixels(pixels, index);
       timeoutId = getAnimationFrame(runMarquee, {
         framesPerSecond: config.speed,

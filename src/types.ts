@@ -76,13 +76,13 @@ export interface HardwareState {
 export enum SceneName {
   Blank = "blank",
   Moon = "moon",
-  Countdown = "countdown",
   Twinkle = "twinkle",
   Ripple = "ripple",
   Marquee = "marquee",
   Emoji = "emoji",
   Color = "color",
   Hardware = "hardware",
+  Message = "message",
 }
 
 export interface Preset {

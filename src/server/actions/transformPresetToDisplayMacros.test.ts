@@ -9,24 +9,6 @@ describe("transformPresetToDisplayConfig", () => {
     timekeeper.freeze(new Date(1735994402614));
   });
 
-  it("returns countdown macro config", async () => {
-    const preset: Preset = {
-      name: "test preset",
-      mode: "for",
-      scenes: [{ sceneName: SceneName.Countdown, sceneConfig: {} }],
-      forTime: "0:05",
-      untilDay: "0",
-      untilHour: "0",
-      untilMinute: "0",
-    };
-
-    const displayConfig = await transformPresetToDisplayMacros(preset);
-
-    assert.equal(displayConfig.length, 1);
-    assert.equal(displayConfig[0].macroName, "countdown");
-    assert.equal(!!displayConfig[0].macroConfig.endDate, true);
-  });
-
   it("returns emoji macro config", async () => {
     const preset: Preset = {
       name: "test preset",

@@ -81,12 +81,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
               data={[
                 {
                   group: "Built-in Scenes",
-                  items: [
-                    SceneName.Blank,
-                    SceneName.Moon,
-                    SceneName.Countdown,
-                    SceneName.Twinkle,
-                  ],
+                  items: [SceneName.Blank, SceneName.Moon, SceneName.Twinkle],
                 },
                 {
                   group: "Custom Scenes",

@@ -3,7 +3,6 @@
 import {
   box,
   coordinates,
-  countdown,
   emoji,
   marquee,
   moon,
@@ -13,7 +12,6 @@ import {
 } from "../../display-engine/marcoConfigs";
 import { Macro } from "../../display-engine/types";
 import { Preset, SceneName } from "@/types";
-import { getEndDate } from "@/helpers/getEndDate";
 import { getCustomScenes } from "@/server/queries";
 
 export async function transformPresetToDisplayMacros(
@@ -48,6 +46,17 @@ export async function transformPresetToDisplayMacros(
         ];
       }
 
+      if (sceneName === SceneName.Message) {
+        return [
+          text({
+            ...sceneConfig,
+            startingRow: 0,
+            font: "Tiny5",
+            fontSize: 8,
+          }),
+        ];
+      }
+
       if (sceneName === SceneName.Emoji) {
         return [
           // text({
@@ -60,16 +69,6 @@ export async function transformPresetToDisplayMacros(
             ...sceneConfig,
           }),
         ];
-      }
-
-      if (sceneName === SceneName.Countdown) {
-        const endDate = getEndDate(preset);
-
-        if (endDate) {
-          return [countdown({ ...sceneConfig, endDate: endDate.toJSON() })];
-        } else {
-          return [text({ text: "no\n date" })];
-        }
       }
 
       if (sceneName === SceneName.Twinkle) {
