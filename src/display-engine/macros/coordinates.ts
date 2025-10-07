@@ -1,10 +1,8 @@
-import { MacroCoordinatesConfig, MacroFn } from "../types";
-import { syncFromCanvas } from "../canvas";
+import { MacroCoordinatesConfig, MacroFn, Pixel } from "../types";
+import { colorToRgba } from "./ripple";
 
 export const startCoordinates: MacroFn = async ({
   macroConfig,
-  ctx,
-  dimensions,
   index,
   updatePixels,
 }) => {
@@ -15,13 +13,19 @@ export const startCoordinates: MacroFn = async ({
     ...macroConfig,
   };
 
+  const pixels: Pixel[] = [];
+
   for (const coordinate in config.coordinates) {
-    ctx.fillStyle = (config as MacroCoordinatesConfig).coordinates[coordinate];
+    const hexColor = (config as MacroCoordinatesConfig).coordinates[coordinate];
+    const rgba = colorToRgba(hexColor);
     const [x, y] = coordinate.split(":");
-    ctx.fillRect(parseInt(x, 10), parseInt(y, 10), 1, 1);
+    pixels.push({
+      y: parseInt(y, 10),
+      x: parseInt(x, 10),
+      rgba: new Uint8ClampedArray([rgba.r, rgba.g, rgba.b, rgba.a]),
+    });
   }
 
-  const pixels = syncFromCanvas(ctx, dimensions);
   updatePixels(pixels, index);
 
   return () => {};

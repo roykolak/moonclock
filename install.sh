@@ -60,6 +60,10 @@ echo " -> Seeding database file"
 sudo touch $DATA_FOLDER/database.json
 sudo chmod 666 $DATA_FOLDER/database.json
 
+echo " -> Loosen fontconfig cache permissions"
+
+sudo chmod 666 /var/cache/fontconfig
+
 echo " -> Seeding custom scenes"
 
 if [ ! -d "$DATA_FOLDER/custom_scenes" ]; then

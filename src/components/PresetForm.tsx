@@ -19,6 +19,7 @@ import {
   Stack,
   Switch,
   Text,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -30,6 +31,7 @@ import { useDisclosure } from "@mantine/hooks";
 import {
   MacroMarqueeConfig,
   MacroRippleConfig,
+  MacroTextConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
@@ -109,6 +111,12 @@ export function PresetForm({
       return form.setFieldValue(fieldValue, {
         animateStarTwinkle: true,
       } as Partial<MacroMarqueeConfig>);
+    }
+
+    if (value === SceneName.Message) {
+      return form.setFieldValue(fieldValue, {
+        text: "Hello\nWorld!",
+      } as Partial<MacroTextConfig>);
     }
 
     form.setFieldValue(fieldValue, {});
@@ -219,6 +227,7 @@ function Scene({
               group: "Built-in Scenes",
               items: [
                 SceneName.Moon,
+                SceneName.Message,
                 SceneName.Color,
                 SceneName.Twinkle,
                 SceneName.Ripple,
@@ -446,6 +455,39 @@ export function SceneConfigControls({
             placeholder="Select a twinkle color"
             key={form.key(`scenes.${index}.sceneConfig.color`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (sceneName === "message") {
+    return (
+      <Card w="100%">
+        <Stack>
+          <Textarea
+            label="Message"
+            key={form.key(`scenes.${index}.sceneConfig.text`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
+          />
+          <Stack gap={4}>
+            <Text size="sm">Font size</Text>
+            <Slider
+              min={7}
+              max={20}
+              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
+              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
+            />
+          </Stack>
+          <SegmentedControl
+            fullWidth
+            data={[
+              { label: "Left", value: "left" },
+              { label: "Center", value: "center" },
+              { label: "Right", value: "right" },
+            ]}
+            key={form.key(`scenes.${index}.sceneConfig.alignment`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.alignment`)}
           />
         </Stack>
       </Card>

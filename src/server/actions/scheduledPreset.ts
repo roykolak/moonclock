@@ -18,6 +18,8 @@ export async function updateScheduledPreset(
     },
   });
 
+  fetch(`http://localhost:3001/api/reload`);
+
   revalidatePath("/panel");
 }
 
