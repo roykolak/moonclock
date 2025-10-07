@@ -33,7 +33,7 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    const newPreset = page.getByTestId("preset-item").nth(3);
+    const newPreset = page.getByTestId("preset-item").nth(2);
 
     await expect(newPreset).toBeVisible();
 
@@ -92,7 +92,7 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    const newPreset = page.getByTestId("preset-item").nth(3);
+    const newPreset = page.getByTestId("preset-item").nth(2);
 
     await expect(newPreset).toBeVisible();
 
