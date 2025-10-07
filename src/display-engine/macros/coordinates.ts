@@ -17,8 +17,12 @@ export const startCoordinates: MacroFn = async ({
 
   for (const coordinate in config.coordinates) {
     const hexColor = (config as MacroCoordinatesConfig).coordinates[coordinate];
+
+    if (!hexColor) continue;
+
     const rgba = colorToRgba(hexColor);
     const [x, y] = coordinate.split(":");
+
     pixels.push({
       y: parseInt(y, 10),
       x: parseInt(x, 10),
