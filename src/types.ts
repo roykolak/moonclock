@@ -58,6 +58,7 @@ export enum PresetField {
   ForTime = "forTime",
   TimeAdjustmentAmount = "timeAdjustmentAmount",
   Brightness = "brightness",
+  Pinned = "pinned",
 }
 
 export interface QueuedFramesSnapshot {
@@ -97,6 +98,7 @@ export interface Preset {
   [PresetField.ForTime]: string;
   [PresetField.TimeAdjustmentAmount]?: string;
   [PresetField.Brightness]?: number | null;
+  [PresetField.Pinned]?: boolean;
   scenes: Scene[];
 }
 

@@ -31,7 +31,7 @@ test.describe("Updating panel settings", () => {
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
     await expect(page.getByAltText("bunny scene")).toBeVisible();
 
-    await page.getByRole("button", { name: "Sleep Mode" }).click();
+    await page.getByRole("button", { name: "Moon" }).click();
 
     await expect(page.getByRole("button", { name: "+1 hour" })).toBeVisible();
     await expect(page.getByRole("button", { name: "-1 hour" })).toBeVisible();

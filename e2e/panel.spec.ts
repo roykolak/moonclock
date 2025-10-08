@@ -14,11 +14,11 @@ test.describe("Test", () => {
   }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("button", { name: "Sleep Mode" }).click();
+    await page.getByRole("button", { name: "Moon" }).click();
 
     const endTime = page.getByTestId("end-time");
 
-    await expect(page.getByText("Sleep Mode until...")).toBeVisible();
+    await expect(page.getByText("Moon until...")).toBeVisible();
     await expect(endTime).toHaveText("7:00 AM");
 
     await page.getByRole("button", { name: "+5 min" }).click();
@@ -33,15 +33,13 @@ test.describe("Test", () => {
     await page.getByTestId("panel-menu").click();
     await page.getByRole("menuitem", { name: "Clear Panel" }).click();
 
-    await expect(
-      page.getByRole("button", { name: "Sleep Mode" })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Moon" })).toBeVisible();
   });
 
   test("activating a preset and editting it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("button", { name: "Sleep Mode" }).click();
+    await page.getByRole("button", { name: "Moon" }).click();
 
     await page.getByTestId("panel-menu").click();
     await page.getByRole("menuitem", { name: "Edit Preset" }).click();
@@ -77,8 +75,6 @@ test.describe("Test", () => {
     await page.getByTestId("panel-menu").click();
     await page.getByRole("menuitem", { name: "Clear Panel" }).click();
 
-    await expect(
-      page.getByRole("button", { name: "Sleep Mode" })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Moon" })).toBeVisible();
   });
 });

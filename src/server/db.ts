@@ -31,7 +31,7 @@ export const defaultData: DataTypes = {
   presets: [
     {
       id: randomUUID(),
-      name: "Sleep Mode",
+      name: "Moon",
       scenes: [
         {
           sceneName: SceneName.Moon,
@@ -43,16 +43,130 @@ export const defaultData: DataTypes = {
       untilHour: "7",
       untilMinute: "00",
       forTime: "",
+      pinned: true,
+    },
+    {
+      mode: "for",
+      name: "Message",
+      scenes: [
+        {
+          sceneName: "message",
+          sceneConfig: {
+            text: "Hello \nWorld!",
+            fontSize: 25,
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+      id: randomUUID(),
+      pinned: true,
     },
     {
       id: randomUUID(),
-      name: "Nap Mode",
+      name: "Bunny",
       scenes: [{ sceneName: "bunny", sceneConfig: {} }],
       mode: "for",
       untilDay: "0",
       untilHour: "0",
       untilMinute: "0",
       forTime: "2:00",
+      pinned: true,
+    },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Twinkle",
+      scenes: [
+        {
+          sceneName: "twinkle",
+          sceneConfig: {
+            color: "#ffffff",
+            speed: 30,
+            amount: 50,
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+      pinned: false,
+    },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Ripple",
+      scenes: [
+        {
+          sceneName: "ripple",
+          sceneConfig: {
+            color: "#08a86b",
+            speed: 30,
+            waveHeight: 1,
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+    },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Emoji",
+      scenes: [
+        {
+          sceneName: "emoji",
+          sceneConfig: {
+            name: "smile",
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+    },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Solid Color",
+      scenes: [
+        {
+          sceneName: "color",
+          sceneConfig: {
+            color: "#8a1663",
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+    },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Marquee",
+      scenes: [
+        {
+          sceneName: "marquee",
+          sceneConfig: {
+            color: "#ffffff",
+            speed: 30,
+            fontSize: 16,
+            text: "hello",
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
     },
   ],
 };
