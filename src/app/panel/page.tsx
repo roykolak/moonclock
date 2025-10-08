@@ -14,6 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const { scheduledPreset, panel, presets, nextVersion } = getData();
   const customSceneNames = await getCustomSceneNames();
+  const pinnedPresets = presets.filter(({ pinned }) => pinned);
 
   let formattedEndTime = null;
 
@@ -32,7 +33,7 @@ export default async function Page() {
         panel={panel}
         scheduledPreset={scheduledPreset}
         formattedEndTime={formattedEndTime}
-        presets={presets}
+        presets={pinnedPresets}
         customSceneNames={customSceneNames}
       />
     </App>

@@ -1,8 +1,18 @@
 "use client";
 
-import { Box, Button, Card, Flex, Group, Text } from "@mantine/core";
-import { Preset } from "../types";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Text,
+} from "@mantine/core";
+import { Preset, PresetField } from "../types";
 import { PresetPreview } from "./PresetPreview";
+import { IconPin, IconPinFilled } from "@tabler/icons-react";
+import { updatePreset } from "@/server/actions/presets";
 
 interface PresetItemProps {
   preset: Preset;
@@ -30,6 +40,18 @@ export function PresetItem({
           </Box>
         </Flex>
         <Flex align="center" gap="xs">
+          <ActionIcon
+            variant="transparent"
+            data-testid="pin-toggle"
+            onClick={() => {
+              updatePreset({
+                ...preset,
+                pinned: !(preset[PresetField.Pinned] || false),
+              });
+            }}
+          >
+            {preset[PresetField.Pinned] ? <IconPinFilled /> : <IconPin />}
+          </ActionIcon>
           <Button size="sm" variant="light" onClick={onEditClick}>
             Edit
           </Button>

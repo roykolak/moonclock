@@ -14,8 +14,6 @@ test.describe("Test", () => {
 
     await page.getByRole("link", { name: "Presets" }).click();
 
-    await expect(page.getByTestId("preset-item")).toHaveCount(2);
-
     // Create Preset
 
     await page.getByRole("button", { name: "New Preset" }).click();
@@ -33,7 +31,7 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    const newPreset = page.getByTestId("preset-item").nth(2);
+    const newPreset = page.getByTestId("preset-item").last();
 
     await expect(newPreset).toBeVisible();
 
@@ -69,7 +67,8 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Delete preset" }).click();
 
-    await expect(page.getByTestId("preset-item")).toHaveCount(2);
+    const lastPreset = page.getByTestId("preset-item").last();
+    await expect(lastPreset).not.toHaveText("Updated custom preset");
   });
 
   test("creating a new, multiple scene, preset", async ({ page }) => {
@@ -92,10 +91,26 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    const newPreset = page.getByTestId("preset-item").nth(2);
+    const newPreset = page.getByTestId("preset-item").last();
 
     await expect(newPreset).toBeVisible();
 
     await expect(newPreset.getByAltText("moon, marquee scene")).toBeVisible();
+  });
+
+  test("pinning a preset", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
+    await expect(page.getByRole("button", { name: "Twinkle" })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "Presets" }).click();
+
+    const bunnyPreset = page.getByTestId("preset-item").nth(3);
+
+    await bunnyPreset.getByTestId("pin-toggle").click();
+
+    await page.getByRole("link", { name: "Panel" }).click();
+
+    await expect(page.getByRole("button", { name: "Twinkle" })).toHaveCount(1);
   });
 });
