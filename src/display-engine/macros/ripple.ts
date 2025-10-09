@@ -15,7 +15,21 @@ export function colorToRgba(hexOrRgbString: string) {
       };
     }
   } else {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+    // Try 8-digit hex with alpha first (#rrggbbaa)
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+      hexOrRgbString
+    );
+    if (result) {
+      return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+        a: parseInt(result[4], 16),
+      };
+    }
+
+    // Fall back to 6-digit hex without alpha (#rrggbb)
+    result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
       hexOrRgbString
     );
     if (result) {
