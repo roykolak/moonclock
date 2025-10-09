@@ -168,6 +168,39 @@ export const defaultData: DataTypes = {
       untilHour: "0",
       forTime: "0:05",
     },
+    {
+      id: randomUUID(),
+      mode: "for",
+      name: "Multi-scene",
+      scenes: [
+        {
+          sceneName: "color",
+          sceneConfig: {
+            color: "#006e8c",
+          },
+        },
+        {
+          sceneName: "ripple",
+          sceneConfig: {
+            color: "#a80000",
+            speed: 34,
+            waveHeight: 1,
+          },
+        },
+        {
+          sceneName: "message",
+          sceneConfig: {
+            text: "\n\nHELLO!",
+            alignment: "center",
+            name: "thumbsup",
+          },
+        },
+      ],
+      untilMinute: "0",
+      untilDay: "0",
+      untilHour: "0",
+      forTime: "0:05",
+    },
   ],
 };
 

@@ -44,7 +44,7 @@ export const startTwinkle: MacroFn = async ({
     for (let i = 0; i < twinklingCoordinates.length; i++) {
       const { x, y, a, peaked } = twinklingCoordinates[i];
 
-      const rgba = await colorToRgba("#FFFFFF");
+      const rgba = await colorToRgba(config.color);
 
       pixels.push({
         x,
