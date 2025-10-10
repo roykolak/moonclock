@@ -62,7 +62,7 @@ function App({
       <AppShell.Navbar p="md">
         <NavLink
           component={Link}
-          href="/"
+          href="/panel"
           label="Panel"
           active={pathname.includes("/panel")}
           leftSection={
@@ -78,7 +78,6 @@ function App({
           component={Link}
           href="/presets"
           label="Presets"
-          data-testid="nav-presets"
           active={pathname.includes("/presets")}
           leftSection={
             <ActionIcon variant="light">

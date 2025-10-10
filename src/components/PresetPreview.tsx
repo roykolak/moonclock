@@ -56,25 +56,27 @@ export function PresetPreview({
         dimensions,
         createCanvas,
         onPixelsChange: (pixels) => {
-          for (const pixel of pixels) {
-            if (!pixel.rgba) return;
+          requestAnimationFrame(() => {
+            for (const pixel of pixels) {
+              if (!pixel.rgba) return;
 
-            const id = ctx?.createImageData(1, 1);
+              const id = ctx?.createImageData(1, 1);
 
-            if (!id) continue;
+              if (!id) continue;
 
-            const d = id.data;
+              const d = id.data;
 
-            d[0] = pixel.rgba[0];
-            d[1] = pixel.rgba[1];
-            d[2] = pixel.rgba[2];
-            d[3] = pixel.rgba[3];
+              d[0] = pixel.rgba[0];
+              d[1] = pixel.rgba[1];
+              d[2] = pixel.rgba[2];
+              d[3] = pixel.rgba[3];
 
-            ctx?.putImageData(id, pixel.x, pixel.y);
-          }
+              ctx?.putImageData(id, pixel.x, pixel.y);
+            }
 
-          const dataURL = canvas.toDataURL("png");
-          setImageData(dataURL);
+            const dataURL = canvas.toDataURL("png");
+            setImageData(dataURL);
+          });
         },
       });
 
