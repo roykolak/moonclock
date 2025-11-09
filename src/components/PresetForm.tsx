@@ -2,11 +2,8 @@
 
 import {
   Accordion,
-  ActionIcon,
   Box,
   Button,
-  Card,
-  Checkbox,
   Collapse,
   Flex,
   Group,
@@ -18,15 +15,12 @@ import {
   Stack,
   Switch,
   Text,
-  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
 import { Preset, PresetField, SceneName } from "../types";
 import { useForm, UseFormReturnType } from "@mantine/form";
 import { PresetPreview } from "./PresetPreview";
-import { ColorPicker } from "./ColorPicker";
-import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
   MacroMarqueeConfig,
@@ -34,6 +28,7 @@ import {
   MacroTextConfig,
   MacroTwinkleConfig,
 } from "@/display-engine/types";
+import { Scenes } from "./Scenes";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 interface PresetFormProps {
@@ -172,14 +167,7 @@ export function PresetForm({
 
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
-          {form.getValues().scenes.map((item, index) => (
-            <Scene
-              key={index}
-              form={form}
-              index={index}
-              customSceneNames={customSceneNames}
-            />
-          ))}
+          <Scenes form={form} customSceneNames={customSceneNames} />
           <Button
             variant="light"
             data-testid="new-scene-button"
@@ -201,315 +189,6 @@ export function PresetForm({
         </Flex>
       </Stack>
     </form>
-  );
-}
-
-function Scene({
-  form,
-  index,
-  customSceneNames,
-}: {
-  form: UseFormReturnType<Preset>;
-  index: number;
-  customSceneNames: string[];
-}) {
-  const [sceneControlsVisible, sceneControlshandlers] = useDisclosure();
-
-  return (
-    <Group key={index} w="100%" mb="xs">
-      <Group w="100%" gap="6">
-        <Select
-          placeholder="Scene"
-          variant="filled"
-          style={{ flex: "auto" }}
-          data={[
-            {
-              group: "Built-in Scenes",
-              items: [
-                SceneName.Moon,
-                SceneName.Message,
-                SceneName.Color,
-                SceneName.Twinkle,
-                SceneName.Ripple,
-                SceneName.Marquee,
-                SceneName.Emoji,
-              ],
-            },
-            {
-              group: "Custom Scenes",
-              items: customSceneNames,
-            },
-          ]}
-          data-testid={`scene-${index}-select`}
-          required
-          key={form.key(`scenes.${index}.sceneName`)}
-          {...form.getInputProps(`scenes.${index}.sceneName`)}
-        />
-        <ActionIcon
-          variant="light"
-          data-testid={`scene-${index}-settings-button`}
-          onClick={sceneControlshandlers.toggle}
-          size="lg"
-        >
-          <IconSettings size={22} />
-        </ActionIcon>
-        <ActionIcon
-          color="red"
-          variant="light"
-          size="lg"
-          data-testid={`scene-${index}-delete-button`}
-          onClick={() => form.removeListItem("scenes", index)}
-        >
-          <IconTrash size={16} />
-        </ActionIcon>
-      </Group>
-      {sceneControlsVisible && (
-        <SceneConfigControls form={form} index={index} />
-      )}
-    </Group>
-  );
-}
-
-export function SceneConfigControls({
-  form,
-  index,
-}: {
-  form: UseFormReturnType<Preset>;
-  index: number;
-}) {
-  const { sceneName, sceneConfig } = form.getValues().scenes[index];
-
-  const supportedEmojis = [
-    ["🎉", "tada"],
-    ["✅", "checkmark"],
-    ["😄", "smile"],
-    ["🔥", "flame"],
-    ["👍", "thumbsup"],
-    ["👎", "thumbsdown"],
-    ["❌", "x"],
-  ];
-
-  if (sceneName === "emoji") {
-    return (
-      <Group gap="xs">
-        {supportedEmojis.map((supportedEmoji) => {
-          const [emoji, name] = supportedEmoji;
-          return (
-            <ActionIcon
-              key={name}
-              color={sceneConfig.name === name ? "cyan" : "gray"}
-              onClick={() =>
-                form.setFieldValue(`scenes.${index}.sceneConfig.name`, name)
-              }
-            >
-              {emoji}
-            </ActionIcon>
-          );
-        })}
-      </Group>
-    );
-  }
-
-  if (sceneName === "moon") {
-    return (
-      <Card w="100%">
-        <Switch
-          label="Animate star twinkle"
-          labelPosition="left"
-          key={form.key(`scenes.${index}.sceneConfig.animateStarTwinkle`)}
-          checked={form.values.scenes[index].sceneConfig.animateStarTwinkle}
-          {...form.getInputProps(
-            `scenes.${index}.sceneConfig.animateStarTwinkle`
-          )}
-        />
-      </Card>
-    );
-  }
-
-  if (sceneName === "twinkle") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Twinkle Speed</Text>
-            <Slider
-              label={null}
-              min={5}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.speed`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
-            />
-          </Stack>
-          <Stack gap={4}>
-            <Text size="sm">Twinkle Amount</Text>
-            <Slider
-              label={null}
-              max={1000}
-              key={form.key(`scenes.${index}.sceneConfig.amount`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.amount`)}
-            />
-          </Stack>
-          <ColorPicker
-            value={form.values.scenes[index].sceneConfig.color}
-            onChange={(color) =>
-              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
-            }
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === SceneName.Color) {
-    return (
-      <Card w="100%">
-        <Stack>
-          <ColorPicker
-            value={form.values.scenes[index].sceneConfig.color}
-            onChange={(color) =>
-              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
-            }
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "ripple") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Stack gap={4}>
-            <Text size="sm">Speed</Text>
-            <Slider
-              label={null}
-              min={5}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.speed`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
-            />
-          </Stack>
-          <Stack gap={4}>
-            <Text size="sm">Wave height</Text>
-            <Slider
-              label={null}
-              step={1}
-              max={10}
-              min={1}
-              key={form.key(`scenes.${index}.sceneConfig.waveHeight`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
-            />
-          </Stack>
-          <ColorPicker
-            value={form.values.scenes[index].sceneConfig.color}
-            onChange={(color) =>
-              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
-            }
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "marquee") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <TextInput
-            label="Message"
-            key={form.key(`scenes.${index}.sceneConfig.text`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
-          />
-          <Stack gap={4}>
-            <Text size="sm">Font size</Text>
-            <Slider
-              min={12}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
-            />
-          </Stack>
-          <Checkbox
-            label="Mirror horizontally"
-            checked={form.values.scenes[index].sceneConfig.mirrorHorizontally}
-            key={form.key(`scenes.${index}.sceneConfig.mirrorHorizontally`)}
-            {...form.getInputProps(
-              `scenes.${index}.sceneConfig.mirrorHorizontally`
-            )}
-          />
-          <Stack gap={4}>
-            <Text size="sm">Speed</Text>
-            <Slider
-              min={5}
-              max={60}
-              key={form.key(`scenes.${index}.sceneConfig.speed`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.speed`)}
-            />
-          </Stack>
-          <Stack gap={4}>
-            <Text size="sm">Starting row</Text>
-            <Slider
-              max={32}
-              key={form.key(`scenes.${index}.sceneConfig.startingRow`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.startingRow`)}
-            />
-          </Stack>
-          <ColorPicker
-            value={form.values.scenes[index].sceneConfig.color}
-            onChange={(color) =>
-              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
-            }
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (sceneName === "message") {
-    return (
-      <Card w="100%">
-        <Stack>
-          <Textarea
-            label="Message"
-            key={form.key(`scenes.${index}.sceneConfig.text`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.text`)}
-          />
-          <Stack gap={4}>
-            <Text size="sm">Font size</Text>
-            <Slider
-              min={7}
-              max={20}
-              key={form.key(`scenes.${index}.sceneConfig.fontSize`)}
-              {...form.getInputProps(`scenes.${index}.sceneConfig.fontSize`)}
-            />
-          </Stack>
-          <SegmentedControl
-            fullWidth
-            data={[
-              { label: "Left", value: "left" },
-              { label: "Center", value: "center" },
-              { label: "Right", value: "right" },
-            ]}
-            key={form.key(`scenes.${index}.sceneConfig.alignment`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.alignment`)}
-          />
-          <ColorPicker
-            value={form.values.scenes[index].sceneConfig.color}
-            onChange={(color) =>
-              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
-            }
-          />
-        </Stack>
-      </Card>
-    );
-  }
-
-  return (
-    <Card w="100%">
-      <Text ta="center" size="xs">
-        No scene options available
-      </Text>
-    </Card>
   );
 }
 
