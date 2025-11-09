@@ -26,7 +26,13 @@ test.describe("Test", () => {
 
     await page.getByTestId("change-expiration").click();
 
+    const forTimeSelect = page.getByTestId("for-time-select");
+    await expect(forTimeSelect).toBeVisible();
+
+    await page.waitForTimeout(350);
+
     await page.getByTestId("for-time-select").click();
+
     await page.getByRole("option", { name: "30 minutes", exact: true }).click();
 
     await page.getByRole("button", { name: "Create Preset" }).click();
@@ -49,7 +55,12 @@ test.describe("Test", () => {
 
     await page.getByTestId("change-expiration").click();
 
+    await expect(forTimeSelect).toBeVisible();
+
+    await page.waitForTimeout(350);
+
     await page.getByTestId("for-time-select").click();
+
     await page.getByRole("option", { name: "1 hour 30 minutes" }).click();
 
     await page.getByTestId("scene-0-select").click();
