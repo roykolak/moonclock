@@ -8,7 +8,6 @@ import {
   Card,
   Checkbox,
   Collapse,
-  ColorInput,
   Flex,
   Group,
   Input,
@@ -26,6 +25,7 @@ import {
 import { Preset, PresetField, SceneName } from "../types";
 import { useForm, UseFormReturnType } from "@mantine/form";
 import { PresetPreview } from "./PresetPreview";
+import { ColorPicker } from "./ColorPicker";
 import { IconSettings, IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -349,10 +349,11 @@ export function SceneConfigControls({
               {...form.getInputProps(`scenes.${index}.sceneConfig.amount`)}
             />
           </Stack>
-          <ColorInput
-            placeholder="Select a twinkle color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          <ColorPicker
+            value={form.values.scenes[index].sceneConfig.color}
+            onChange={(color) =>
+              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
+            }
           />
         </Stack>
       </Card>
@@ -363,10 +364,11 @@ export function SceneConfigControls({
     return (
       <Card w="100%">
         <Stack>
-          <ColorInput
-            placeholder="Select a color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          <ColorPicker
+            value={form.values.scenes[index].sceneConfig.color}
+            onChange={(color) =>
+              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
+            }
           />
         </Stack>
       </Card>
@@ -398,10 +400,11 @@ export function SceneConfigControls({
               {...form.getInputProps(`scenes.${index}.sceneConfig.waveHeight`)}
             />
           </Stack>
-          <ColorInput
-            placeholder="Select a twinkle color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          <ColorPicker
+            value={form.values.scenes[index].sceneConfig.color}
+            onChange={(color) =>
+              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
+            }
           />
         </Stack>
       </Card>
@@ -451,10 +454,11 @@ export function SceneConfigControls({
               {...form.getInputProps(`scenes.${index}.sceneConfig.startingRow`)}
             />
           </Stack>
-          <ColorInput
-            placeholder="Select a twinkle color"
-            key={form.key(`scenes.${index}.sceneConfig.color`)}
-            {...form.getInputProps(`scenes.${index}.sceneConfig.color`)}
+          <ColorPicker
+            value={form.values.scenes[index].sceneConfig.color}
+            onChange={(color) =>
+              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
+            }
           />
         </Stack>
       </Card>
@@ -488,6 +492,12 @@ export function SceneConfigControls({
             ]}
             key={form.key(`scenes.${index}.sceneConfig.alignment`)}
             {...form.getInputProps(`scenes.${index}.sceneConfig.alignment`)}
+          />
+          <ColorPicker
+            value={form.values.scenes[index].sceneConfig.color}
+            onChange={(color) =>
+              form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
+            }
           />
         </Stack>
       </Card>

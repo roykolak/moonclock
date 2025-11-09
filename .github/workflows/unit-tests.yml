@@ -12,12 +12,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
+      - name: Install dependencies
+        run: npm ci
       - uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "America/Chicago"
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev librsvg2-dev
-          npm ci
       - run: npm test
