@@ -29,6 +29,24 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
     },
   });
 
+  const handleCheckForUpdate = async () => {
+    try {
+      const response = await fetch("/api/check-for-update", {
+        method: "PUT",
+      });
+      const data = await response.json();
+      showNotification({
+        message: data.message || "Update check completed",
+        color: data.message?.includes("Error") ? "red" : "blue",
+      });
+    } catch {
+      showNotification({
+        message: "Failed to check for update",
+        color: "red",
+      });
+    }
+  };
+
   return (
     <form
       onSubmit={form.onSubmit((values) => {
@@ -192,6 +210,15 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
         </Accordion>
         <Button type="submit" fullWidth mt="md">
           Save
+        </Button>
+        <Button
+          onClick={handleCheckForUpdate}
+          fullWidth
+          mt="md"
+          variant="light"
+          data-testid="check-for-update-button"
+        >
+          Check for Update
         </Button>
       </Stack>
     </form>
