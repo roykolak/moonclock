@@ -1,3 +1,5 @@
+"use server";
+
 import Anthropic from "@anthropic-ai/sdk";
 import { getData } from "../db";
 import { getCachedPrompt, setCachedPrompt } from "./promptCache";
