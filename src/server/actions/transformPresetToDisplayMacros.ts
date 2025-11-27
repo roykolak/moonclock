@@ -6,6 +6,7 @@ import {
   emoji,
   marquee,
   moon,
+  prompt,
   ripple,
   text,
   twinkle,
@@ -73,6 +74,10 @@ export async function transformPresetToDisplayMacros(
 
       if (sceneName === SceneName.Twinkle) {
         return [twinkle({ ...sceneConfig })];
+      }
+
+      if (sceneName === SceneName.Prompt) {
+        return [prompt({ ...sceneConfig })];
       }
 
       if (sceneName === SceneName.Hardware) {

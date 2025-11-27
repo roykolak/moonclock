@@ -2,6 +2,7 @@
 
 import {
   ActionIcon,
+  Button,
   Card,
   Checkbox,
   Group,
@@ -138,6 +139,7 @@ function Scene({
               items: [
                 SceneName.Moon,
                 SceneName.Message,
+                SceneName.Prompt,
                 SceneName.Color,
                 SceneName.Twinkle,
                 SceneName.Ripple,
@@ -412,6 +414,38 @@ export function SceneConfigControls({
               form.setFieldValue(`scenes.${index}.sceneConfig.color`, color)
             }
           />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (sceneName === SceneName.Prompt) {
+    return (
+      <Card w="100%">
+        <Stack>
+          <Textarea
+            label="Prompt"
+            description="Describe what you want to see on the display"
+            placeholder="e.g., a happy cat, a sunset, a rocket ship..."
+            key={form.key(`scenes.${index}.sceneConfig.prompt`)}
+            {...form.getInputProps(`scenes.${index}.sceneConfig.prompt`)}
+          />
+          <Group justify="flex-end">
+            <Button
+              variant="filled"
+              color="blue"
+              onClick={() => {
+                const currentPrompt =
+                  form.values.scenes[index].sceneConfig.prompt;
+                form.setFieldValue(
+                  `scenes.${index}.sceneConfig.executedPrompt`,
+                  currentPrompt
+                );
+              }}
+            >
+              Run
+            </Button>
+          </Group>
         </Stack>
       </Card>
     );

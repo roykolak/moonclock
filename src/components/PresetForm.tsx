@@ -24,6 +24,7 @@ import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
 import {
   MacroMarqueeConfig,
+  MacroPromptConfig,
   MacroRippleConfig,
   MacroTextConfig,
   MacroTwinkleConfig,
@@ -112,6 +113,13 @@ export function PresetForm({
       return form.setFieldValue(fieldValue, {
         text: "Hello\nWorld!",
       } as Partial<MacroTextConfig>);
+    }
+
+    if (value === SceneName.Prompt) {
+      return form.setFieldValue(fieldValue, {
+        prompt: "a happy cat",
+        executedPrompt: "a happy cat",
+      } as Partial<MacroPromptConfig>);
     }
 
     form.setFieldValue(fieldValue, {});
