@@ -9,6 +9,7 @@ import {
   MacroMeteorsConfig,
   MacroMoonConfig,
   MacroName,
+  MacroPromptConfig,
   MacroRippleConfig,
   MacroTextConfig,
   MacroTwinkleConfig,
@@ -68,5 +69,10 @@ export const coordinates = (
   macroConfig: Partial<MacroCoordinatesConfig>
 ): Macro => ({
   macroName: MacroName.Coordinates,
+  macroConfig,
+});
+
+export const prompt = (macroConfig: Partial<MacroPromptConfig>): Macro => ({
+  macroName: MacroName.Prompt,
   macroConfig,
 });
