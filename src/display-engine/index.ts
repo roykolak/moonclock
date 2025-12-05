@@ -20,7 +20,6 @@ import { startCustom } from "./macros/custom";
 import { startCoordinates } from "./macros/coordinates";
 import { startMoon } from "./macros/moon";
 import { startEmoji } from "./macros/emoji";
-import { startPrompt } from "./macros/prompt";
 
 export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
 
@@ -47,7 +46,6 @@ async function startMacros({
     [MacroName.Coordinates]: startCoordinates,
     [MacroName.Moon]: startMoon,
     [MacroName.Emoji]: startEmoji,
-    [MacroName.Prompt]: startPrompt,
   };
 
   const stops = await Promise.all(

@@ -86,7 +86,6 @@ export enum SceneName {
   Color = "color",
   Hardware = "hardware",
   Message = "message",
-  Prompt = "prompt",
 }
 
 export interface Preset {

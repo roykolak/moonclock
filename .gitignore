@@ -55,5 +55,3 @@ release.tar.gz
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-
-prompt.json
