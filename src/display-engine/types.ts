@@ -12,7 +12,6 @@ export enum MacroName {
   Coordinates = "coordinates",
   Moon = "moon",
   Emoji = "emoji",
-  Prompt = "prompt",
 }
 export interface Gradient {
   direction: "vertical" | "horizontal";
@@ -112,11 +111,6 @@ export interface MacroMoonConfig {
   animateStarTwinkle?: boolean;
 }
 
-export interface MacroPromptConfig {
-  prompt: string;
-  executedPrompt?: string;
-}
-
 export type MacroConfig = MacroBoxConfig &
   MacroTextConfig &
   MacroMarqueeConfig &
@@ -127,8 +121,7 @@ export type MacroConfig = MacroBoxConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
   MacroRippleConfig &
-  MacroEmojiConfig &
-  MacroPromptConfig;
+  MacroEmojiConfig;
 
 export interface Macro {
   macroName: MacroName;

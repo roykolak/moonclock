@@ -2,16 +2,8 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { getData } from "../db";
-import { getCachedPrompt, setCachedPrompt } from "./promptCache";
-import vm from "vm";
 
 export async function generatePixelArt(description: string) {
-  // Check cache first
-  const cachedCoordinates = await getCachedPrompt(description);
-  if (cachedCoordinates) {
-    return { success: true, coordinates: cachedCoordinates };
-  }
-
   const { panel } = getData();
   const apiKey = panel.anthropicApiKey;
 
@@ -25,53 +17,30 @@ export async function generatePixelArt(description: string) {
   const anthropic = new Anthropic({
     apiKey,
   });
-  const prompt = `You are a pixel art generator for a 32x32 LED matrix display. 
-  
-You are the world's greatest pixel art generator and you do an incredible job simplifying real world objects into a small grid of colors. 
-Generate pixel art based on the user's description.
+  const prompt = `You are a pixel art generator for a 32x32 LED matrix display. Generate pixel art based on the user's description.
 
 User description: "${description}"
 
-Write Node.js code that creates pixel art. The code should:
-1. Create a 32x32 grid (array of arrays)
-2. Use null for empty pixels
-3. Use hex color strings for colored pixels
-4. Output JSON with "x:y" coordinate keys
+Return a JSON object where keys are coordinates in the format "x:y" (where x and y are 0-31) and values are hex color codes (e.g., "#FF0000").
 
-Style: 8-bit aesthetic, vibrant but rich colors (not neon), high saturation
-Keep designs SIMPLE and recognizable at 32x32 resolution
+Rules:
+- Only include pixels that should be colored (empty pixels are omitted)
+- Use appropriate colors that match the description
+- Consider the 32x32 grid size when designing
+- Keep designs simple and recognizable at this resolution
+- Keep the colors SIMPLE and use high saturation
+- Return ONLY valid JSON, no additional text
 
-Example code structure:
-\`\`\`javascript
-// Create 32x32 grid
-const grid = Array(32).fill(null).map(() => Array(32).fill(null));
-
-// Draw your pixel art (example: red square)
-for (let x = 10; x < 20; x++) {
-    for (let y = 10; y < 20; y++) {
-        grid[y][x] = "#FF0000";
-    }
-}
-
-// Convert to coordinate format
-const result = {};
-for (let y = 0; y < 32; y++) {
-    for (let x = 0; x < 32; x++) {
-        if (grid[y][x] !== null) {
-            result[\`\${x}:\${y}\`] = grid[y][x];
-        }
-    }
-}
-
-console.log(JSON.stringify(result));
-\`\`\`
-
-Write similar code for: ${description}
-Return ONLY the JavaScript code, no markdown formatting or explanations.`;
+Example format:
+{
+  "0:0": "#FF0000",
+  "1:0": "#FF0000",
+  "0:1": "#00FF00"
+}`;
 
   try {
     const message = await anthropic.messages.create({
-      model: "claude-opus-4-20250514",
+      model: "claude-sonnet-4-5-20250929",
       max_tokens: 8096,
       messages: [
         {
@@ -86,31 +55,16 @@ Return ONLY the JavaScript code, no markdown formatting or explanations.`;
       throw new Error("No text response from API");
     }
 
-    // Remove markdown code blocks if present
-    const code = textContent.text
-      .replace(/```javascript\n?/g, "")
-      .replace(/```\n?/g, "");
+    // Extract JSON from the response (in case Claude wraps it in markdown)
+    let jsonText = textContent.text.trim();
+    const jsonMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
+    }
 
-    // Capture console.log output
-    let output = "";
-    const mockConsole = {
-      log: (msg: string) => {
-        output = msg;
-      },
-    };
+    console.log(jsonText);
 
-    // Execute code safely using Node's built-in vm module
-    const context = vm.createContext({ mockConsole });
-    const script = new vm.Script(
-      code.replace(/console\.log/g, "mockConsole.log")
-    );
-    script.runInContext(context, { timeout: 1000 });
-
-    const coordinates = JSON.parse(output);
-
-    // Cache the result for future use
-    await setCachedPrompt(description, coordinates);
-
+    const coordinates = JSON.parse(jsonText);
     return { success: true, coordinates };
   } catch (error) {
     console.error("Error generating pixel art:", error);
