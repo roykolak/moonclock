@@ -2,7 +2,7 @@
 
 ## What is this?
 
-It's a LED display powered by a RaspberryPi and you control it via this webapp, hosted on the Pi.
+It's a LED display powered by a RaspberryPi and you control it via this webapp, hosted on the Pi, or via an external button connected via GPIO pins.
 
 You can configure an LED scene to display..
 
@@ -55,18 +55,49 @@ You'll need the following supplies:
 1. [Female jumper wires](https://www.adafruit.com/product/266)
 1. A usb cable that you can cut to power the LED panel
 1. A usb cable to power the raspberry pi
-1. Optional - [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) to soften the LED Panel
-1. Optional - 8.5" x 8.5" frame to house the Panel
+1. Optional - For Button: [16mm push button](https://www.adafruit.com/product/1504)
+1. Optional - For Button: [Button quick connect wire pairs](https://www.adafruit.com/product/1152)
+1. Optional - For Presentation: [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) to soften the LED Panel
+1. Optional - For Presentation: 8.5" x 8.5" frame to house the Panel
 
 Wire the panel according to the wiring chart [here](https://github.com/hzeller/rpi-rgb-led-matrix/blob/master/wiring.md).
 
 👉 Remember, you are wiring a 32x32 panel, double check your work!
 
-## Installation & Setup
+## Machine Setup
 
 Install the latest raspbian (not desktop verion!) on your pi and join it to your network. Then ssh into the machine and let's get going...
 
 First, you'll need to [disable onboard sound](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound). This is a requirement from `hzeller/rpi-rgb-led-matrix`
+
+### External Button Setup
+
+If you are planning on connecting an external button to cycle through visualizations
+
+```
+echo "gpio=16=ip,pu" | sudo tee -a /boot/firmware/config.txt
+```
+
+```
+sudo usermod -a -G gpio root
+```
+
+```
+echo 'SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"' | sudo tee /etc/udev/rules.d/99-gpio.rules
+```
+
+```
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+And finally...
+
+```
+sudo reboot
+```
+
+## Installation
 
 Update the system
 
@@ -146,6 +177,12 @@ sudo npm run start:dev
 
 ```
 npm run build
+```
+
+## Developing on a pi
+
+```
+scp release.tar.gz pi@192.168.4.225:~/
 ```
 
 ## Developing on a vm
