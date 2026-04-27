@@ -40,7 +40,7 @@ export function HardwareSettings({
   } = hardwareState;
 
   const filteredSnapshots = filterQueuedFramesSnapshotsBySeconds(
-    queuedFramesSnapshots
+    queuedFramesSnapshots,
   );
 
   return (
@@ -66,7 +66,7 @@ export function HardwareSettings({
             />
           </Grid.Col>
           <Grid.Col span={9}>
-            <Grid gutter={0}>
+            <Grid gap={0}>
               <Grid.Col span={4}>
                 <Text c="dimmed" size="sm" fw="bold">
                   Scenes:
@@ -151,8 +151,8 @@ export function HardwareSettings({
           <Text size="sm" c="dimmed">
             {getTimeFromDate(
               new Date(
-                filteredSnapshots?.[filteredSnapshots?.length - 1]?.timestamp
-              )
+                filteredSnapshots?.[filteredSnapshots?.length - 1]?.timestamp,
+              ),
             )}
           </Text>
         </Group>
