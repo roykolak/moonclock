@@ -161,7 +161,7 @@ export function PresetForm({
           )}
         </Stack>
 
-        <Collapse in={expirationOpened}>
+        <Collapse expanded={expirationOpened}>
           <ExpirationTime form={form} />
         </Collapse>
 
