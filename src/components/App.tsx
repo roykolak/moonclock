@@ -6,6 +6,7 @@ import {
   AppShell,
   Box,
   Burger,
+  Divider,
   Group,
   NavLink,
   Text,
@@ -13,6 +14,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconAdjustmentsHorizontal,
+  IconCpu,
   IconDeviceTv,
   IconExclamationCircleFilled,
   IconLayersIntersect,
@@ -110,6 +112,19 @@ function App({
                 style={{ width: "70%", height: "70%" }}
                 stroke={1.5}
               />
+            </ActionIcon>
+          }
+        />
+
+        <Divider my="xs" />
+        <NavLink
+          component={Link}
+          href="/hardware"
+          label="Hardware"
+          active={pathname.includes("/hardware")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconCpu style={{ width: "70%", height: "70%" }} stroke={1.5} />
             </ActionIcon>
           }
         />

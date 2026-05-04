@@ -16,6 +16,7 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
+import Link from "next/link";
 import {
   HardwareState,
   Panel as PanelType,
@@ -32,7 +33,6 @@ import {
   createCustomScheduledPreset,
   updateScheduledPreset,
 } from "@/server/actions/scheduledPreset";
-import { HardwareSettings } from "./HardwareSettings";
 import { IconDots } from "@tabler/icons-react";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 import { useEffect, useState } from "react";
@@ -55,12 +55,11 @@ export default function Panel({
   customSceneNames,
 }: PanelProps) {
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
-  const [hardwareModalOpen, hardwareModalHandlers] = useDisclosure();
 
   const [presetEditting, setPresetEditting] = useState<Preset | null>(null);
 
   const [hardwareState, setHardwareState] = useState<HardwareState | null>(
-    null
+    null,
   );
 
   const theme = useMantineTheme();
@@ -78,7 +77,7 @@ export default function Panel({
   const timeAdjustment = parseInt(
     scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
       panel.timeAdjustmentAmount,
-    10
+    10,
   );
 
   return (
@@ -103,23 +102,17 @@ export default function Panel({
           submitLabel={scheduledPreset?.preset?.id ? "Update" : "Apply now"}
         />
       </Modal>
-      <Modal
-        title="Hardware Status"
-        opened={hardwareModalOpen}
-        onClose={hardwareModalHandlers.close}
-      >
-        <HardwareSettings hardwareState={hardwareState} />
-      </Modal>
       {isFrameRateLagging(hardwareState) && (
         <Alert color="red" p="xs" mb="md">
           <Stack>
             <Group justify="space-between" w="100%">
               <Text c={theme.colors.red[5]}>Framerate is lagging!</Text>
               <Button
+                component={Link}
+                href="/hardware"
                 variant="light"
                 color="red"
                 size="compact-sm"
-                onClick={hardwareModalHandlers.open}
               >
                 More..
               </Button>
@@ -174,9 +167,6 @@ export default function Panel({
                   }}
                 >
                   Clear Panel
-                </Menu.Item>
-                <Menu.Item onClick={hardwareModalHandlers.open}>
-                  Hardware...
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
