@@ -7,7 +7,7 @@ import { promisify } from "util";
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
-console.log('Building version:', packageInfo.version)
+console.log("Building version:", packageInfo.version);
 
 await esbuild.build({
   entryPoints: ["hardware/index.ts"],
@@ -32,6 +32,10 @@ content = content.replace(oldString, newString);
 fs.writeFileSync(filePath, content, "utf8");
 
 console.log("\n -> canvas.node dependency path rewritten");
+
+fs.cpSync("hardware/prebuilt", "dist/hardware", { recursive: true });
+
+console.log("\n -> Copied prebuilt native modules to dist/hardware");
 
 fs.cpSync(".next/standalone", "dist/app", { recursive: true });
 fs.cpSync("public", "dist/app/public", { recursive: true });
@@ -72,11 +76,11 @@ const services = [
 const placeholder = "{VERSION}";
 
 for (const service of services) {
-  const file = `${releaseFolder}/services/${service}`
+  const file = `${releaseFolder}/services/${service}`;
   const data = await readFile(file, "utf8");
   const result = data.replace(
     new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-    packageInfo.version
+    packageInfo.version,
   );
   await writeFile(file, result, "utf8");
 }
