@@ -10,7 +10,7 @@ export const startLoadingBar: MacroFn = async ({
   updatePixels,
 }) => {
   const config = {
-    color: "#ffffff",
+    color: "#009900",
     height: 2,
     startingRow: dimensions.height - 2,
     duration: 3000,

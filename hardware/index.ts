@@ -350,7 +350,11 @@ export async function createCanvas(dimensions: Dimensions) {
               fontSize: 8,
               startingRow: 18,
             }),
-            loadingBar({ duration: previewDurationMs }),
+            loadingBar({
+              duration: previewDurationMs,
+              color: "#009900",
+              height: 1,
+            }),
           ]);
 
           await new Promise((resolve) =>
