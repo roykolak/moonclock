@@ -94,6 +94,7 @@ sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
 
 echo "" > $DATA_FOLDER/current_install_step.txt
 
+cd /
 sudo rm -fr /usr/local/bin/moonclock/update
 
 sudo mc restart

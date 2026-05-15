@@ -24,7 +24,7 @@ export async function startUpdate() {
 
     exec(`{
       sudo mkdir -p "/usr/local/bin/moonclock/update" &&
-      sudo tar -xzvf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
+      sudo tar -xzf ${absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
       cd /usr/local/bin/moonclock/update/ &&
       sudo ./install.sh
     }`);
