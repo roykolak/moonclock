@@ -20,6 +20,7 @@ import { startCustom } from "./macros/custom";
 import { startCoordinates } from "./macros/coordinates";
 import { startMoon } from "./macros/moon";
 import { startEmoji } from "./macros/emoji";
+import { startLoadingBar } from "./macros/loading-bar";
 
 export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
 
@@ -46,6 +47,7 @@ async function startMacros({
     [MacroName.Coordinates]: startCoordinates,
     [MacroName.Moon]: startMoon,
     [MacroName.Emoji]: startEmoji,
+    [MacroName.LoadingBar]: startLoadingBar,
   };
 
   const stops = await Promise.all(
@@ -62,7 +64,7 @@ async function startMacros({
         updatePixels,
         createCanvas,
       });
-    })
+    }),
   );
 
   return () => {
@@ -133,7 +135,7 @@ export function createDisplayEngine({
               (baseColor, pixel) => {
                 return mixColors({ newColor: pixel.rgba, baseColor });
               },
-              new Uint8ClampedArray([0, 0, 0, 255])
+              new Uint8ClampedArray([0, 0, 0, 255]),
             );
 
             pixelsToUpdate.push({

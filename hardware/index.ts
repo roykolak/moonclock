@@ -2,7 +2,12 @@ import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
-import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
+import {
+  coordinates,
+  loadingBar,
+  marquee,
+  text,
+} from "../src/display-engine/marcoConfigs";
 import { getData, setData } from "@/server/db";
 import { getEndDate } from "@/helpers/getEndDate";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
@@ -79,7 +84,7 @@ export async function createCanvas(dimensions: Dimensions) {
     res.header("Access-Control-Allow-Methods", "GET");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     );
 
     // Handle preflight requests
@@ -121,7 +126,7 @@ export async function createCanvas(dimensions: Dimensions) {
   const { panel } = await getData();
 
   let displayConfig: Macro[] = await transformPresetToDisplayMacros(
-    panel.defaultPreset
+    panel.defaultPreset,
   );
   let preset: Preset = panel.defaultPreset;
   let renderedAt: string = new Date().toJSON();
@@ -145,7 +150,7 @@ export async function createCanvas(dimensions: Dimensions) {
       {
         ...LedMatrix.defaultRuntimeOptions(),
         gpioSlowdown: panel[PanelField.GpioSlowdown],
-      }
+      },
     );
     matrix.afterSync(() => {
       const pixelUpdates = updateQueue.shift();
@@ -285,7 +290,7 @@ export async function createCanvas(dimensions: Dimensions) {
       abortCurrentOperation = false;
 
       console.log(
-        "[HARDWARE] Button pressed! Cycling to next pinned preset..."
+        "[HARDWARE] Button pressed! Cycling to next pinned preset...",
       );
 
       const { presets } = getData();
@@ -309,7 +314,7 @@ export async function createCanvas(dimensions: Dimensions) {
         const nextPreset = pinnedPresets[currentPinnedIndex];
 
         console.log(
-          `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`
+          `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
         );
 
         const endDate = getEndDate(nextPreset);
@@ -320,6 +325,8 @@ export async function createCanvas(dimensions: Dimensions) {
           const minutes = endDate.getMinutes().toString().padStart(2, "0");
           const period = hours24 >= 12 ? "PM" : "AM";
           const endTimeText = `${hours12}:${minutes} ${period}`;
+
+          const previewDurationMs = 3000;
 
           engine.render([
             text({
@@ -343,9 +350,12 @@ export async function createCanvas(dimensions: Dimensions) {
               fontSize: 8,
               startingRow: 18,
             }),
+            loadingBar({ duration: previewDurationMs }),
           ]);
 
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+          await new Promise((resolve) =>
+            setTimeout(resolve, previewDurationMs),
+          );
 
           if (abortCurrentOperation) {
             console.log("[HARDWARE] Operation aborted by new button press");

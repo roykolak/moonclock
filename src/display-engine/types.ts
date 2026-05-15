@@ -12,6 +12,7 @@ export enum MacroName {
   Coordinates = "coordinates",
   Moon = "moon",
   Emoji = "emoji",
+  LoadingBar = "loadingBar",
 }
 export interface Gradient {
   direction: "vertical" | "horizontal";
@@ -111,6 +112,13 @@ export interface MacroMoonConfig {
   animateStarTwinkle?: boolean;
 }
 
+export interface MacroLoadingBarConfig {
+  duration: number;
+  color: string;
+  height: number;
+  startingRow: number;
+}
+
 export type MacroConfig = MacroBoxConfig &
   MacroTextConfig &
   MacroMarqueeConfig &
@@ -121,7 +129,8 @@ export type MacroConfig = MacroBoxConfig &
   MacroCoordinatesConfig &
   MacroMoonConfig &
   MacroRippleConfig &
-  MacroEmojiConfig;
+  MacroEmojiConfig &
+  MacroLoadingBarConfig;
 
 export interface Macro {
   macroName: MacroName;
@@ -146,12 +155,12 @@ export interface AnimationConfig {
 export type UpdatePixels = (pixels: Pixel[], index: number) => void;
 export type InternalPixelsChangeCallback = (
   pixels: Pixel[],
-  index: number
+  index: number,
 ) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
 export type MacroStopCallback = () => void;
 export type CreateCanvas = (
-  dimensions: Dimensions
+  dimensions: Dimensions,
 ) => Promise<HTMLCanvasElement>;
 
 export type MacroFn = ({

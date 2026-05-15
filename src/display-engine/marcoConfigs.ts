@@ -5,6 +5,7 @@ import {
   MacroCustomConfig,
   MacroEmojiConfig,
   MacroImageConfig,
+  MacroLoadingBarConfig,
   MacroMarqueeConfig,
   MacroMeteorsConfig,
   MacroMoonConfig,
@@ -65,8 +66,15 @@ export const moon = (macroConfig: Partial<MacroMoonConfig>): Macro => ({
 });
 
 export const coordinates = (
-  macroConfig: Partial<MacroCoordinatesConfig>
+  macroConfig: Partial<MacroCoordinatesConfig>,
 ): Macro => ({
   macroName: MacroName.Coordinates,
+  macroConfig,
+});
+
+export const loadingBar = (
+  macroConfig: Partial<MacroLoadingBarConfig>,
+): Macro => ({
+  macroName: MacroName.LoadingBar,
   macroConfig,
 });
