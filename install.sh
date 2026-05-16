@@ -97,4 +97,4 @@ echo "" > $DATA_FOLDER/current_install_step.txt
 cd /
 sudo rm -fr /usr/local/bin/moonclock/update
 
-sudo mc restart
+sudo systemd-run --no-block --collect /usr/local/bin/mc restart
