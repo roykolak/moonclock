@@ -22,7 +22,12 @@ export default function RootLayout({
         />
         <link rel="icon" href="/app-icon.png" type="image/x-icon" />
         <link rel="apple-touch-icon" href="/app-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#333333" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Moonclock" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <ColorSchemeScript defaultColorScheme="dark" />
       </head>
       <body>
