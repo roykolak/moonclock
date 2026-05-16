@@ -23,15 +23,18 @@ await esbuild.build({
 
 console.log("\n -> Hardware script built");
 
-// update canvas.node path in hardware output
+// rewrite hardcoded native module paths to match where build.js
+// copies them under dist/hardware/
 const filePath = "dist/hardware/index.cjs";
 let content = fs.readFileSync(filePath, "utf8");
-const oldString = "../skia.node";
-const newString = "./skia.node";
-content = content.replace(oldString, newString);
+content = content.replace(/"\.\.\/skia\.node"/g, '"./skia.node"');
+content = content.replace(
+  /"\.\.\/build\/Release\/rpi-led-matrix\.node"/g,
+  '"./build/rpi-led-matrix.node"',
+);
 fs.writeFileSync(filePath, content, "utf8");
 
-console.log("\n -> canvas.node dependency path rewritten");
+console.log("\n -> Native module dependency paths rewritten");
 
 fs.cpSync("hardware/prebuilt", "dist/hardware", { recursive: true });
 
