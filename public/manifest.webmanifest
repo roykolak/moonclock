@@ -1,0 +1,17 @@
+{
+  "name": "Moon Clock",
+  "short_name": "Moon Clock",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#333333",
+  "theme_color": "#333333",
+  "icons": [
+    {
+      "src": "/app-icon.png",
+      "sizes": "770x758",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
