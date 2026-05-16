@@ -48,7 +48,7 @@ test.describe("Test", () => {
 
     await page.getByTestId("preset-name").fill("Preset 123");
 
-    await page.getByRole("button", { name: "Update" }).click();
+    await page.getByRole("button", { name: "Update", exact: true }).click();
 
     await expect(page.getByText("Preset 123 until...")).toBeVisible();
   });

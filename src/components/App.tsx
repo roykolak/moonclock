@@ -6,18 +6,23 @@ import {
   AppShell,
   Box,
   Burger,
+  Button,
   Divider,
   Group,
   NavLink,
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { showNotification } from "@mantine/notifications";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   IconAdjustmentsHorizontal,
   IconCpu,
   IconDeviceTv,
   IconExclamationCircleFilled,
   IconLayersIntersect,
+  IconRefresh,
   IconSpray,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -35,8 +40,32 @@ function App({
   nextVersion: NextVersion | null;
 }) {
   const [navOpened, { toggle: toggleNav }] = useDisclosure();
+  const [checkingForUpdate, setCheckingForUpdate] = useState(false);
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
 
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleCheckForUpdate = async () => {
+    setCheckingForUpdate(true);
+    try {
+      const response = await fetch("/api/check-for-update", { method: "PUT" });
+      const data = await response.json();
+      if (data.available) {
+        router.refresh();
+        setReleaseNotesOpen(true);
+      } else if (data.message?.includes("Error")) {
+        showNotification({ message: data.message, color: "red" });
+      }
+    } catch {
+      showNotification({
+        message: "Failed to check for update",
+        color: "red",
+      });
+    } finally {
+      setCheckingForUpdate(false);
+    }
+  };
 
   return (
     <AppShell
@@ -58,7 +87,11 @@ function App({
             data-testid="app-menu"
           />
           <Text flex={1}>Moon Clock</Text>
-          <UpdatePrompt nextVersion={nextVersion} />
+          <UpdatePrompt
+            nextVersion={nextVersion}
+            releaseNotesOpen={releaseNotesOpen}
+            onReleaseNotesOpenChange={setReleaseNotesOpen}
+          />
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
@@ -130,7 +163,22 @@ function App({
         />
 
         <Box flex="auto"></Box>
-        <Text c="dimmed">{packageInfo.version}</Text>
+        <Group justify="space-between" align="center">
+          <Text c="dimmed" size="sm">
+            v{packageInfo.version}
+          </Text>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            color="gray"
+            leftSection={<IconRefresh size={14} stroke={1.5} />}
+            onClick={handleCheckForUpdate}
+            loading={checkingForUpdate}
+            data-testid="check-for-update-button"
+          >
+            Check for updates
+          </Button>
+        </Group>
       </AppShell.Navbar>
       <AppShell.Main>
         <ErrorBoundary

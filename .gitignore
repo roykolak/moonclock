@@ -46,6 +46,7 @@ custom_scenes/automated-test-scene-123.json
 node_modules
 moonclock
 release.tar.gz
+current_download_progress.json
 
 /dist
 
