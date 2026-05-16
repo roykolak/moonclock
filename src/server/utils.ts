@@ -26,3 +26,15 @@ export function currentInstallStepFile() {
     ? "/var/lib/moonclock/current_install_step.txt"
     : "./current_install_step.txt";
 }
+
+export function currentDownloadProgressFile() {
+  return process.env.NODE_ENV === "production"
+    ? "/var/lib/moonclock/current_download_progress.json"
+    : "./current_download_progress.json";
+}
+
+export function releaseDownloadPath() {
+  return process.env.NODE_ENV === "production"
+    ? "/usr/local/bin/moonclock/release.tar.gz"
+    : "./release.tar.gz";
+}

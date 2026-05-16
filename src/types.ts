@@ -19,6 +19,8 @@ export interface NextVersion {
   updateStartedAt: string | null;
   updateFinishedAt: string | null;
   absoluteFilePath: string;
+  downloadUrl: string;
+  downloadedAt: string | null;
 }
 
 export interface Panel {

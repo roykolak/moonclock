@@ -1,19 +1,8 @@
-import { setData } from "@/server/db";
+import { getData, setData } from "@/server/db";
 import packageInfo from "../../../../package.json";
-import { log } from "console";
-import { pipeline, Readable } from "stream";
-import { exec } from "child_process";
-import { promisify } from "util";
-import fs from "fs";
-
-const pipelineAsync = promisify(pipeline);
-const execPromise = promisify(exec);
+import { releaseDownloadPath } from "@/server/utils";
 
 export async function PUT() {
-  let message: string = "";
-
-  log("Checking for update");
-
   try {
     const url = `https://api.github.com/repos/roykolak/moonclock/releases`;
     const releases = await fetch(url).then((response) => response.json());
@@ -21,65 +10,45 @@ export async function PUT() {
     const latestRelease = releases[0];
 
     if (!latestRelease) {
-      const message = "No release found.";
-      console.log(message);
-      return Response.json({ message });
+      return Response.json({ message: "No release found.", available: false });
     }
 
     const asset = latestRelease.assets[0];
 
     if (!asset) {
-      const message = "No asset found.";
-      console.log(message);
-      return Response.json({ message });
+      return Response.json({ message: "No asset found.", available: false });
     }
 
     const latestVersion = latestRelease.tag_name.replace("v", "");
 
     if (latestVersion === packageInfo.version) {
-      const message = "Up to date.";
-      console.log(message);
-      return Response.json({ message });
+      const { nextVersion } = getData();
+      if (nextVersion) setData({ nextVersion: null });
+      return Response.json({ message: "Up to date.", available: false });
     }
-
-    const downloadUrl = asset.browser_download_url;
-    const fileName = asset.name;
-
-    console.log(`Downloading ${fileName} from ${downloadUrl}...`);
-
-    const assetResponse = await fetch(downloadUrl);
-    if (!assetResponse.ok) {
-      throw new Error(`Failed to download asset: ${assetResponse.status}`);
-    }
-
-    const readableStream = Readable.fromWeb(assetResponse.body as any);
-
-    const savePath = "/usr/local/bin/moonclock/release.tar.gz";
-
-    await execPromise(`rm -f ${savePath}`);
-
-    const fileStream = fs.createWriteStream(savePath);
-    await pipelineAsync(readableStream, fileStream);
-
-    console.log(`Downloaded and saved as ${savePath}, ${latestVersion}`);
 
     setData({
       nextVersion: {
         version: latestVersion,
         releaseNotes: latestRelease.body,
+        downloadUrl: asset.browser_download_url,
+        absoluteFilePath: releaseDownloadPath(),
+        downloadedAt: null,
         updateFinishedAt: null,
         updateStartedAt: null,
-        absoluteFilePath: savePath,
       },
     });
 
-    message = "Update available - " + latestVersion;
+    return Response.json({
+      message: `Update available - ${latestVersion}`,
+      available: true,
+      version: latestVersion,
+    });
   } catch (e) {
-    log(e);
-    message = "Error checking for update";
+    console.log(e);
+    return Response.json({
+      message: "Error checking for update",
+      available: false,
+    });
   }
-
-  log(message);
-
-  return Response.json({ message });
 }
