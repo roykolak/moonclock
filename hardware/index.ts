@@ -275,7 +275,7 @@ export async function createCanvas(dimensions: Dimensions) {
   }
 
   try {
-    const button = new Gpio(528, "in", "falling", { debounceTimeout: 200 });
+    const button = new Gpio(528, "in", "falling", { debounceTimeout: 50 });
     let currentPinnedIndex = -1;
     let activePreview: {
       timeoutId: NodeJS.Timeout | null;
