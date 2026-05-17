@@ -275,9 +275,12 @@ export async function createCanvas(dimensions: Dimensions) {
   }
 
   try {
-    const button = new Gpio(528, "in", "falling", { debounceTimeout: 200 });
+    const button = new Gpio(528, "in", "falling", { debounceTimeout: 50 });
     let currentPinnedIndex = -1;
-    let abortCurrentOperation = false;
+    let activePreview: {
+      timeoutId: NodeJS.Timeout | null;
+      cancelled: boolean;
+    } | null = null;
 
     button.watch(async (err) => {
       if (err) {
@@ -285,9 +288,15 @@ export async function createCanvas(dimensions: Dimensions) {
         return;
       }
 
-      abortCurrentOperation = true;
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      abortCurrentOperation = false;
+      if (activePreview) {
+        activePreview.cancelled = true;
+        if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
+      }
+      const op: { timeoutId: NodeJS.Timeout | null; cancelled: boolean } = {
+        timeoutId: null,
+        cancelled: false,
+      };
+      activePreview = op;
 
       console.log(
         "[HARDWARE] Button pressed! Cycling to next pinned preset...",
@@ -357,11 +366,11 @@ export async function createCanvas(dimensions: Dimensions) {
             }),
           ]);
 
-          await new Promise((resolve) =>
-            setTimeout(resolve, previewDurationMs),
-          );
+          await new Promise<void>((resolve) => {
+            op.timeoutId = setTimeout(resolve, previewDurationMs);
+          });
 
-          if (abortCurrentOperation) {
+          if (op.cancelled) {
             console.log("[HARDWARE] Operation aborted by new button press");
             return;
           }
