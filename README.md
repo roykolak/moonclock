@@ -179,6 +179,19 @@ sudo npm run start:dev
 npm run build
 ```
 
+## Publishing a release
+
+`npm run release` bumps the version, builds the tarball, pushes the commit and tag, and creates the GitHub release with auto-generated notes.
+
+```
+npm run release             # patch bump (default)
+npm run release minor
+npm run release major
+npm run release 0.87.5      # specific version
+```
+
+Requires a clean working tree on `main` and an authenticated `gh` CLI (`gh auth status`). If the build or push fails, the local commit and tag are rolled back automatically. If the GitHub release step fails after the push, the script prints the commands needed to clean up the remote tag.
+
 ## Developing on a pi
 
 ```

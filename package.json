@@ -15,7 +15,8 @@
     "start:dev": "concurrently \"npm run app:dev\" \"npm run hardware:dev\"",
     "test:e2e": "playwright test",
     "test:e2e:debug": "PWDEBUG=1 playwright test",
-    "test": "APP_ENV=test tsx --test"
+    "test": "APP_ENV=test tsx --test",
+    "release": "bin/release.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
