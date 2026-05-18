@@ -32,7 +32,7 @@ interface UnitGroup {
 }
 
 const UNIT_GROUPS: UnitGroup[] = [
-  { label: "app", color: "blue", units: ["moonclock-app.service"] },
+  { label: "app", color: "green", units: ["moonclock-app.service"] },
   { label: "hw", color: "violet", units: ["moonclock-hardware.service"] },
   {
     label: "updater",
