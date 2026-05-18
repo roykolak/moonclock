@@ -24,6 +24,7 @@ import {
   IconLayersIntersect,
   IconRefresh,
   IconSpray,
+  IconTerminal2,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -158,6 +159,20 @@ function App({
           leftSection={
             <ActionIcon variant="light">
               <IconCpu style={{ width: "70%", height: "70%" }} stroke={1.5} />
+            </ActionIcon>
+          }
+        />
+        <NavLink
+          component={Link}
+          href="/logs"
+          label="Logs"
+          active={pathname.includes("/logs")}
+          leftSection={
+            <ActionIcon variant="light">
+              <IconTerminal2
+                style={{ width: "70%", height: "70%" }}
+                stroke={1.5}
+              />
             </ActionIcon>
           }
         />
