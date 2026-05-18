@@ -67,6 +67,9 @@ async function startMacros({
 
       return () => {
         stop();
+        // skia-canvas's context only holds a WeakRef to its canvas, so we
+        // must keep `canvas` reachable for the macro's lifetime — otherwise
+        // GC frees it and getImageData fails with a Neon downcast error.
         void canvas;
       };
     }),
