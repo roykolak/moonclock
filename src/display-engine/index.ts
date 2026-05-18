@@ -56,7 +56,7 @@ async function startMacros({
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
       const macroFn = MacroMap[macroName];
 
-      return macroFn({
+      const stop = await macroFn({
         macroConfig,
         dimensions,
         ctx,
@@ -64,6 +64,11 @@ async function startMacros({
         updatePixels,
         createCanvas,
       });
+
+      return () => {
+        stop();
+        void canvas;
+      };
     }),
   );
 
