@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ActionIcon,
   Alert,
   Badge,
   Box,
@@ -13,12 +12,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import {
-  IconAlertCircle,
-  IconPlayerPause,
-  IconPlayerPlay,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface LogEntry {
@@ -59,7 +53,6 @@ function formatTime(microseconds: number): string {
 
 export function LogsViewer() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [paused, setPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enabledUnits, setEnabledUnits] = useState<string[]>(
     Object.keys(UNIT_COLORS),
@@ -67,13 +60,8 @@ export function LogsViewer() {
   const [autoScroll, setAutoScroll] = useState(true);
 
   const idRef = useRef(0);
-  const pausedRef = useRef(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef(true);
-
-  useEffect(() => {
-    pausedRef.current = paused;
-  }, [paused]);
 
   useEffect(() => {
     autoScrollRef.current = autoScroll;
@@ -83,7 +71,6 @@ export function LogsViewer() {
     const es = new EventSource("/api/logs/stream");
 
     es.onmessage = (e) => {
-      if (pausedRef.current) return;
       try {
         const raw = JSON.parse(e.data);
         const entry: LogEntry = {
@@ -136,33 +123,7 @@ export function LogsViewer() {
 
   return (
     <Stack h="calc(100vh - 100px)" gap="sm">
-      <Group justify="space-between" align="center">
-        <Title order={2}>Logs</Title>
-        <Group gap="xs">
-          <Button
-            size="xs"
-            variant="default"
-            leftSection={
-              paused ? (
-                <IconPlayerPlay size={14} />
-              ) : (
-                <IconPlayerPause size={14} />
-              )
-            }
-            onClick={() => setPaused((p) => !p)}
-          >
-            {paused ? "Resume" : "Pause"}
-          </Button>
-          <ActionIcon
-            variant="default"
-            size="md"
-            onClick={() => setLogs([])}
-            aria-label="Clear logs"
-          >
-            <IconTrash size={14} />
-          </ActionIcon>
-        </Group>
-      </Group>
+      <Title order={2}>Logs</Title>
 
       <Chip.Group
         multiple
