@@ -145,7 +145,13 @@ export function LogsViewer() {
       >
         <Group gap="xs">
           {UNIT_GROUPS.map((g) => (
-            <Chip key={g.label} value={g.label} size="xs" color={g.color}>
+            <Chip
+              key={g.label}
+              value={g.label}
+              size="xs"
+              color={g.color}
+              variant="light"
+            >
               {g.label}
             </Chip>
           ))}
