@@ -56,7 +56,7 @@ async function startMacros({
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
       const macroFn = MacroMap[macroName];
 
-      return macroFn({
+      const stop = await macroFn({
         macroConfig,
         dimensions,
         ctx,
@@ -64,6 +64,14 @@ async function startMacros({
         updatePixels,
         createCanvas,
       });
+
+      return () => {
+        stop();
+        // skia-canvas's context only holds a WeakRef to its canvas, so we
+        // must keep `canvas` reachable for the macro's lifetime — otherwise
+        // GC frees it and getImageData fails with a Neon downcast error.
+        void canvas;
+      };
     }),
   );
 
