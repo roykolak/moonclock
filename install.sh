@@ -24,6 +24,11 @@ sudo ./install-dependencies.sh
 
 MOONCLOCK_VERSION=$(jq -r '.version' package.json)
 
+PREVIOUS_VERSION=""
+if [ -L "$APP_FOLDER/current" ]; then
+  PREVIOUS_VERSION=$(basename "$(readlink "$APP_FOLDER/current")")
+fi
+
 message="Installing Moonclock ($MOONCLOCK_VERSION)"
 log "$message"
 echo "$message" > $DATA_FOLDER/current_install_step.txt
@@ -92,9 +97,20 @@ log " -> Symlinking mc to bin/mc"
 
 sudo ln -sf "$APP_FOLDER/current/bin/mc" /usr/local/bin/mc
 
+log " -> Pruning old releases (keeping $MOONCLOCK_VERSION${PREVIOUS_VERSION:+ + $PREVIOUS_VERSION for rollback})"
+
+for d in "$APP_FOLDER/releases"/*/; do
+  v=$(basename "$d")
+  if [ "$v" != "$MOONCLOCK_VERSION" ] && [ "$v" != "$PREVIOUS_VERSION" ]; then
+    log "   -> Removing $v"
+    sudo rm -rf "$d"
+  fi
+done
+
 echo "" > $DATA_FOLDER/current_install_step.txt
 
 cd /
 sudo rm -fr /usr/local/bin/moonclock/update
+sudo rm -f /usr/local/bin/moonclock/release.tar.gz
 
 sudo systemd-run --no-block --collect /usr/local/bin/mc restart
