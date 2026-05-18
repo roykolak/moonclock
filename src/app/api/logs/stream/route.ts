@@ -3,9 +3,10 @@ import { spawn } from "child_process";
 export const dynamic = "force-dynamic";
 
 const UNITS = [
-  "moonclock-app",
-  "moonclock-hardware",
+  "moonclock-app.service",
+  "moonclock-hardware.service",
   "moonclock-update-checker.timer",
+  "moonclock-update-checker.service",
 ];
 
 export async function GET(req: Request) {

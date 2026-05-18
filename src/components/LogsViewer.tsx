@@ -25,19 +25,28 @@ interface LogEntry {
 
 const MAX_LINES = 1000;
 
-const UNIT_COLORS: Record<string, string> = {
-  "moonclock-app.service": "cyan",
-  "moonclock-hardware.service": "violet",
-  "moonclock-update-checker.timer": "orange",
-  "moonclock-update-checker.service": "orange",
-};
+interface UnitGroup {
+  label: string;
+  color: string;
+  units: string[];
+}
 
-const UNIT_SHORT: Record<string, string> = {
-  "moonclock-app.service": "app",
-  "moonclock-hardware.service": "hw",
-  "moonclock-update-checker.timer": "updater",
-  "moonclock-update-checker.service": "updater",
-};
+const UNIT_GROUPS: UnitGroup[] = [
+  { label: "app", color: "cyan", units: ["moonclock-app.service"] },
+  { label: "hw", color: "violet", units: ["moonclock-hardware.service"] },
+  {
+    label: "updater",
+    color: "orange",
+    units: [
+      "moonclock-update-checker.timer",
+      "moonclock-update-checker.service",
+    ],
+  },
+];
+
+const GROUP_BY_UNIT = new Map<string, UnitGroup>(
+  UNIT_GROUPS.flatMap((g) => g.units.map((u) => [u, g] as const)),
+);
 
 function priorityColor(priority: number): string | undefined {
   if (priority <= 3) return "red";
@@ -54,8 +63,8 @@ function formatTime(microseconds: number): string {
 export function LogsViewer() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [enabledUnits, setEnabledUnits] = useState<string[]>(
-    Object.keys(UNIT_COLORS),
+  const [enabledGroups, setEnabledGroups] = useState<string[]>(
+    UNIT_GROUPS.map((g) => g.label),
   );
   const [autoScroll, setAutoScroll] = useState(true);
 
@@ -110,8 +119,12 @@ export function LogsViewer() {
   }, [logs]);
 
   const visibleLogs = useMemo(
-    () => logs.filter((l) => enabledUnits.includes(l.unit)),
-    [logs, enabledUnits],
+    () =>
+      logs.filter((l) => {
+        const group = GROUP_BY_UNIT.get(l.unit);
+        return group ? enabledGroups.includes(group.label) : true;
+      }),
+    [logs, enabledGroups],
   );
 
   const handleScrollPositionChange = ({ y }: { x: number; y: number }) => {
@@ -127,13 +140,13 @@ export function LogsViewer() {
 
       <Chip.Group
         multiple
-        value={enabledUnits}
-        onChange={(v) => setEnabledUnits(v as string[])}
+        value={enabledGroups}
+        onChange={(v) => setEnabledGroups(v as string[])}
       >
         <Group gap="xs">
-          {Object.keys(UNIT_COLORS).map((u) => (
-            <Chip key={u} value={u} size="xs" color={UNIT_COLORS[u]}>
-              {UNIT_SHORT[u]}
+          {UNIT_GROUPS.map((g) => (
+            <Chip key={g.label} value={g.label} size="xs" color={g.color}>
+              {g.label}
             </Chip>
           ))}
         </Group>
@@ -166,34 +179,40 @@ export function LogsViewer() {
                 Waiting for logs...
               </Text>
             ) : (
-              visibleLogs.map((entry) => (
-                <Group
-                  key={entry.id}
-                  gap="xs"
-                  wrap="nowrap"
-                  align="flex-start"
-                  style={{ lineHeight: 1.4 }}
-                >
-                  <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-                    {formatTime(entry.timestamp)}
-                  </Text>
-                  <Badge
-                    size="xs"
-                    color={UNIT_COLORS[entry.unit] || "gray"}
-                    variant="light"
-                    style={{ flexShrink: 0, minWidth: 60 }}
+              visibleLogs.map((entry) => {
+                const group = GROUP_BY_UNIT.get(entry.unit);
+                return (
+                  <Group
+                    key={entry.id}
+                    gap="xs"
+                    wrap="nowrap"
+                    align="flex-start"
+                    style={{ lineHeight: 1.4 }}
                   >
-                    {UNIT_SHORT[entry.unit] || entry.unit}
-                  </Badge>
-                  <Text
-                    size="xs"
-                    c={priorityColor(entry.priority)}
-                    style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                  >
-                    {entry.message}
-                  </Text>
-                </Group>
-              ))
+                    <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+                      {formatTime(entry.timestamp)}
+                    </Text>
+                    <Badge
+                      size="xs"
+                      color={group?.color || "gray"}
+                      variant="light"
+                      style={{ flexShrink: 0, minWidth: 60 }}
+                    >
+                      {group?.label || entry.unit}
+                    </Badge>
+                    <Text
+                      size="xs"
+                      c={priorityColor(entry.priority)}
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {entry.message}
+                    </Text>
+                  </Group>
+                );
+              })
             )}
           </Box>
         </ScrollArea>
