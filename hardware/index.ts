@@ -143,7 +143,7 @@ export async function createCanvas(dimensions: Dimensions) {
         rows: 32,
         cols: 32,
         chainLength: 1,
-        hardwareMapping: GpioMapping.Regular,
+        hardwareMapping: GpioMapping.AdafruitHat,
         pwmLsbNanoseconds: panel[PanelField.PwnLsbNanoseconds],
         pwmBits: panel[PanelField.PwmBits],
       },
