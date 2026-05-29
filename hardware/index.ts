@@ -2,18 +2,14 @@ import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
-import {
-  coordinates,
-  loadingBar,
-  marquee,
-  text,
-} from "../src/display-engine/marcoConfigs";
-import { getData, setData } from "@/server/db";
-import { getEndDate } from "@/helpers/getEndDate";
+import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
+import { getData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
 import { Canvas, FontLibrary } from "skia-canvas";
-import { Gpio } from "onoff";
+// Disabled: the button uses GPIO16, which the AdafruitHat mapping drives as
+// G2 (green, bottom half). See the commented-out button block below.
+// import { Gpio } from "onoff";
 
 import express from "express";
 import { waitForIpAddress } from "./getIpAddress";
@@ -159,19 +155,11 @@ export async function createCanvas(dimensions: Dimensions) {
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
-          updateVirtualPanel(pixel);
-        }
-      }
-
-      // rpi-led-matrix double-buffers: the buffer drawn here is two syncs old,
-      // so drawing only the delta leaves the alternate buffer with stale or
-      // uninitialized data (e.g. a stuck half-green panel). Repaint the whole
-      // frame each sync from virtualPanel, which holds the full current state.
-      matrix.brightness(brightness || panel[PanelField.Brightness]);
-      for (let x = 0; x < 32; x++) {
-        for (let y = 0; y < 32; y++) {
-          const hexA = virtualPanel[x + ":" + y] ?? "000000";
-          matrix.fgColor(parseInt(hexA, 16)).setPixel(x, y);
+          const hexA = updateVirtualPanel(pixel);
+          matrix
+            .brightness(brightness || panel[PanelField.Brightness])
+            .fgColor(parseInt(hexA, 16))
+            .setPixel(pixel.x, pixel.y);
         }
       }
 
@@ -282,6 +270,7 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
+  /*
   try {
     const button = new Gpio(528, "in", "falling", { debounceTimeout: 50 });
     let currentPinnedIndex = -1;
@@ -402,6 +391,7 @@ export async function createCanvas(dimensions: Dimensions) {
     console.error("[HARDWARE] Button functionality will be disabled");
     console.error("[HARDWARE] See instructions in README.");
   }
+  */
 
   setInterval(async () => {
     await runConditionalRenderUpdate();
