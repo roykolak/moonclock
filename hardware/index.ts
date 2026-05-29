@@ -159,11 +159,19 @@ export async function createCanvas(dimensions: Dimensions) {
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
-          const hexA = updateVirtualPanel(pixel);
-          matrix
-            .brightness(brightness || panel[PanelField.Brightness])
-            .fgColor(parseInt(hexA, 16))
-            .setPixel(pixel.x, pixel.y);
+          updateVirtualPanel(pixel);
+        }
+      }
+
+      // rpi-led-matrix double-buffers: the buffer drawn here is two syncs old,
+      // so drawing only the delta leaves the alternate buffer with stale or
+      // uninitialized data (e.g. a stuck half-green panel). Repaint the whole
+      // frame each sync from virtualPanel, which holds the full current state.
+      matrix.brightness(brightness || panel[PanelField.Brightness]);
+      for (let x = 0; x < 32; x++) {
+        for (let y = 0; y < 32; y++) {
+          const hexA = virtualPanel[x + ":" + y] ?? "000000";
+          matrix.fgColor(parseInt(hexA, 16)).setPixel(x, y);
         }
       }
 
