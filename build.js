@@ -9,8 +9,7 @@ const writeFile = promisify(fs.writeFile);
 
 console.log("Building version:", packageInfo.version);
 
-await esbuild.build({
-  entryPoints: ["hardware/index.ts"],
+const esbuildOptions = {
   bundle: true,
   platform: "node",
   loader: {
@@ -18,23 +17,39 @@ await esbuild.build({
   },
   keepNames: true,
   external: ["*.node"],
-  outfile: "dist/hardware/index.cjs",
-});
-
-console.log("\n -> Hardware script built");
+};
 
 // rewrite hardcoded native module paths to match where build.js
 // copies them under dist/hardware/
-const filePath = "dist/hardware/index.cjs";
-let content = fs.readFileSync(filePath, "utf8");
-content = content.replace(/"\.\.\/skia\.node"/g, '"./skia.node"');
-content = content.replace(
-  /"\.\.\/build\/Release\/rpi-led-matrix\.node"/g,
-  '"./build/rpi-led-matrix.node"',
-);
-fs.writeFileSync(filePath, content, "utf8");
+function rewriteNativeModulePaths(filePath) {
+  let content = fs.readFileSync(filePath, "utf8");
+  content = content.replace(/"\.\.\/skia\.node"/g, '"./skia.node"');
+  content = content.replace(
+    /"\.\.\/build\/Release\/rpi-led-matrix\.node"/g,
+    '"./build/rpi-led-matrix.node"',
+  );
+  fs.writeFileSync(filePath, content, "utf8");
+}
 
-console.log("\n -> Native module dependency paths rewritten");
+await esbuild.build({
+  ...esbuildOptions,
+  entryPoints: ["hardware/index.ts"],
+  outfile: "dist/hardware/index.cjs",
+});
+rewriteNativeModulePaths("dist/hardware/index.cjs");
+
+console.log("\n -> Hardware script built");
+
+// standalone rpi-led-matrix smoke test, bundled so it reuses the prebuilt
+// native module shipped alongside the hardware script in dist/hardware/
+await esbuild.build({
+  ...esbuildOptions,
+  entryPoints: ["hardware/test-matrix.ts"],
+  outfile: "dist/hardware/test-matrix.cjs",
+});
+rewriteNativeModulePaths("dist/hardware/test-matrix.cjs");
+
+console.log("\n -> Smoke test script built");
 
 fs.cpSync("hardware/prebuilt", "dist/hardware", { recursive: true });
 
