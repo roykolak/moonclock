@@ -12,6 +12,7 @@ import { Canvas, FontLibrary } from "skia-canvas";
 // import { Gpio } from "onoff";
 
 import express from "express";
+import Bonjour from "bonjour-service";
 import { waitForIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 
@@ -117,6 +118,20 @@ export async function createCanvas(dimensions: Dimensions) {
 
   app.listen(port, () => {
     console.log(`[HARDWARE] Server running on port ${port}`);
+
+    const bonjour = new Bonjour();
+    bonjour.publish({ name: "moonclock", type: "moonclock", port });
+    console.log(`[HARDWARE] Advertising as _moonclock._tcp via mDNS`);
+
+    const browser = bonjour.find({ type: "moonclock" });
+    browser.on("up", (service) => {
+      console.log(
+        `[HARDWARE] Discovered peer: ${service.name} at ${service.addresses?.[0]}:${service.port}`,
+      );
+    });
+    browser.on("down", (service) => {
+      console.log(`[HARDWARE] Peer went offline: ${service.name}`);
+    });
   });
 
   const { panel } = await getData();

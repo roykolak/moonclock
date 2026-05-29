@@ -29,6 +29,7 @@
     "@mantine/hooks": "^9.1.0",
     "@mantine/notifications": "^9.1.0",
     "@tabler/icons-react": "^3.24.0",
+    "bonjour-service": "^1.4.0",
     "emoji-mart": "^5.6.0",
     "express": "^5.1.0",
     "next": "^16.2.4",
