@@ -11,6 +11,29 @@ describe("checkForUpdates", () => {
   });
 
   describe("when the currentSlot is not set", () => {
+    describe("when there is no current hardware preset yet", () => {
+      it("renders the default preset", async () => {
+        setData({
+          scheduledPreset: null,
+          presets: [],
+          panel: defaultData.panel,
+        });
+
+        const { displayConfig, preset } =
+          (await checkForNewDisplayConfig(null)) || {};
+
+        assert.equal(preset?.scenes[0].sceneName, "blank");
+        assert.deepEqual(displayConfig, [
+          {
+            macroConfig: {
+              backgroundColor: "#000000",
+            },
+            macroName: "box",
+          },
+        ]);
+      });
+    });
+
     describe("when the current hardware scene is not the same as the default scene", () => {
       it("updates the current hardware scene", async () => {
         const date = new Date();
