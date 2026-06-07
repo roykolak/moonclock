@@ -2,14 +2,12 @@ import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
-import { coordinates, marquee, text } from "../src/display-engine/marcoConfigs";
-import { getData } from "@/server/db";
+import { coordinates, marquee, text, loadingBar } from "../src/display-engine/marcoConfigs";
+import { getData, setData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
 import { Canvas, FontLibrary } from "skia-canvas";
-// Disabled: the button uses GPIO16, which the AdafruitHat mapping drives as
-// G2 (green, bottom half). See the commented-out button block below.
-// import { Gpio } from "onoff";
+import { getEndDate } from "@/helpers/getEndDate";
 
 import express from "express";
 import Bonjour from "bonjour-service";
@@ -154,7 +152,7 @@ export async function createCanvas(dimensions: Dimensions) {
         rows: 32,
         cols: 32,
         chainLength: 1,
-        hardwareMapping: GpioMapping.AdafruitHat,
+        hardwareMapping: panel[PanelField.HardwareMapping] as GpioMapping,
         pwmLsbNanoseconds: panel[PanelField.PwnLsbNanoseconds],
         pwmBits: panel[PanelField.PwmBits],
       },
@@ -285,128 +283,136 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
-  /*
-  try {
-    const button = new Gpio(528, "in", "falling", { debounceTimeout: 50 });
-    let currentPinnedIndex = -1;
-    let activePreview: {
-      timeoutId: NodeJS.Timeout | null;
-      cancelled: boolean;
-    } | null = null;
-
-    button.watch(async (err) => {
-      if (err) {
-        console.error("[HARDWARE] Button watch error:", err);
-        return;
-      }
-
-      if (activePreview) {
-        activePreview.cancelled = true;
-        if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
-      }
-      const op: { timeoutId: NodeJS.Timeout | null; cancelled: boolean } = {
-        timeoutId: null,
-        cancelled: false,
-      };
-      activePreview = op;
-
-      console.log(
-        "[HARDWARE] Button pressed! Cycling to next pinned preset...",
+  if (panel[PanelField.ButtonEnabled]) {
+    try {
+      const { Gpio } = await import("onoff");
+      const button = new Gpio(
+        panel[PanelField.ButtonGpioPin],
+        "in",
+        "falling",
+        { debounceTimeout: 50 },
       );
+      let currentPinnedIndex = -1;
+      let activePreview: {
+        timeoutId: NodeJS.Timeout | null;
+        cancelled: boolean;
+      } | null = null;
 
-      const { presets } = getData();
-      const pinnedPresets = presets.filter((p) => p[PresetField.Pinned]);
-
-      if (pinnedPresets.length === 0) {
-        console.log("[HARDWARE] No pinned presets found");
-        return;
-      }
-
-      currentPinnedIndex =
-        (currentPinnedIndex + 1) % (pinnedPresets.length + 1);
-
-      if (currentPinnedIndex === pinnedPresets.length) {
-        console.log("[HARDWARE] Clearing scheduled preset");
-
-        setData({
-          scheduledPreset: null,
-        });
-      } else {
-        const nextPreset = pinnedPresets[currentPinnedIndex];
-
-        console.log(
-          `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
-        );
-
-        const endDate = getEndDate(nextPreset);
-
-        if (endDate) {
-          const hours24 = endDate.getHours();
-          const hours12 = hours24 % 12 || 12;
-          const minutes = endDate.getMinutes().toString().padStart(2, "0");
-          const period = hours24 >= 12 ? "PM" : "AM";
-          const endTimeText = `${hours12}:${minutes} ${period}`;
-
-          const previewDurationMs = 3000;
-
-          engine.render([
-            text({
-              text: nextPreset[PresetField.Name],
-              font: "Tiny5",
-              color: "#FFF",
-              fontSize: 8,
-              startingRow: 1,
-            }),
-            text({
-              text: `Until..`,
-              font: "Tiny5",
-              color: "#999",
-              fontSize: 8,
-              startingRow: 9,
-            }),
-            text({
-              text: endTimeText,
-              font: "Tiny5",
-              color: "#999",
-              fontSize: 8,
-              startingRow: 18,
-            }),
-            loadingBar({
-              duration: previewDurationMs,
-              color: "#009900",
-              height: 1,
-            }),
-          ]);
-
-          await new Promise<void>((resolve) => {
-            op.timeoutId = setTimeout(resolve, previewDurationMs);
-          });
-
-          if (op.cancelled) {
-            console.log("[HARDWARE] Operation aborted by new button press");
-            return;
-          }
+      button.watch(async (err) => {
+        if (err) {
+          console.error("[HARDWARE] Button watch error:", err);
+          return;
         }
 
-        setData({
-          scheduledPreset: {
-            preset: nextPreset,
-            endTime: endDate ? endDate.toJSON() : null,
-            updatedAt: new Date().toJSON(),
-          },
-        });
-      }
+        if (activePreview) {
+          activePreview.cancelled = true;
+          if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
+        }
+        const op: { timeoutId: NodeJS.Timeout | null; cancelled: boolean } = {
+          timeoutId: null,
+          cancelled: false,
+        };
+        activePreview = op;
 
-      await runConditionalRenderUpdate();
-    });
+        console.log(
+          "[HARDWARE] Button pressed! Cycling to next pinned preset...",
+        );
 
-    console.log("[HARDWARE] Button initialized on GPIO 528 (pin 36)");
-  } catch (error) {
-    console.error("[HARDWARE] Failed to initialize button GPIO:", error);
-    console.error("[HARDWARE] Button functionality will be disabled");
-    console.error("[HARDWARE] See instructions in README.");
+        const { presets } = getData();
+        const pinnedPresets = presets.filter((p) => p[PresetField.Pinned]);
+
+        if (pinnedPresets.length === 0) {
+          console.log("[HARDWARE] No pinned presets found");
+          return;
+        }
+
+        currentPinnedIndex =
+          (currentPinnedIndex + 1) % (pinnedPresets.length + 1);
+
+        if (currentPinnedIndex === pinnedPresets.length) {
+          console.log("[HARDWARE] Clearing scheduled preset");
+
+          setData({
+            scheduledPreset: null,
+          });
+        } else {
+          const nextPreset = pinnedPresets[currentPinnedIndex];
+
+          console.log(
+            `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
+          );
+
+          const endDate = getEndDate(nextPreset);
+
+          if (endDate) {
+            const hours24 = endDate.getHours();
+            const hours12 = hours24 % 12 || 12;
+            const minutes = endDate.getMinutes().toString().padStart(2, "0");
+            const period = hours24 >= 12 ? "PM" : "AM";
+            const endTimeText = `${hours12}:${minutes} ${period}`;
+
+            const previewDurationMs = 3000;
+
+            engine.render([
+              text({
+                text: nextPreset[PresetField.Name],
+                font: "Tiny5",
+                color: "#FFF",
+                fontSize: 8,
+                startingRow: 1,
+              }),
+              text({
+                text: `Until..`,
+                font: "Tiny5",
+                color: "#999",
+                fontSize: 8,
+                startingRow: 9,
+              }),
+              text({
+                text: endTimeText,
+                font: "Tiny5",
+                color: "#999",
+                fontSize: 8,
+                startingRow: 18,
+              }),
+              loadingBar({
+                duration: previewDurationMs,
+                color: "#009900",
+                height: 1,
+              }),
+            ]);
+
+            await new Promise<void>((resolve) => {
+              op.timeoutId = setTimeout(resolve, previewDurationMs);
+            });
+
+            if (op.cancelled) {
+              console.log("[HARDWARE] Operation aborted by new button press");
+              return;
+            }
+          }
+
+          setData({
+            scheduledPreset: {
+              preset: nextPreset,
+              endTime: endDate ? endDate.toJSON() : null,
+              updatedAt: new Date().toJSON(),
+            },
+          });
+        }
+
+        await runConditionalRenderUpdate();
+      });
+
+      console.log(
+        `[HARDWARE] Button initialized on GPIO ${panel[PanelField.ButtonGpioPin]}`,
+      );
+    } catch (error) {
+      console.error("[HARDWARE] Failed to initialize button GPIO:", error);
+      console.error("[HARDWARE] Button functionality will be disabled");
+      console.error("[HARDWARE] See instructions in README.");
+    }
   }
-  */
 
   setInterval(async () => {
     await runConditionalRenderUpdate();
