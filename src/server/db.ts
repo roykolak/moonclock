@@ -22,6 +22,9 @@ export const defaultData: DataTypes = {
     pwnLsbNanoseconds: 130,
     gpioSlowdown: 4,
     pwmBits: 11,
+    hardwareMapping: "adafruit-hat",
+    buttonEnabled: false,
+    buttonGpioPin: 528,
   },
   scheduledPreset: {
     preset: null,

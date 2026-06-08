@@ -31,6 +31,9 @@ export interface Panel {
   [PanelField.GpioSlowdown]: 0 | 1 | 2 | 3 | 4;
   [PanelField.PwmBits]: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
   [PanelField.AnthropicApiKey]?: string;
+  [PanelField.HardwareMapping]: string;
+  [PanelField.ButtonEnabled]: boolean;
+  [PanelField.ButtonGpioPin]: number;
   updatedAt?: string;
   defaultPreset: Preset;
 }
@@ -43,6 +46,9 @@ export enum PanelField {
   GpioSlowdown = "gpioSlowdown",
   PwmBits = "pwmBits",
   AnthropicApiKey = "anthropicApiKey",
+  HardwareMapping = "hardwareMapping",
+  ButtonEnabled = "buttonEnabled",
+  ButtonGpioPin = "buttonGpioPin",
 }
 
 export interface Time {

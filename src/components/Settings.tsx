@@ -7,9 +7,11 @@ import {
   Button,
   Divider,
   Group,
+  NumberInput,
   Select,
   Slider,
   Stack,
+  Switch,
   Text,
   TextInput,
   Title,
@@ -172,7 +174,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                 </Stack>
 
                 <Stack gap={4}>
-                  <Stack gap={0}>
+                  <Stack gap={4}>
                     <Text size="sm">PWN Bits</Text>
                     <Text c="dimmed" size="xs">
                       Lower values will increase performance at the expense of
@@ -185,6 +187,41 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                     key={form.key(PanelField.PwmBits)}
                     {...form.getInputProps(PanelField.PwmBits)}
                   />
+                </Stack>
+
+                <Select
+                  label="Hardware Mapping"
+                  description="GPIO wiring layout for your LED matrix HAT or adapter"
+                  variant="filled"
+                  data={[
+                    { label: "Regular", value: "regular" },
+                    { label: "Adafruit HAT", value: "adafruit-hat" },
+                    { label: "Adafruit HAT (PWM)", value: "adafruit-hat-pwm" },
+                    { label: "Regular (Pi 1)", value: "regular-pi1" },
+                  ]}
+                  key={form.key(PanelField.HardwareMapping)}
+                  {...form.getInputProps(PanelField.HardwareMapping)}
+                />
+
+                <Stack gap={4}>
+                  <Switch
+                    label="Enable Button"
+                    description="Enable GPIO button to cycle through pinned presets"
+                    key={form.key(PanelField.ButtonEnabled)}
+                    {...form.getInputProps(PanelField.ButtonEnabled, {
+                      type: "checkbox",
+                    })}
+                  />
+                  {form.getValues()[PanelField.ButtonEnabled] && (
+                    <NumberInput
+                      label="Button GPIO Pin"
+                      description="GPIO chip-relative offset for the button (e.g. 528 for BCM GPIO16)"
+                      variant="filled"
+                      min={0}
+                      key={form.key(PanelField.ButtonGpioPin)}
+                      {...form.getInputProps(PanelField.ButtonGpioPin)}
+                    />
+                  )}
                 </Stack>
               </Stack>
             </Accordion.Panel>

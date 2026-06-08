@@ -15,7 +15,7 @@
     "start:dev": "concurrently \"npm run app:dev\" \"npm run hardware:dev\"",
     "test:e2e": "playwright test",
     "test:e2e:debug": "PWDEBUG=1 playwright test",
-    "test": "APP_ENV=test tsx --test",
+    "test": "APP_ENV=test tsx --test $(find . -name '*.test.ts' -not -path '*/node_modules/*')",
     "release": "bin/release.sh"
   },
   "dependencies": {
