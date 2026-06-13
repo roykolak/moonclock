@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createDisplayEngine, Dimensions, Macro } from "../display-engine";
 import { Preset } from "@/types";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
@@ -39,6 +39,8 @@ export function PresetPreview({
 
   const [engine, setEngine] = useState<any>();
 
+  const engineRef = useRef<any>(null);
+
   const [displayConfig, setDisplayConfig] = useState<Macro[]>([]);
 
   useEffect(() => {
@@ -48,6 +50,8 @@ export function PresetPreview({
   }, [JSON.stringify(preset)]);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       const canvas = await createCanvas(dimensions);
       const ctx = canvas.getContext("2d");
@@ -80,10 +84,21 @@ export function PresetPreview({
         },
       });
 
+      // The component may have unmounted while the engine was being created
+      // asynchronously; stop it immediately so it never starts running.
+      if (cancelled) {
+        displayEngine.stop();
+        return;
+      }
+
+      engineRef.current = displayEngine;
       setEngine(displayEngine);
     })();
 
-    return () => engine?.stop();
+    return () => {
+      cancelled = true;
+      engineRef.current?.stop();
+    };
   }, []);
 
   useEffect(() => {
