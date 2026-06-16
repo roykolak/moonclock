@@ -2,7 +2,12 @@ import { LedMatrix, GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Macro, Pixel } from "../src/display-engine/types";
-import { coordinates, marquee, text, loadingBar } from "../src/display-engine/marcoConfigs";
+import {
+  coordinates,
+  marquee,
+  text,
+  loadingBar,
+} from "../src/display-engine/marcoConfigs";
 import { getData, setData } from "@/server/db";
 import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
 import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
@@ -111,6 +116,13 @@ export async function createCanvas(dimensions: Dimensions) {
 
   app.post("/api/throttle", (req, res) => {
     syncSpeed = req.body.value;
+    res.send(true);
+  });
+
+  // Simulate a hardware button press from the UI. Drives the same cycling
+  // logic as the GPIO watcher, so it works in emulator mode too.
+  app.post("/api/button-press", async (req, res) => {
+    await handleButtonPress();
     res.send(true);
   });
 
@@ -283,6 +295,139 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
+  let currentPinnedIndex = -1;
+  let activePreview: {
+    timeoutId: NodeJS.Timeout | null;
+    cancelled: boolean;
+    resolve: (() => void) | null;
+  } | null = null;
+
+  // Cycles through pinned presets (then a clear step), exactly as a hardware
+  // button press would. Exposed so both the GPIO watcher and the
+  // POST /api/button-press endpoint drive the identical code path.
+  async function handleButtonPress() {
+    if (activePreview) {
+      activePreview.cancelled = true;
+      if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
+      // Resolve the parked preview promise so the superseded handler
+      // unwinds (hits its `op.cancelled` guard) instead of hanging forever.
+      if (activePreview.resolve) activePreview.resolve();
+    }
+    const op: {
+      timeoutId: NodeJS.Timeout | null;
+      cancelled: boolean;
+      resolve: (() => void) | null;
+    } = {
+      timeoutId: null,
+      cancelled: false,
+      resolve: null,
+    };
+    activePreview = op;
+
+    console.log("[HARDWARE] Button pressed! Cycling to next pinned preset...");
+
+    const { presets } = getData();
+    const pinnedPresets = presets.filter((p) => p[PresetField.Pinned]);
+
+    if (pinnedPresets.length === 0) {
+      console.log("[HARDWARE] No pinned presets found");
+      return;
+    }
+
+    currentPinnedIndex = (currentPinnedIndex + 1) % (pinnedPresets.length + 1);
+
+    if (currentPinnedIndex === pinnedPresets.length) {
+      console.log("[HARDWARE] Clearing scheduled preset");
+
+      setData({
+        scheduledPreset: null,
+      });
+
+      // Preview screens are painted straight to the engine without updating
+      // `preset`, so checkForNewDisplayConfig's sceneMatch can wrongly think
+      // the default is already showing and skip the render — leaving a stale
+      // preview frozen on screen. Render the default directly so the clear
+      // is always visible.
+      const { panel: latestPanel } = getData();
+      preset = latestPanel.defaultPreset;
+      renderedAt = new Date().toJSON();
+      displayConfig = await transformPresetToDisplayMacros(preset);
+      brightness = preset[PresetField.Brightness] || null;
+      syncSpeed = 0;
+      updateQueue = [];
+      queuedFramesSnapshots = [];
+      engine.render(displayConfig);
+      return;
+    } else {
+      const nextPreset = pinnedPresets[currentPinnedIndex];
+
+      console.log(
+        `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
+      );
+
+      const endDate = getEndDate(nextPreset);
+
+      if (endDate) {
+        const hours24 = endDate.getHours();
+        const hours12 = hours24 % 12 || 12;
+        const minutes = endDate.getMinutes().toString().padStart(2, "0");
+        const period = hours24 >= 12 ? "PM" : "AM";
+        const endTimeText = `${hours12}:${minutes} ${period}`;
+
+        const previewDurationMs = 3000;
+
+        engine.render([
+          text({
+            text: nextPreset[PresetField.Name],
+            font: "Tiny5",
+            color: "#FFF",
+            fontSize: 8,
+            startingRow: 1,
+          }),
+          text({
+            text: `Until..`,
+            font: "Tiny5",
+            color: "#999",
+            fontSize: 8,
+            startingRow: 9,
+          }),
+          text({
+            text: endTimeText,
+            font: "Tiny5",
+            color: "#999",
+            fontSize: 8,
+            startingRow: 18,
+          }),
+          loadingBar({
+            duration: previewDurationMs,
+            color: "#009900",
+            height: 1,
+          }),
+        ]);
+
+        await new Promise<void>((resolve) => {
+          op.resolve = resolve;
+          op.timeoutId = setTimeout(resolve, previewDurationMs);
+        });
+
+        if (op.cancelled) {
+          console.log("[HARDWARE] Operation aborted by new button press");
+          return;
+        }
+      }
+
+      setData({
+        scheduledPreset: {
+          preset: nextPreset,
+          endTime: endDate ? endDate.toJSON() : null,
+          updatedAt: new Date().toJSON(),
+        },
+      });
+    }
+
+    await runConditionalRenderUpdate();
+  }
+
   if (panel[PanelField.ButtonEnabled]) {
     try {
       const { Gpio } = await import("onoff");
@@ -292,116 +437,13 @@ export async function createCanvas(dimensions: Dimensions) {
         "falling",
         { debounceTimeout: 50 },
       );
-      let currentPinnedIndex = -1;
-      let activePreview: {
-        timeoutId: NodeJS.Timeout | null;
-        cancelled: boolean;
-      } | null = null;
 
-      button.watch(async (err) => {
+      button.watch((err) => {
         if (err) {
           console.error("[HARDWARE] Button watch error:", err);
           return;
         }
-
-        if (activePreview) {
-          activePreview.cancelled = true;
-          if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
-        }
-        const op: { timeoutId: NodeJS.Timeout | null; cancelled: boolean } = {
-          timeoutId: null,
-          cancelled: false,
-        };
-        activePreview = op;
-
-        console.log(
-          "[HARDWARE] Button pressed! Cycling to next pinned preset...",
-        );
-
-        const { presets } = getData();
-        const pinnedPresets = presets.filter((p) => p[PresetField.Pinned]);
-
-        if (pinnedPresets.length === 0) {
-          console.log("[HARDWARE] No pinned presets found");
-          return;
-        }
-
-        currentPinnedIndex =
-          (currentPinnedIndex + 1) % (pinnedPresets.length + 1);
-
-        if (currentPinnedIndex === pinnedPresets.length) {
-          console.log("[HARDWARE] Clearing scheduled preset");
-
-          setData({
-            scheduledPreset: null,
-          });
-        } else {
-          const nextPreset = pinnedPresets[currentPinnedIndex];
-
-          console.log(
-            `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
-          );
-
-          const endDate = getEndDate(nextPreset);
-
-          if (endDate) {
-            const hours24 = endDate.getHours();
-            const hours12 = hours24 % 12 || 12;
-            const minutes = endDate.getMinutes().toString().padStart(2, "0");
-            const period = hours24 >= 12 ? "PM" : "AM";
-            const endTimeText = `${hours12}:${minutes} ${period}`;
-
-            const previewDurationMs = 3000;
-
-            engine.render([
-              text({
-                text: nextPreset[PresetField.Name],
-                font: "Tiny5",
-                color: "#FFF",
-                fontSize: 8,
-                startingRow: 1,
-              }),
-              text({
-                text: `Until..`,
-                font: "Tiny5",
-                color: "#999",
-                fontSize: 8,
-                startingRow: 9,
-              }),
-              text({
-                text: endTimeText,
-                font: "Tiny5",
-                color: "#999",
-                fontSize: 8,
-                startingRow: 18,
-              }),
-              loadingBar({
-                duration: previewDurationMs,
-                color: "#009900",
-                height: 1,
-              }),
-            ]);
-
-            await new Promise<void>((resolve) => {
-              op.timeoutId = setTimeout(resolve, previewDurationMs);
-            });
-
-            if (op.cancelled) {
-              console.log("[HARDWARE] Operation aborted by new button press");
-              return;
-            }
-          }
-
-          setData({
-            scheduledPreset: {
-              preset: nextPreset,
-              endTime: endDate ? endDate.toJSON() : null,
-              updatedAt: new Date().toJSON(),
-            },
-          });
-        }
-
-        await runConditionalRenderUpdate();
+        handleButtonPress();
       });
 
       console.log(

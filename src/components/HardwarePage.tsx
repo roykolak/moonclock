@@ -20,7 +20,7 @@ export function HardwarePage() {
           setConnected(true);
         })
         .catch(() => setConnected(false));
-    }, 1000);
+    }, 250);
 
     return () => clearInterval(loop);
   }, []);
