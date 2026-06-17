@@ -178,6 +178,19 @@ export function HardwareSettings({
         fullWidth
         variant="light"
         onClick={async () => {
+          await fetch(
+            `http://${window.location.hostname}:3001/api/button-press`,
+            { method: "POST" },
+          );
+        }}
+      >
+        Simulate Button Press
+      </Button>
+      <Button
+        mt="sm"
+        fullWidth
+        variant="light"
+        onClick={async () => {
           showNotification({ message: "Reloaded hardware" });
           await reloadHardwareScene();
         }}
