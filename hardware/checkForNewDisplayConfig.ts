@@ -11,7 +11,7 @@ function getSceneName(preset: Preset | null) {
   return preset?.scenes?.[0].sceneName;
 }
 
-export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
+export async function checkForNewDisplayConfig(currentPreset: Preset | null): Promise<{
   preset: Preset;
   renderedAt: string;
   displayConfig: Macro[];
