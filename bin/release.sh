@@ -16,7 +16,25 @@ fi
 
 git pull --ff-only
 
-NEW_VERSION=$(npm version "$BUMP")
+# Beta releases: `bin/release.sh beta` starts or continues a beta line,
+# published as a GitHub prerelease. `bin/release.sh beta major|patch` picks
+# the base bump when starting a new line (default minor).
+# Promoting a beta to stable needs no special mode: a plain
+# `bin/release.sh patch` on 0.92.0-beta.N yields 0.92.0.
+if [ "$BUMP" = "beta" ]; then
+  CURRENT_VERSION=$(node -p "require('./package.json').version")
+  if [[ "$CURRENT_VERSION" == *-beta.* ]]; then
+    # already in a beta line: 0.92.0-beta.1 -> 0.92.0-beta.2
+    NEW_VERSION=$(npm version prerelease --preid=beta)
+  else
+    # start a beta line from a stable base: 0.91.0 -> 0.92.0-beta.0
+    NEW_VERSION=$(npm version "pre${2:-minor}" --preid=beta)
+  fi
+  GH_RELEASE_FLAGS=(--prerelease)
+else
+  NEW_VERSION=$(npm version "$BUMP")
+  GH_RELEASE_FLAGS=()
+fi
 echo "Bumped to $NEW_VERSION"
 
 rollback_local() {
@@ -32,7 +50,7 @@ git push --follow-tags
 
 trap - ERR
 
-if ! gh release create "$NEW_VERSION" release.tar.gz --generate-notes --verify-tag; then
+if ! gh release create "$NEW_VERSION" release.tar.gz --generate-notes "${GH_RELEASE_FLAGS[@]}" --verify-tag; then
   echo "" >&2
   echo "Release creation failed but commit and tag were already pushed." >&2
   echo "To clean up the remote tag and commit:" >&2

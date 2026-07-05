@@ -25,6 +25,7 @@ export const defaultData: DataTypes = {
     hardwareMapping: "adafruit-hat",
     buttonEnabled: false,
     buttonGpioPin: 528,
+    updateChannel: "stable",
   },
   scheduledPreset: {
     preset: null,

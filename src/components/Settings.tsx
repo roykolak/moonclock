@@ -28,6 +28,7 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
+      updateChannel: panel.updateChannel ?? "stable",
     },
   });
 
@@ -113,6 +114,27 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           data-testid="anthropic-api-key-input"
           key={form.key(PanelField.AnthropicApiKey)}
           {...form.getInputProps(PanelField.AnthropicApiKey)}
+        />
+
+        <Divider />
+
+        <Title order={5} mt="md">
+          Updates
+        </Title>
+
+        <Select
+          variant="filled"
+          style={{ flex: 1 }}
+          label="Release channel"
+          description="Beta receives prerelease builds; switching back to Stable keeps the current version until a newer stable release ships"
+          data={[
+            { label: "Stable", value: "stable" },
+            { label: "Beta", value: "beta" },
+          ]}
+          allowDeselect={false}
+          data-testid="update-channel-select"
+          key={form.key(PanelField.UpdateChannel)}
+          {...form.getInputProps(PanelField.UpdateChannel)}
         />
 
         <Divider />
