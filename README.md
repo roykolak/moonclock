@@ -200,7 +200,7 @@ Requires a clean working tree on `main` and an authenticated `gh` CLI (`gh auth 
 
 ### Beta releases
 
-`npm run release beta` (or the `npm run release:beta` shortcut) publishes a GitHub prerelease that only moonclocks on the Beta release channel will pick up.
+`npm run release beta` publishes a GitHub prerelease that only moonclocks on the Beta release channel will pick up.
 
 ```
 npm run release beta          # 0.91.0 -> 0.92.0-beta.0, then -beta.1, -beta.2, ...

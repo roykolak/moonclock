@@ -16,8 +16,7 @@
     "test:e2e": "playwright test",
     "test:e2e:debug": "PWDEBUG=1 playwright test",
     "test": "APP_ENV=test tsx --test $(find . -name '*.test.ts' -not -path '*/node_modules/*')",
-    "release": "bin/release.sh",
-    "release:beta": "bin/release.sh beta"
+    "release": "bin/release.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
