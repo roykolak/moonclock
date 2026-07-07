@@ -1,7 +1,29 @@
 #!/bin/bash
 set -e
 
-BUMP="${1:-patch}"
+usage() {
+  cat >&2 <<'EOF'
+Usage: bin/release.sh <prod|beta> [bump]
+
+  prod [patch|minor|major|X.Y.Z]  Publish a stable release (bump defaults to patch).
+                                  On a beta version, promotes the line to stable
+                                  (0.92.0-beta.3 -> 0.92.0).
+  beta [minor|major|patch]        Publish a GitHub prerelease. Starts a beta line
+                                  from a stable base (default minor bump), or
+                                  increments -beta.N on an existing line.
+
+A channel is required — there is no default release.
+EOF
+  exit 1
+}
+
+CHANNEL="${1:-}"
+BUMP="${2:-}"
+
+case "$CHANNEL" in
+  prod | beta) ;;
+  *) usage ;;
+esac
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "Working tree has uncommitted changes. Aborting." >&2
@@ -16,23 +38,22 @@ fi
 
 git pull --ff-only
 
-# Beta releases: `bin/release.sh beta` starts or continues a beta line,
-# published as a GitHub prerelease. `bin/release.sh beta major|patch` picks
-# the base bump when starting a new line (default minor).
-# Promoting a beta to stable needs no special mode: a plain
-# `bin/release.sh patch` on 0.92.0-beta.N yields 0.92.0.
-if [ "$BUMP" = "beta" ]; then
-  CURRENT_VERSION=$(node -p "require('./package.json').version")
+CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+if [ "$CHANNEL" = "beta" ]; then
   if [[ "$CURRENT_VERSION" == *-beta.* ]]; then
     # already in a beta line: 0.92.0-beta.1 -> 0.92.0-beta.2
     NEW_VERSION=$(npm version prerelease --preid=beta)
   else
     # start a beta line from a stable base: 0.91.0 -> 0.92.0-beta.0
-    NEW_VERSION=$(npm version "pre${2:-minor}" --preid=beta)
+    NEW_VERSION=$(npm version "pre${BUMP:-minor}" --preid=beta)
   fi
   GH_RELEASE_FLAGS=(--prerelease)
 else
-  NEW_VERSION=$(npm version "$BUMP")
+  if [[ "$CURRENT_VERSION" == *-beta.* ]]; then
+    echo "Note: this promotes $CURRENT_VERSION to a stable release."
+  fi
+  NEW_VERSION=$(npm version "${BUMP:-patch}")
   GH_RELEASE_FLAGS=()
 fi
 echo "Bumped to $NEW_VERSION"
