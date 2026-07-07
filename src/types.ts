@@ -23,6 +23,8 @@ export interface NextVersion {
   downloadedAt: string | null;
 }
 
+export type UpdateChannel = "stable" | "beta";
+
 export interface Panel {
   [PanelField.Name]: string;
   [PanelField.TimeAdjustmentAmount]: string;
@@ -34,6 +36,7 @@ export interface Panel {
   [PanelField.HardwareMapping]: string;
   [PanelField.ButtonEnabled]: boolean;
   [PanelField.ButtonGpioPin]: number;
+  [PanelField.UpdateChannel]?: UpdateChannel;
   updatedAt?: string;
   defaultPreset: Preset;
 }
@@ -49,6 +52,7 @@ export enum PanelField {
   HardwareMapping = "hardwareMapping",
   ButtonEnabled = "buttonEnabled",
   ButtonGpioPin = "buttonGpioPin",
+  UpdateChannel = "updateChannel",
 }
 
 export interface Time {

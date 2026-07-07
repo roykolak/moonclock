@@ -135,6 +135,12 @@ When a new version is available, you will see a banner like the one below in you
 
 <img src="images/update-prompt.png" width="400" />
 
+### Release channels
+
+By default your moonclock only receives stable releases. If you want to try prerelease builds, switch the "Release channel" setting to Beta on the Settings page.
+
+Switching back to Stable never downgrades — the moonclock keeps its current beta build until a newer stable release ships, then updates to that.
+
 ## Data Storage
 
 All data is stored in `/var/lib/moonclock`. This includes...
@@ -181,16 +187,30 @@ npm run build
 
 ## Publishing a release
 
-`npm run release` bumps the version, builds the tarball, pushes the commit and tag, and creates the GitHub release with auto-generated notes.
+`npm run release <channel>` bumps the version, builds the tarball, pushes the commit and tag, and creates the GitHub release with auto-generated notes. A channel (`prod` or `beta`) is required — running it without one prints usage and publishes nothing.
 
 ```
-npm run release             # patch bump (default)
-npm run release minor
-npm run release major
-npm run release 0.87.5      # specific version
+npm run release prod          # stable, patch bump
+npm run release prod minor
+npm run release prod major
+npm run release prod 0.87.5   # specific version
 ```
 
 Requires a clean working tree on `main` and an authenticated `gh` CLI (`gh auth status`). If the build or push fails, the local commit and tag are rolled back automatically. If the GitHub release step fails after the push, the script prints the commands needed to clean up the remote tag.
+
+### Beta releases
+
+`npm run release beta` publishes a GitHub prerelease that only moonclocks on the Beta release channel will pick up.
+
+```
+npm run release beta          # 0.91.0 -> 0.92.0-beta.0, then -beta.1, -beta.2, ...
+npm run release beta major    # 0.91.0 -> 1.0.0-beta.0
+npm run release beta patch    # 0.91.0 -> 0.91.1-beta.0
+```
+
+Starting from a stable version begins a new beta line (minor bump by default); running it again on a beta version increments `-beta.N`.
+
+To promote a beta line to stable, run `npm run release prod` — on `0.92.0-beta.3` it publishes `0.92.0`. The script prints a promotion notice when this happens.
 
 ## Developing on a pi
 

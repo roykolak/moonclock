@@ -24,6 +24,13 @@ test.describe("Updating panel settings", () => {
     await page.getByTestId("time-adjustment-select").click();
     await page.getByRole("option", { name: "1 hour" }).click();
 
+    await expect(page.getByTestId("update-channel-select")).toHaveValue(
+      "Stable",
+    );
+
+    await page.getByTestId("update-channel-select").click();
+    await page.getByRole("option", { name: "Beta" }).click();
+
     await page.getByRole("button", { name: "Save" }).click();
 
     await page.getByRole("link", { name: "Panel" }).click();
@@ -35,5 +42,9 @@ test.describe("Updating panel settings", () => {
 
     await expect(page.getByRole("button", { name: "+1 hour" })).toBeVisible();
     await expect(page.getByRole("button", { name: "-1 hour" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Settings" }).click();
+
+    await expect(page.getByTestId("update-channel-select")).toHaveValue("Beta");
   });
 });
