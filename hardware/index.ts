@@ -149,7 +149,7 @@ export async function createCanvas(dimensions: Dimensions) {
   let displayConfig: Macro[] = await transformPresetToDisplayMacros(
     panel.defaultPreset,
   );
-  let preset: Preset = panel.defaultPreset;
+  let preset: Preset | null = null;
   let renderedAt: string = new Date().toJSON();
   let lastLoopRunAt: string = "";
 
