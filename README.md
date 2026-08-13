@@ -83,18 +83,12 @@ Specifically, it...
 
 It's safe to re-run — every step checks before it changes anything.
 
-### Options
+It installs the latest stable release. To run beta builds, switch the "Release channel" setting to Beta once you're up.
+
+Pass `--no-reboot` if you'd rather reboot yourself:
 
 ```
---beta                 Install the latest prerelease instead of the latest stable
---restore <file>       Restore a /var/lib/moonclock backup after installing
---no-reboot            Don't reboot, even if the boot config changed
-```
-
-To pass options through the one-liner, give bash a `-s`:
-
-```
-curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- --beta
+curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- --no-reboot
 ```
 
 Your moonclock will automatically start after any pi restarts.
