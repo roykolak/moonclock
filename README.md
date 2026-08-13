@@ -64,59 +64,37 @@ Wire the panel according to the wiring chart [here](https://github.com/hzeller/r
 
 👉 Remember, you are wiring a 32x32 panel, double check your work!
 
-## Machine Setup
-
-Install the latest raspbian (not desktop verion!) on your pi and join it to your network. Then ssh into the machine and let's get going...
-
-First, you'll need to [disable onboard sound](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound). This is a requirement from `hzeller/rpi-rgb-led-matrix`
-
-### External Button Setup
-
-If you are planning on connecting an external button to cycle through visualizations
-
-```
-echo "gpio=16=ip,pu" | sudo tee -a /boot/firmware/config.txt
-```
-
-```
-sudo usermod -a -G gpio root
-```
-
-```
-echo 'SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"' | sudo tee /etc/udev/rules.d/99-gpio.rules
-```
-
-```
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
-
-And finally...
-
-```
-sudo reboot
-```
-
 ## Installation
 
-Update the system
+Install the latest raspbian (not desktop verion!) on your pi and join it to your network. Then ssh into the machine and run...
 
 ```
-sudo apt-get update
+curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash
 ```
 
-Download and untar Moonclock
+That's the whole thing. It prepares the machine, downloads the latest release, installs it, and reboots.
+
+Specifically, it...
+
+- Disables onboard sound, which `hzeller/rpi-rgb-led-matrix` [requires](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound)
+- Configures GPIO 16 and its udev rule, for the optional external button
+- Downloads and installs the latest release
+- Reboots to apply the boot config
+
+It's safe to re-run — every step checks before it changes anything.
+
+### Options
 
 ```
-sudo wget -O release.tar.gz https://github.com/roykolak/moonclock/releases/.../release.tar.gz
-sudo tar -xzvf release.tar.gz
+--beta                 Install the latest prerelease instead of the latest stable
+--restore <file>       Restore a /var/lib/moonclock backup after installing
+--no-reboot            Don't reboot, even if the boot config changed
 ```
 
-Install Moonclock...
+To pass options through the one-liner, give bash a `-s`:
 
 ```
-cd moonclock
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- --beta
 ```
 
 Your moonclock will automatically start after any pi restarts.

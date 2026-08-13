@@ -22,7 +22,17 @@ echo "$message" > $DATA_FOLDER/current_install_step.txt
 
 sudo ./install-dependencies.sh
 
-MOONCLOCK_VERSION=$(jq -r '.version' package.json)
+if ! command -v node > /dev/null; then
+  log "Node is not on PATH after installing dependencies. Aborting."
+  exit 1
+fi
+
+MOONCLOCK_VERSION=$(node -p "require('./package.json').version")
+
+if [ -z "$MOONCLOCK_VERSION" ]; then
+  log "Could not read the version from package.json. Aborting."
+  exit 1
+fi
 
 PREVIOUS_VERSION=""
 if [ -L "$APP_FOLDER/current" ]; then
