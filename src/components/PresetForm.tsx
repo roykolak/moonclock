@@ -196,7 +196,7 @@ export function AdvancedSettings({
   form: UseFormReturnType<Preset>;
 }) {
   return (
-    <Accordion defaultValue="Apples" variant="filled">
+    <Accordion variant="filled">
       <Accordion.Item key="hardware" value="hardware">
         <Accordion.Control>
           <Text size="sm" c="dimmed">

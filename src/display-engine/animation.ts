@@ -1,12 +1,9 @@
 import { AnimationConfig } from "./types";
 
-/** A `setTimeout`-based frame scheduler, one instance per animated macro.
+/** A `setTimeout`-based frame scheduler, one instance per animated scene.
  *
- *  Each instance tracks its own `lastTime`. The previous implementation
- *  kept `lastTime` at module scope, shared by every animated macro in the
- *  process — so two concurrently-running macros (e.g. a scene with two
- *  animated layers) would clobber each other's pacing and neither macro's
- *  `framesPerSecond` was honored correctly. */
+ *  Each instance tracks its own `lastTime`, so concurrent scenes pace
+ *  independently and each scene's `framesPerSecond` is honored correctly. */
 export function createAnimationLoop(options: AnimationConfig) {
   const frameRate = 1000 / options.framesPerSecond;
   let lastTime = 0;
@@ -14,7 +11,7 @@ export function createAnimationLoop(options: AnimationConfig) {
   let stopped = false;
 
   return {
-    schedule(callback: (timestamp: number) => void) {
+    schedule(callback: () => void) {
       if (stopped) return;
 
       const currentTime = performance.now();
@@ -25,7 +22,7 @@ export function createAnimationLoop(options: AnimationConfig) {
 
       timeoutId = setTimeout(() => {
         lastTime = performance.now();
-        callback(lastTime);
+        callback();
       }, timeToCall);
     },
     stop() {

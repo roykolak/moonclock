@@ -6,7 +6,7 @@ import { anchorOrigin } from "@/display-engine/geometry";
 import type { Anchor, Dimensions } from "@/display-engine/types";
 import type { Sprite } from "./types";
 
-export interface SpritePlacement {
+interface SpritePlacement {
   anchor?: Anchor; // default "center"
   offsetX?: number; // whole pixels, applied AFTER anchoring
   offsetY?: number;
@@ -14,10 +14,9 @@ export interface SpritePlacement {
 }
 
 /** Draws a Sprite (pixel data authored in its own 0-based box) onto a
- *  canvas, anchored within `dimensions` — the same anchor/offset/scale
- *  math `macros/coordinates.ts` uses for the sparse-pixel path, applied
- *  via `ctx.fillRect` instead of building a `Pixel[]` array. The one
- *  shared placement primitive every scene's `draw()` calls directly. */
+ *  canvas, anchored within `dimensions` and painted via `ctx.fillRect`.
+ *  The one shared placement primitive every scene's `draw()` calls
+ *  directly. */
 export function drawSprite(
   ctx: CanvasRenderingContext2D,
   dimensions: Dimensions,

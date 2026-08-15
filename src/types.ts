@@ -38,11 +38,6 @@ export interface Panel {
   defaultPreset: Preset;
 }
 
-export interface Time {
-  hour: number;
-  minute: number;
-}
-
 export interface QueuedFramesSnapshot {
   timestamp: number;
   count: number;

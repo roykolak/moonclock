@@ -3,7 +3,7 @@ import { createDisplayEngine, Dimensions, Scene } from "../display-engine";
 
 const dimensions = { height: 32, width: 32 };
 
-export async function createCanvas(dimensions: Dimensions) {
+async function createCanvas(dimensions: Dimensions) {
   const { width, height } = dimensions;
 
   const tiny5Font = new FontFace("Tiny5", "url(/fonts/Tiny5-Regular.ttf)");
