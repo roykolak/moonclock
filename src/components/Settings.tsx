@@ -2,7 +2,6 @@
 
 import { updatePanel } from "@/server/actions/panel";
 import { Panel, PanelField } from "@/types";
-import { scenes } from "@/scenes/catalog";
 import {
   Accordion,
   Button,
@@ -71,21 +70,6 @@ export function Settings({ panel }: SettingsProps) {
           required
           key={form.key(PanelField.TimeAdjustmentAmount)}
           {...form.getInputProps(PanelField.TimeAdjustmentAmount)}
-        />
-        <Select
-          placeholder="Scene"
-          variant="filled"
-          style={{ flex: 1 }}
-          label="Default Scene"
-          description="What will be shown when nothing is active"
-          data={scenes.map((scene) => ({
-            label: scene.label,
-            value: scene.id,
-          }))}
-          data-testid="default-scene-select"
-          required
-          key={form.key("defaultPreset.sceneId")}
-          {...form.getInputProps("defaultPreset.sceneId")}
         />
         <Divider />
 

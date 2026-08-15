@@ -18,9 +18,6 @@ test.describe("Updating panel settings", () => {
 
     await page.getByTestId("panel-name-input").fill("New Moonclock");
 
-    await page.getByTestId("default-scene-select").click();
-    await page.getByRole("option", { name: "bunny" }).click();
-
     await page.getByTestId("time-adjustment-select").click();
     await page.getByRole("option", { name: "1 hour" }).click();
 
@@ -36,7 +33,7 @@ test.describe("Updating panel settings", () => {
     await page.getByRole("link", { name: "Panel" }).click();
 
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
-    await expect(page.getByAltText("bunny scene")).toBeVisible();
+    await expect(page.getByAltText("blank scene")).toBeVisible();
 
     await page.getByRole("button", { name: "Moon" }).click();
 
