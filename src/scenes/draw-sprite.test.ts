@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { drawSprite } from "./draw-sprite";
 import { moonSprite } from "./moon/sprite";
 import { bunnySprite } from "./bunny/sprite";
-import { moon as legacyMoon } from "@/display-engine/scenes/moon";
+import { moon as legacyMoon } from "./__fixtures__/legacy-moon";
 import bunnyJson from "../../custom_scenes/bunny.json";
 import type { Dimensions } from "@/display-engine/types";
 

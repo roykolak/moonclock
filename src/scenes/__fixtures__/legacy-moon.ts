@@ -1,3 +1,7 @@
+// Frozen copy of the original absolute-coordinate moon art from the old
+// macro system. Kept only as a regression fixture: sprite-utils.test.ts and
+// draw-sprite.test.ts prove the curated moonSprite is pixel-identical to
+// this. Do not edit — its whole value is being the untouched "before".
 export const moon = {
   "17:1": "#FFF5FA",
   "5:6": "#969696",

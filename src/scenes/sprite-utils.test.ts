@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { measure, normalizeSprite } from "./sprite-utils";
-import { moon } from "@/display-engine/scenes/moon";
+import { moon } from "./__fixtures__/legacy-moon";
 import bunnyJson from "../../custom_scenes/bunny.json";
 
 describe("measure", () => {
