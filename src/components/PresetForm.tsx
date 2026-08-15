@@ -2,7 +2,6 @@
 
 import {
   Accordion,
-  Box,
   Button,
   Collapse,
   Flex,
@@ -18,22 +17,15 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { Preset, PresetField, SceneName } from "../types";
+import { Preset, PresetField } from "../types";
 import { useForm, UseFormReturnType } from "@mantine/form";
-import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  MacroMarqueeConfig,
-  MacroRippleConfig,
-  MacroTextConfig,
-  MacroTwinkleConfig,
-} from "@/display-engine/types";
-import { Scenes } from "./Scenes";
+import { ScenePicker } from "./ScenePicker";
+import { SceneId } from "@/scenes/types";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 interface PresetFormProps {
   preset: Preset | null;
-  customSceneNames: string[];
   title?: string;
   submitLabel?: string;
   action: (preset: Preset) => void;
@@ -42,7 +34,7 @@ interface PresetFormProps {
 const defaultPreset: Preset = {
   mode: "for",
   name: "",
-  scenes: [],
+  sceneId: SceneId.Moon,
   untilMinute: "0",
   untilDay: "0",
   untilHour: "0",
@@ -51,7 +43,6 @@ const defaultPreset: Preset = {
 
 export function PresetForm({
   preset = defaultPreset,
-  customSceneNames,
   action,
   submitLabel,
   title,
@@ -62,67 +53,9 @@ export function PresetForm({
 
   const [expirationOpened, { toggle: expirationToggle }] = useDisclosure(false);
 
-  form.watch("scenes.0.sceneName", ({ value }) => {
-    const fieldValue = "scenes.0.sceneConfig";
-
-    if (value === SceneName.Twinkle) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        amount: 50,
-      } as Partial<MacroTwinkleConfig>);
-    }
-
-    if (value === SceneName.Ripple) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        waveHeight: 6,
-      } as Partial<MacroRippleConfig>);
-    }
-
-    if (value === SceneName.Marquee) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        fontSize: 16,
-        text: "hello",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Emoji) {
-      return form.setFieldValue(fieldValue, {
-        name: "smile",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Color) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ff0000",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Moon) {
-      return form.setFieldValue(fieldValue, {
-        animateStarTwinkle: true,
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Message) {
-      return form.setFieldValue(fieldValue, {
-        text: "Hello\nWorld!",
-      } as Partial<MacroTextConfig>);
-    }
-
-    form.setFieldValue(fieldValue, {});
-  });
-
   return (
     <form onSubmit={form.onSubmit(action)} data-testid="preset-form">
       {title && <Title order={2}>{title}</Title>}
-      <Box w="50%" m="auto" mb="md">
-        <PresetPreview preset={form.values} />
-      </Box>
       <Stack>
         <TextInput
           placeholder=""
@@ -167,19 +100,7 @@ export function PresetForm({
 
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
-          <Scenes form={form} customSceneNames={customSceneNames} />
-          <Button
-            variant="light"
-            data-testid="new-scene-button"
-            onClick={() =>
-              form.insertListItem("scenes", {
-                sceneName: SceneName.Moon,
-                sceneConfig: {},
-              })
-            }
-          >
-            Add new scene
-          </Button>
+          <ScenePicker form={form} />
         </Stack>
         <AdvancedSettings form={form} />
         <Flex mt="xs">

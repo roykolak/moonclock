@@ -1,5 +1,4 @@
 import App from "../../components/App";
-import { getCustomSceneNames } from "../../server/queries";
 import Panel from "../../components/Panel";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
@@ -13,7 +12,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
   const { scheduledPreset, panel, presets, nextVersion } = getData();
-  const customSceneNames = await getCustomSceneNames();
   const pinnedPresets = presets.filter(({ pinned }) => pinned);
 
   let formattedEndTime = null;
@@ -34,7 +32,6 @@ export default async function Page() {
         scheduledPreset={scheduledPreset}
         formattedEndTime={formattedEndTime}
         presets={pinnedPresets}
-        customSceneNames={customSceneNames}
       />
     </App>
   );

@@ -1,141 +1,13 @@
-export type Alignment = "left" | "center" | "right";
-
-export enum MacroName {
-  Box = "box",
-  Text = "text",
-  Twinkle = "twinkle",
-  Meteors = "meteors",
-  Marquee = "marquee",
-  Image = "image",
-  Ripple = "ripple",
-  Custom = "custom",
-  Coordinates = "coordinates",
-  Moon = "moon",
-  Emoji = "emoji",
-  LoadingBar = "loadingBar",
-}
-export interface Gradient {
-  direction: "vertical" | "horizontal";
-  colorStops: { color: string; offset: number }[];
-}
-
-export interface MacroBoxConfig {
-  backgroundColor: string | Gradient;
-  startingColumn: number;
-  startingRow: number;
-  width: number;
-  height: number;
-  borderWidth: number;
-  borderColor: string;
-}
-
-export interface MacroTextConfig {
-  color: string;
-  text: string;
-  fontSize: number;
-  font: string;
-  alignment: Alignment;
-  spaceBetweenLetters: number;
-  spaceBetweenLines: number;
-  width: number;
-  startingColumn: number;
-  startingRow: number;
-}
-
-export interface MacroTwinkleConfig {
-  color: string;
-  speed: number;
-  width: number;
-  height: number;
-  amount: number;
-}
-
-export interface MacroRippleConfig {
-  width: number;
-  height: number;
-  speed: number;
-  color: string;
-  waveHeight: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-}
-
-export interface MacroCustomConfig {
-  customFunc: (ctx: CanvasRenderingContext2D, dimensions: Dimensions) => void;
-}
-
-export interface MacroMeteorsConfig {
-  color: string;
-  meteorCount: number;
-  maxTailLength: number;
-  minTailLength: number;
-  maxDepth: number;
-  minSpeed: number;
-  maxSpeed: number;
-  width: number;
-  height: number;
-}
-
-export interface MacroMarqueeConfig {
-  color: string;
-  fontSize: number;
-  font: string;
-  text: string;
-  speed: number;
-  width: number;
-  startingColumn: number;
-  startingRow: number;
-  height: number;
-  mirrorHorizontally: boolean;
-  direction: "horizontal" | "vertical";
-}
-
-export interface MacroEmojiConfig {
-  name: string;
-}
-
-export interface MacroImageConfig {
-  url: string;
-  speed: number;
-  width: number;
-  height: number;
-  startingColumn: number;
-  startingRow: number;
-}
-
-export interface MacroCoordinatesConfig {
-  coordinates: {
-    [key: string]: string;
-  };
-}
-
-export interface MacroMoonConfig {
-  optional?: any;
-  animateStarTwinkle?: boolean;
-}
-
-export interface MacroLoadingBarConfig {
-  duration: number;
-  color: string;
-  height: number;
-  startingRow: number;
-}
-
-export type MacroConfig = MacroBoxConfig &
-  MacroTextConfig &
-  MacroMarqueeConfig &
-  MacroTwinkleConfig &
-  // | MacroMeteorsConfig
-  MacroImageConfig &
-  MacroCustomConfig &
-  MacroCoordinatesConfig &
-  MacroMoonConfig &
-  MacroRippleConfig &
-  MacroEmojiConfig &
-  MacroLoadingBarConfig;
-
-export interface Macro {
-  macroName: MacroName;
-  macroConfig: Partial<MacroConfig>;
-}
+export type Anchor =
+  | "top-left"
+  | "top"
+  | "top-right"
+  | "left"
+  | "center"
+  | "right"
+  | "bottom-left"
+  | "bottom"
+  | "bottom-right";
 
 export interface Dimensions {
   height: number;
@@ -152,29 +24,33 @@ export interface AnimationConfig {
   framesPerSecond: number;
 }
 
-export type UpdatePixels = (pixels: Pixel[], index: number) => void;
-export type InternalPixelsChangeCallback = (
-  pixels: Pixel[],
-  index: number,
-) => void;
 export type PixelsChangeCallback = (pixels: Pixel[]) => void;
-export type MacroStopCallback = () => void;
 export type CreateCanvas = (
   dimensions: Dimensions,
 ) => Promise<HTMLCanvasElement>;
 
-export type MacroFn = ({
-  macroConfig,
-  dimensions,
-  ctx,
-  index,
-  updatePixels,
-  createCanvas,
-}: {
-  macroConfig: Partial<MacroConfig>;
-  dimensions: Dimensions;
-  ctx: CanvasRenderingContext2D;
-  index: number;
-  updatePixels: InternalPixelsChangeCallback;
-  createCanvas: CreateCanvas;
-}) => Promise<MacroStopCallback>;
+/** The engine's one rendering primitive. Everything the display engine can
+ *  render — a curated scene, a boot screen, a button-press preview — is a
+ *  Scene: optional one-time setup, then a per-frame draw with direct canvas
+ *  access. There is no intermediate "macro" representation to compile into
+ *  or out of. */
+export interface Scene<S = unknown> {
+  /** 0/undefined == draw a single static frame. */
+  framesPerSecond?: number;
+  /** Optional async setup, run once per render — e.g. pre-render a sprite
+   *  or measure text onto a scratch canvas rather than doing it per-frame.
+   *  `ctx` is the real, visible canvas context — safe to use for
+   *  measurement (e.g. `ctx.measureText`) before any drawing happens. */
+  init?: (args: {
+    dimensions: Dimensions;
+    createCanvas: CreateCanvas;
+    ctx: CanvasRenderingContext2D;
+  }) => Promise<S>;
+  draw: (args: {
+    ctx: CanvasRenderingContext2D;
+    dimensions: Dimensions;
+    /** ms since this render started. Use for time-based motion. */
+    elapsed: number;
+    state: S;
+  }) => void;
+}

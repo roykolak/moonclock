@@ -78,9 +78,6 @@ console.log("\n -> Copying folders to release directory");
 fs.cpSync("dist", `${releaseFolder}/dist`, { recursive: true });
 fs.cpSync("bin", `${releaseFolder}/bin`, { recursive: true });
 fs.cpSync("services", `${releaseFolder}/services`, { recursive: true });
-fs.cpSync("custom_scenes", `${releaseFolder}/custom_scenes`, {
-  recursive: true,
-});
 
 console.log("\n -> Updating systemd services to include version");
 

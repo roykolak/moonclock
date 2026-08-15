@@ -23,7 +23,6 @@ import {
   IconExclamationCircleFilled,
   IconLayersIntersect,
   IconRefresh,
-  IconSpray,
   IconTerminal2,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -121,17 +120,6 @@ function App({
                 style={{ width: "70%", height: "70%" }}
                 stroke={1.5}
               />
-            </ActionIcon>
-          }
-        />
-        <NavLink
-          component={Link}
-          href="/composer"
-          label="Composer"
-          active={pathname.includes("/composer")}
-          leftSection={
-            <ActionIcon variant="light">
-              <IconSpray style={{ width: "70%", height: "70%" }} stroke={1.5} />
             </ActionIcon>
           }
         />

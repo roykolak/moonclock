@@ -14,7 +14,7 @@ describe("getEndDate", () => {
       const preset: Preset = {
         name: "test preset",
         mode: "for",
-        scenes: [],
+        sceneId: "blank",
         forTime: "2:15",
         untilDay: "0",
         untilHour: "0",
@@ -31,7 +31,7 @@ describe("getEndDate", () => {
       const preset: Preset = {
         name: "test preset",
         mode: "until",
-        scenes: [],
+        sceneId: "blank",
         forTime: "",
         untilDay: "1",
         untilHour: "6",

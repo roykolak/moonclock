@@ -1,12 +1,12 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { Panel, PanelField, SceneName } from "@/types";
+import { Panel, PanelField } from "@/types";
+import { scenes } from "@/scenes/catalog";
 import {
   Accordion,
   Button,
   Divider,
-  Group,
   NumberInput,
   Select,
   Slider,
@@ -21,10 +21,9 @@ import { showNotification } from "@mantine/notifications";
 
 interface SettingsProps {
   panel: Panel;
-  customSceneNames: string[];
 }
 
-export function Settings({ panel, customSceneNames }: SettingsProps) {
+export function Settings({ panel }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
@@ -73,49 +72,21 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           key={form.key(PanelField.TimeAdjustmentAmount)}
           {...form.getInputProps(PanelField.TimeAdjustmentAmount)}
         />
-        {form.getValues().defaultPreset.scenes.map((item, index) => (
-          <Group key={index} w="100%">
-            <Select
-              placeholder="Scene"
-              variant="filled"
-              style={{ flex: 1 }}
-              label="Default Scene"
-              description="What will be shown when nothing is active"
-              data={[
-                {
-                  group: "Built-in Scenes",
-                  items: [SceneName.Blank, SceneName.Moon, SceneName.Twinkle],
-                },
-                {
-                  group: "Custom Scenes",
-                  items: customSceneNames,
-                },
-              ]}
-              data-testid="default-scene-select"
-              required
-              key={form.key(`defaultPreset.scenes.${index}.sceneName`)}
-              {...form.getInputProps(`defaultPreset.scenes.${index}.sceneName`)}
-            />
-          </Group>
-        ))}
-        <Divider />
-
-        <Title order={5} mt="md">
-          AI Settings
-        </Title>
-
-        <TextInput
-          placeholder="sk-ant-..."
+        <Select
+          placeholder="Scene"
           variant="filled"
           style={{ flex: 1 }}
-          label="Anthropic API Key"
-          description="Required for AI pixel art generation"
-          type="password"
-          data-testid="anthropic-api-key-input"
-          key={form.key(PanelField.AnthropicApiKey)}
-          {...form.getInputProps(PanelField.AnthropicApiKey)}
+          label="Default Scene"
+          description="What will be shown when nothing is active"
+          data={scenes.map((scene) => ({
+            label: scene.label,
+            value: scene.id,
+          }))}
+          data-testid="default-scene-select"
+          required
+          key={form.key("defaultPreset.sceneId")}
+          {...form.getInputProps("defaultPreset.sceneId")}
         />
-
         <Divider />
 
         <Title order={5} mt="md">

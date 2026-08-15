@@ -1,165 +1,97 @@
 import { mixColors } from "./colors";
-import { startBox } from "./macros/box";
-import { startMarquee } from "./macros/marquee";
-import { startMeteors } from "./macros/meteors";
-import { startRipple } from "./macros/ripple";
-import { startText } from "./macros/text";
-import { startTwinkle } from "./macros/twinkle";
+import { createAnimationLoop } from "./animation";
+import { syncFromCanvas } from "./canvas";
 import {
   CreateCanvas,
   Dimensions,
-  Macro,
-  MacroFn,
-  MacroName,
   Pixel,
   PixelsChangeCallback,
-  UpdatePixels,
+  Scene,
 } from "./types";
-import { startImage } from "./macros/image";
-import { startCustom } from "./macros/custom";
-import { startCoordinates } from "./macros/coordinates";
-import { startMoon } from "./macros/moon";
-import { startEmoji } from "./macros/emoji";
-import { startLoadingBar } from "./macros/loading-bar";
 
-export type { Pixel, Macro, MacroConfig, MacroName, Dimensions } from "./types";
+export type { Pixel, Scene, Dimensions } from "./types";
 
-async function startMacros({
-  macros,
-  dimensions,
-  updatePixels,
-  createCanvas,
-}: {
-  macros: Macro[];
-  dimensions: Dimensions;
-  updatePixels: UpdatePixels;
-  createCanvas: CreateCanvas;
-}) {
-  const MacroMap: { [k in MacroName]: MacroFn } = {
-    [MacroName.Box]: startBox,
-    [MacroName.Text]: startText,
-    [MacroName.Marquee]: startMarquee,
-    [MacroName.Twinkle]: startTwinkle,
-    [MacroName.Ripple]: startRipple,
-    [MacroName.Image]: startImage,
-    [MacroName.Meteors]: startMeteors,
-    [MacroName.Custom]: startCustom,
-    [MacroName.Coordinates]: startCoordinates,
-    [MacroName.Moon]: startMoon,
-    [MacroName.Emoji]: startEmoji,
-    [MacroName.LoadingBar]: startLoadingBar,
-  };
-
-  const stops = await Promise.all(
-    macros.map(async ({ macroName, macroConfig }, index) => {
-      const canvas = await createCanvas(dimensions);
-      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-      const macroFn = MacroMap[macroName];
-
-      const stop = await macroFn({
-        macroConfig,
-        dimensions,
-        ctx,
-        index,
-        updatePixels,
-        createCanvas,
-      });
-
-      return () => {
-        stop();
-        // skia-canvas's context only holds a WeakRef to its canvas, so we
-        // must keep `canvas` reachable for the macro's lifetime — otherwise
-        // GC frees it and getImageData fails with a Neon downcast error.
-        void canvas;
-      };
-    }),
-  );
-
-  return () => {
-    for (const stop of stops) {
-      stop();
-    }
-  };
-}
-
-const buildPixelMap = ({ height, width }: Dimensions) => {
-  const pixelMap: Pixel[][][] = [];
-  for (let y = 0; y < height; y++) {
-    const row = [];
-    for (let x = 0; x < width; x++) {
-      row.push([]);
-    }
-    pixelMap.push(row);
-  }
-  return pixelMap;
-};
+const BLACK = new Uint8ClampedArray([0, 0, 0, 255]);
 
 export function createDisplayEngine({
   dimensions,
   onPixelsChange,
   createCanvas,
 }: {
-  dimensions: { height: number; width: number };
+  dimensions: Dimensions;
   onPixelsChange: PixelsChangeCallback;
   createCanvas: CreateCanvas;
 }) {
-  let stopMacros: () => void = () => {};
+  let stop: () => void = () => {};
 
   return {
-    render: async (macros: Macro[]) => {
-      stopMacros();
+    render: async <S>(scene: Scene<S> | null) => {
+      stop();
 
       const resetPixels: Pixel[] = [];
-
-      for (let x = 0; x < 32; x++) {
-        for (let y = 0; y < 32; y++) {
-          resetPixels.push({
-            x,
-            y,
-            rgba: new Uint8ClampedArray([0, 0, 0, 255]),
-          });
+      for (let x = 0; x < dimensions.width; x++) {
+        for (let y = 0; y < dimensions.height; y++) {
+          resetPixels.push({ x, y, rgba: BLACK });
         }
       }
-
       onPixelsChange(resetPixels);
 
-      const pixelMap = buildPixelMap(dimensions);
+      if (!scene) {
+        stop = () => {};
+        return stop;
+      }
 
-      stopMacros = await startMacros({
-        macros,
-        dimensions,
-        createCanvas,
-        updatePixels: (updatePixels, index) => {
-          const pixelsToUpdate: Pixel[] = [];
-          updatePixels.forEach((pixelToUpdate) => {
-            const { y, x } = pixelToUpdate;
-            const pixelStack = pixelMap?.[y]?.[x];
+      const canvas = await createCanvas(dimensions);
+      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-            if (!pixelStack) return;
+      // A scene without `init` never reads `state` in `draw`, so the
+      // `undefined` here is safe even though `S` may not include it.
+      const state = (
+        scene.init
+          ? await scene.init({ dimensions, createCanvas, ctx })
+          : undefined
+      ) as S;
 
-            pixelStack[index] = pixelToUpdate;
+      const fps = scene.framesPerSecond ?? 0;
+      const start = performance.now();
+      const loop = createAnimationLoop({ framesPerSecond: fps || 1 });
+      let running = true;
 
-            const rgba = pixelStack.reduce<Uint8ClampedArray>(
-              (baseColor, pixel) => {
-                return mixColors({ newColor: pixel.rgba, baseColor });
-              },
-              new Uint8ClampedArray([0, 0, 0, 255]),
-            );
+      function frame() {
+        ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+        ctx.save();
+        scene!.draw({
+          ctx,
+          dimensions,
+          elapsed: performance.now() - start,
+          state,
+        });
+        ctx.restore();
 
-            pixelsToUpdate.push({
-              ...pixelToUpdate,
-              rgba,
-            });
-          });
+        const pixels = syncFromCanvas(ctx, dimensions).map((pixel) => ({
+          ...pixel,
+          rgba: mixColors({ newColor: pixel.rgba, baseColor: BLACK }),
+        }));
+        onPixelsChange(pixels);
 
-          onPixelsChange(pixelsToUpdate);
-        },
-      });
+        if (running && fps > 0) loop.schedule(frame);
+      }
 
-      return stopMacros;
+      frame();
+
+      stop = () => {
+        running = false;
+        loop.stop();
+        // skia-canvas's context only holds a WeakRef to its canvas, so we
+        // must keep `canvas` reachable for the scene's lifetime — otherwise
+        // GC frees it and getImageData fails with a Neon downcast error.
+        void canvas;
+      };
+
+      return stop;
     },
     stop: () => {
-      stopMacros();
+      stop();
     },
   };
 }

@@ -44,7 +44,6 @@ interface PanelProps {
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
   formattedEndTime: string | null;
-  customSceneNames: string[];
 }
 
 export default function Panel({
@@ -52,7 +51,6 @@ export default function Panel({
   scheduledPreset,
   formattedEndTime,
   presets,
-  customSceneNames,
 }: PanelProps) {
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
 
@@ -90,7 +88,6 @@ export default function Panel({
         onClose={customPresetModalHandlers.close}
       >
         <PresetForm
-          customSceneNames={customSceneNames}
           preset={presetEditting}
           action={async (preset) => {
             await createCustomScheduledPreset(preset);
@@ -204,16 +201,6 @@ export default function Panel({
                     {preset.name}
                   </Button>
                 ))}
-                <Button
-                  variant="light"
-                  fullWidth
-                  onClick={() => {
-                    setPresetEditting({ name: "Custom" } as Preset);
-                    customPresetModalHandlers.open();
-                  }}
-                >
-                  Custom...
-                </Button>
               </Stack>
             )}
           </div>

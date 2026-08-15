@@ -1,11 +1,12 @@
 import fs from "fs";
-import { DataTypes, Preset, SceneName } from "../types";
+import { DataTypes, Preset } from "../types";
+import { SceneId } from "../scenes/types";
 import { databaseFile } from "./utils";
 import { randomUUID } from "crypto";
 
 const defaultPreset: Preset = {
   name: "Default",
-  scenes: [{ sceneName: SceneName.Blank, sceneConfig: {} }],
+  sceneId: SceneId.Blank,
   mode: "for",
   untilDay: "0",
   untilHour: "0",
@@ -36,12 +37,7 @@ export const defaultData: DataTypes = {
     {
       id: randomUUID(),
       name: "Moon",
-      scenes: [
-        {
-          sceneName: SceneName.Moon,
-          sceneConfig: { animateStarTwinkle: true },
-        },
-      ],
+      sceneId: SceneId.Moon,
       mode: "until",
       untilDay: "1",
       untilHour: "7",
@@ -50,160 +46,15 @@ export const defaultData: DataTypes = {
       pinned: true,
     },
     {
-      mode: "for",
-      name: "Message",
-      scenes: [
-        {
-          sceneName: "message",
-          sceneConfig: {
-            text: "Hello \nWorld!",
-            fontSize: 25,
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-      id: randomUUID(),
-      pinned: true,
-    },
-    {
       id: randomUUID(),
       name: "Bunny",
-      scenes: [{ sceneName: "bunny", sceneConfig: {} }],
+      sceneId: SceneId.Bunny,
       mode: "for",
       untilDay: "0",
       untilHour: "0",
       untilMinute: "0",
       forTime: "2:00",
-      pinned: true,
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Twinkle",
-      scenes: [
-        {
-          sceneName: "twinkle",
-          sceneConfig: {
-            color: "#ffffff",
-            speed: 30,
-            amount: 50,
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
       pinned: false,
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Ripple",
-      scenes: [
-        {
-          sceneName: "ripple",
-          sceneConfig: {
-            color: "#08a86b",
-            speed: 30,
-            waveHeight: 1,
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Emoji",
-      scenes: [
-        {
-          sceneName: "emoji",
-          sceneConfig: {
-            name: "smile",
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Solid Color",
-      scenes: [
-        {
-          sceneName: "color",
-          sceneConfig: {
-            color: "#8a1663",
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Marquee",
-      scenes: [
-        {
-          sceneName: "marquee",
-          sceneConfig: {
-            color: "#ffffff",
-            speed: 30,
-            fontSize: 16,
-            text: "hello",
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
-    },
-    {
-      id: randomUUID(),
-      mode: "for",
-      name: "Multi-scene",
-      scenes: [
-        {
-          sceneName: "color",
-          sceneConfig: {
-            color: "#006e8c",
-          },
-        },
-        {
-          sceneName: "ripple",
-          sceneConfig: {
-            color: "#a80000",
-            speed: 34,
-            waveHeight: 1,
-          },
-        },
-        {
-          sceneName: "message",
-          sceneConfig: {
-            text: "\n\nHELLO!",
-            alignment: "center",
-            name: "thumbsup",
-          },
-        },
-      ],
-      untilMinute: "0",
-      untilDay: "0",
-      untilHour: "0",
-      forTime: "0:05",
     },
   ],
 };
@@ -216,11 +67,41 @@ function getDatabaseName() {
 
 function readDb(): DataTypes {
   const dbFile = getDatabaseName();
+
+  let raw = "";
   try {
-    const file = fs.readFileSync(dbFile).toString();
-    return JSON.parse(file);
+    raw = fs.readFileSync(dbFile).toString();
   } catch {
-    console.log(`trouble loading/parsing ${dbFile}, seeding default data`);
+    console.log(`[DB] ${dbFile} missing; seeding default data`);
+    writeDb(defaultData);
+    return JSON.parse(JSON.stringify(defaultData));
+  }
+
+  // install.sh `touch`es an empty database.json on first boot — that's
+  // expected and should seed silently, not be treated as corruption.
+  if (raw.trim() === "") {
+    writeDb(defaultData);
+    return JSON.parse(JSON.stringify(defaultData));
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // Don't silently overwrite a non-empty file that failed to parse —
+    // it may hold hand-tuned Panel fields (pwmBits, gpioSlowdown,
+    // hardwareMapping, ...) that are genuinely annoying to re-tune.
+    // Preset data is cheap (it's just the seed above); Panel tuning isn't.
+    const backupFile = `${dbFile}.corrupt-${Date.now()}`;
+    try {
+      fs.writeFileSync(backupFile, raw, { mode: 0o666 });
+      console.error(
+        `[DB] ${dbFile} failed to parse; original preserved at ${backupFile}, seeding defaults`,
+      );
+    } catch {
+      console.error(
+        `[DB] ${dbFile} failed to parse and could not be backed up; seeding defaults`,
+      );
+    }
     writeDb(defaultData);
     return JSON.parse(JSON.stringify(defaultData));
   }
