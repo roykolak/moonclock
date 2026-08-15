@@ -3,11 +3,11 @@
 import { Card, SimpleGrid, Text, UnstyledButton } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
 import { scenes } from "@/scenes/catalog";
-import { Preset, PresetField } from "@/types";
+import { Preset } from "@/types";
 import { PresetPreview } from "./PresetPreview";
 
 export function ScenePicker({ form }: { form: UseFormReturnType<Preset> }) {
-  const selected = form.getValues()[PresetField.SceneId];
+  const selected = form.getValues().sceneId;
 
   return (
     <SimpleGrid cols={3} data-testid="scene-picker" role="radiogroup">
@@ -17,7 +17,7 @@ export function ScenePicker({ form }: { form: UseFormReturnType<Preset> }) {
           role="radio"
           aria-checked={selected === scene.id}
           data-testid={`scene-option-${scene.id}`}
-          onClick={() => form.setFieldValue(PresetField.SceneId, scene.id)}
+          onClick={() => form.setFieldValue("sceneId", scene.id)}
         >
           <Card
             p={4}

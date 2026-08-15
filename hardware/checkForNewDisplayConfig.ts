@@ -1,6 +1,6 @@
 import { getData, setData } from "@/server/db";
 import { Scene } from "../src/display-engine";
-import { Preset, PresetField } from "@/types";
+import { Preset } from "@/types";
 import { getScene } from "@/helpers/getScene";
 
 function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
@@ -23,7 +23,7 @@ export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
 
         const preset = panel.defaultPreset;
         const renderedAt = new Date().toJSON();
-        const scene = getScene(preset[PresetField.SceneId]);
+        const scene = getScene(preset.sceneId);
 
         return { scene, preset, renderedAt };
       }
@@ -41,7 +41,7 @@ export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
 
       const preset = panel.defaultPreset;
       const renderedAt = new Date().toJSON();
-      const scene = getScene(preset[PresetField.SceneId]);
+      const scene = getScene(preset.sceneId);
 
       await setData({ scheduledPreset: null });
 
@@ -51,13 +51,13 @@ export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
     if (!sceneMatch(scheduledPreset.preset, currentPreset)) {
       console.log(
         `[HARDWARE] Rendering ${
-          scheduledPreset.preset[PresetField.Name]
+          scheduledPreset.preset.name
         } until ${scheduledPreset.endTime}`,
       );
 
       const preset = scheduledPreset.preset;
       const renderedAt = new Date().toJSON();
-      const scene = getScene(preset[PresetField.SceneId]);
+      const scene = getScene(preset.sceneId);
 
       return { scene, preset, renderedAt };
     }

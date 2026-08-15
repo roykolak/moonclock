@@ -1,6 +1,6 @@
 "use client";
 
-import { Preset, PresetField } from "@/types";
+import { Preset } from "@/types";
 import { Overlay } from "@mantine/core";
 import { useScenePreview } from "./useScenePreview";
 import { getScene } from "@/helpers/getScene";
@@ -19,7 +19,7 @@ export function PresetPreview({
   isDefaultPreset = false,
   staticFrame = false,
 }: DisplayProps) {
-  const scene = getScene(preset[PresetField.SceneId]);
+  const scene = getScene(preset.sceneId);
   const imageData = useScenePreview(scene, preset?.sceneId ?? "", {
     staticFrame,
   });

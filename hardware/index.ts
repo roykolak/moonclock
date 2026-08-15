@@ -3,7 +3,7 @@ import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Pixel, Scene } from "../src/display-engine/types";
 import { getData, setData } from "@/server/db";
-import { PanelField, Preset, PresetField, QueuedFramesSnapshot } from "@/types";
+import { Preset, QueuedFramesSnapshot } from "@/types";
 import { Canvas, FontLibrary } from "skia-canvas";
 import { getEndDate } from "@/helpers/getEndDate";
 
@@ -99,7 +99,7 @@ export async function createCanvas(dimensions: Dimensions) {
       lastLoopRunAt,
       syncSpeed,
       virtualPanel,
-      brightness: brightness || panel[PanelField.Brightness],
+      brightness: brightness || panel.brightness,
     });
   });
 
@@ -140,7 +140,7 @@ export async function createCanvas(dimensions: Dimensions) {
 
   const { panel } = await getData();
 
-  let scene: Scene | null = getScene(panel.defaultPreset[PresetField.SceneId]);
+  let scene: Scene | null = getScene(panel.defaultPreset.sceneId);
   let preset: Preset = panel.defaultPreset;
   let renderedAt: string = new Date().toJSON();
   let lastLoopRunAt: string = "";
@@ -156,13 +156,13 @@ export async function createCanvas(dimensions: Dimensions) {
         rows: 32,
         cols: 32,
         chainLength: 1,
-        hardwareMapping: panel[PanelField.HardwareMapping] as GpioMapping,
-        pwmLsbNanoseconds: panel[PanelField.PwnLsbNanoseconds],
-        pwmBits: panel[PanelField.PwmBits],
+        hardwareMapping: panel.hardwareMapping as GpioMapping,
+        pwmLsbNanoseconds: panel.pwnLsbNanoseconds,
+        pwmBits: panel.pwmBits,
       },
       {
         ...LedMatrix.defaultRuntimeOptions(),
-        gpioSlowdown: panel[PanelField.GpioSlowdown],
+        gpioSlowdown: panel.gpioSlowdown,
       },
     );
     matrix.afterSync(() => {
@@ -174,7 +174,7 @@ export async function createCanvas(dimensions: Dimensions) {
         for (const pixel of pixelUpdates) {
           const hexA = updateVirtualPanel(pixel);
           matrix
-            .brightness(brightness || panel[PanelField.Brightness])
+            .brightness(brightness || panel.brightness)
             .fgColor(parseInt(hexA, 16))
             .setPixel(pixel.x, pixel.y);
         }
@@ -282,7 +282,7 @@ export async function createCanvas(dimensions: Dimensions) {
 
       ({ scene, renderedAt, preset } = result);
 
-      brightness = preset[PresetField.Brightness] || null;
+      brightness = preset.brightness || null;
 
       syncSpeed = 0;
 
@@ -331,7 +331,7 @@ export async function createCanvas(dimensions: Dimensions) {
     console.log("[HARDWARE] Button pressed! Cycling to next pinned preset...");
 
     const { presets } = getData();
-    const pinnedPresets = presets.filter((p) => p[PresetField.Pinned]);
+    const pinnedPresets = presets.filter((p) => p.pinned);
 
     if (pinnedPresets.length === 0) {
       console.log("[HARDWARE] No pinned presets found");
@@ -355,8 +355,8 @@ export async function createCanvas(dimensions: Dimensions) {
       const { panel: latestPanel } = getData();
       preset = latestPanel.defaultPreset;
       renderedAt = new Date().toJSON();
-      scene = getScene(preset[PresetField.SceneId]);
-      brightness = preset[PresetField.Brightness] || null;
+      scene = getScene(preset.sceneId);
+      brightness = preset.brightness || null;
       syncSpeed = 0;
       updateQueue = [];
       queuedFramesSnapshots = [];
@@ -365,9 +365,7 @@ export async function createCanvas(dimensions: Dimensions) {
     } else {
       const nextPreset = pinnedPresets[currentPinnedIndex];
 
-      console.log(
-        `[HARDWARE] Switching to preset: ${nextPreset[PresetField.Name]}`,
-      );
+      console.log(`[HARDWARE] Switching to preset: ${nextPreset.name}`);
 
       const endDate = getEndDate(nextPreset);
 
@@ -387,7 +385,7 @@ export async function createCanvas(dimensions: Dimensions) {
             ctx.font = "8px Tiny5";
 
             ctx.fillStyle = "#FFF";
-            ctx.fillText(nextPreset[PresetField.Name], 0, 1);
+            ctx.fillText(nextPreset.name, 0, 1);
 
             ctx.fillStyle = "#999";
             ctx.fillText("Until..", 0, 9);
@@ -425,15 +423,12 @@ export async function createCanvas(dimensions: Dimensions) {
     await runConditionalRenderUpdate();
   }
 
-  if (panel[PanelField.ButtonEnabled]) {
+  if (panel.buttonEnabled) {
     try {
       const { Gpio } = await import("onoff");
-      const button = new Gpio(
-        panel[PanelField.ButtonGpioPin],
-        "in",
-        "falling",
-        { debounceTimeout: 50 },
-      );
+      const button = new Gpio(panel.buttonGpioPin, "in", "falling", {
+        debounceTimeout: 50,
+      });
 
       button.watch((err) => {
         if (err) {
@@ -444,7 +439,7 @@ export async function createCanvas(dimensions: Dimensions) {
       });
 
       console.log(
-        `[HARDWARE] Button initialized on GPIO ${panel[PanelField.ButtonGpioPin]}`,
+        `[HARDWARE] Button initialized on GPIO ${panel.buttonGpioPin}`,
       );
     } catch (error) {
       console.error("[HARDWARE] Failed to initialize button GPIO:", error);

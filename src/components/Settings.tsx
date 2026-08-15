@@ -1,7 +1,7 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { Panel, PanelField } from "@/types";
+import { Panel } from "@/types";
 import {
   Accordion,
   Button,
@@ -49,8 +49,8 @@ export function Settings({ panel }: SettingsProps) {
           label="Name"
           required
           data-testid="panel-name-input"
-          key={form.key(PanelField.Name)}
-          {...form.getInputProps(PanelField.Name)}
+          key={form.key("name")}
+          {...form.getInputProps("name")}
         />
         <Select
           placeholder="Time increment"
@@ -68,8 +68,8 @@ export function Settings({ panel }: SettingsProps) {
           ]}
           data-testid="time-adjustment-select"
           required
-          key={form.key(PanelField.TimeAdjustmentAmount)}
-          {...form.getInputProps(PanelField.TimeAdjustmentAmount)}
+          key={form.key("timeAdjustmentAmount")}
+          {...form.getInputProps("timeAdjustmentAmount")}
         />
         <Divider />
 
@@ -88,8 +88,8 @@ export function Settings({ panel }: SettingsProps) {
           ]}
           allowDeselect={false}
           data-testid="update-channel-select"
-          key={form.key(PanelField.UpdateChannel)}
-          {...form.getInputProps(PanelField.UpdateChannel)}
+          key={form.key("updateChannel")}
+          {...form.getInputProps("updateChannel")}
         />
 
         <Divider />
@@ -102,8 +102,8 @@ export function Settings({ panel }: SettingsProps) {
           <Text size="sm">Display Brightness</Text>
           <Slider
             label={null}
-            key={form.key(PanelField.Brightness)}
-            {...form.getInputProps(PanelField.Brightness)}
+            key={form.key("brightness")}
+            {...form.getInputProps("brightness")}
           />
         </Stack>
 
@@ -127,8 +127,8 @@ export function Settings({ panel }: SettingsProps) {
                   </Stack>
                   <Slider
                     max={1000}
-                    key={form.key(PanelField.PwnLsbNanoseconds)}
-                    {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
+                    key={form.key("pwnLsbNanoseconds")}
+                    {...form.getInputProps("pwnLsbNanoseconds")}
                   />
                 </Stack>
 
@@ -145,8 +145,8 @@ export function Settings({ panel }: SettingsProps) {
                   <Slider
                     max={4}
                     min={0}
-                    key={form.key(PanelField.GpioSlowdown)}
-                    {...form.getInputProps(PanelField.GpioSlowdown)}
+                    key={form.key("gpioSlowdown")}
+                    {...form.getInputProps("gpioSlowdown")}
                   />
                 </Stack>
 
@@ -161,8 +161,8 @@ export function Settings({ panel }: SettingsProps) {
                   <Slider
                     max={11}
                     min={1}
-                    key={form.key(PanelField.PwmBits)}
-                    {...form.getInputProps(PanelField.PwmBits)}
+                    key={form.key("pwmBits")}
+                    {...form.getInputProps("pwmBits")}
                   />
                 </Stack>
 
@@ -176,27 +176,27 @@ export function Settings({ panel }: SettingsProps) {
                     { label: "Adafruit HAT (PWM)", value: "adafruit-hat-pwm" },
                     { label: "Regular (Pi 1)", value: "regular-pi1" },
                   ]}
-                  key={form.key(PanelField.HardwareMapping)}
-                  {...form.getInputProps(PanelField.HardwareMapping)}
+                  key={form.key("hardwareMapping")}
+                  {...form.getInputProps("hardwareMapping")}
                 />
 
                 <Stack gap={4}>
                   <Switch
                     label="Enable Button"
                     description="Enable GPIO button to cycle through pinned presets"
-                    key={form.key(PanelField.ButtonEnabled)}
-                    {...form.getInputProps(PanelField.ButtonEnabled, {
+                    key={form.key("buttonEnabled")}
+                    {...form.getInputProps("buttonEnabled", {
                       type: "checkbox",
                     })}
                   />
-                  {form.getValues()[PanelField.ButtonEnabled] && (
+                  {form.getValues().buttonEnabled && (
                     <NumberInput
                       label="Button GPIO Pin"
                       description="GPIO chip-relative offset for the button (e.g. 528 for BCM GPIO16)"
                       variant="filled"
                       min={0}
-                      key={form.key(PanelField.ButtonGpioPin)}
-                      {...form.getInputProps(PanelField.ButtonGpioPin)}
+                      key={form.key("buttonGpioPin")}
+                      {...form.getInputProps("buttonGpioPin")}
                     />
                   )}
                 </Stack>

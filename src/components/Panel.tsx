@@ -21,7 +21,6 @@ import {
   HardwareState,
   Panel as PanelType,
   Preset,
-  PresetField,
   ScheduledPreset,
 } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
@@ -73,8 +72,7 @@ export default function Panel({
   }, []);
 
   const timeAdjustment = parseInt(
-    scheduledPreset?.preset?.[PresetField.TimeAdjustmentAmount] ||
-      panel.timeAdjustmentAmount,
+    scheduledPreset?.preset?.timeAdjustmentAmount || panel.timeAdjustmentAmount,
     10,
   );
 
