@@ -1,6 +1,6 @@
 // Normalized offline from the legacy moon art (now the regression fixture
 // src/scenes/__fixtures__/legacy-moon.ts), then hand-tuned. Edit directly.
-import { Sprite } from "../sprite";
+import { Sprite } from "../types";
 
 export const moonSprite: Sprite = {
   width: 29,

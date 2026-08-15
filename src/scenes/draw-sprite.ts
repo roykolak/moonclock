@@ -4,7 +4,7 @@
 
 import { anchorOrigin } from "@/display-engine/geometry";
 import type { Anchor, Dimensions } from "@/display-engine/types";
-import type { Sprite } from "./sprite";
+import type { Sprite } from "./types";
 
 export interface SpritePlacement {
   anchor?: Anchor; // default "center"

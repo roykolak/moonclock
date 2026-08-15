@@ -23,3 +23,13 @@ export const SceneId = {
   Bunny: "bunny",
 } as const;
 export type SceneId = (typeof SceneId)[keyof typeof SceneId];
+
+/** A sprite authored in its OWN box. Keys are "x:y" relative to the
+ *  sprite's top-left, i.e. minX === minY === 0. The pixel-data format
+ *  `drawSprite` consumes; scenes that draw sparse art export one of these
+ *  from their own `sprite.ts`. */
+export interface Sprite {
+  width: number;
+  height: number;
+  pixels: { [key: string]: string }; // "x:y" -> "#rrggbb" | "#rrggbbaa"
+}

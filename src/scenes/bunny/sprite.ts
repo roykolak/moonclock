@@ -1,5 +1,5 @@
 // Normalized offline from custom_scenes/bunny.json, then hand-tuned. Edit directly.
-import { Sprite } from "../sprite";
+import { Sprite } from "../types";
 
 export const bunnySprite: Sprite = {
   width: 24,
