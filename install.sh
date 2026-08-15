@@ -83,16 +83,6 @@ log " -> Loosen fontconfig cache permissions"
 
 sudo chmod 666 /var/cache/fontconfig
 
-log " -> Seeding custom scenes"
-
-if [ ! -d "$DATA_FOLDER/custom_scenes" ]; then
-    sudo mkdir -p "$DATA_FOLDER/custom_scenes"
-else
-    log "   -> custom scenes directory exists, skipping"
-fi
-
-sudo cp "$APP_FOLDER/releases/$MOONCLOCK_VERSION/custom_scenes/"* "$DATA_FOLDER/custom_scenes/"
-
 message="Starting Moonclock"
 log "$message"
 echo "$message" > $DATA_FOLDER/current_install_step.txt

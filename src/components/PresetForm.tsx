@@ -2,7 +2,6 @@
 
 import {
   Accordion,
-  Box,
   Button,
   Collapse,
   Flex,
@@ -18,22 +17,15 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { Preset, PresetField, SceneName } from "../types";
+import { Preset } from "../types";
 import { useForm, UseFormReturnType } from "@mantine/form";
-import { PresetPreview } from "./PresetPreview";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  MacroMarqueeConfig,
-  MacroRippleConfig,
-  MacroTextConfig,
-  MacroTwinkleConfig,
-} from "@/display-engine/types";
-import { Scenes } from "./Scenes";
+import { ScenePicker } from "./ScenePicker";
+import { SceneId } from "@/scenes/types";
 import { getFriendlyEndTime } from "@/helpers/getFriendlyEndTime";
 
 interface PresetFormProps {
   preset: Preset | null;
-  customSceneNames: string[];
   title?: string;
   submitLabel?: string;
   action: (preset: Preset) => void;
@@ -42,7 +34,7 @@ interface PresetFormProps {
 const defaultPreset: Preset = {
   mode: "for",
   name: "",
-  scenes: [],
+  sceneId: SceneId.Moon,
   untilMinute: "0",
   untilDay: "0",
   untilHour: "0",
@@ -51,7 +43,6 @@ const defaultPreset: Preset = {
 
 export function PresetForm({
   preset = defaultPreset,
-  customSceneNames,
   action,
   submitLabel,
   title,
@@ -62,67 +53,9 @@ export function PresetForm({
 
   const [expirationOpened, { toggle: expirationToggle }] = useDisclosure(false);
 
-  form.watch("scenes.0.sceneName", ({ value }) => {
-    const fieldValue = "scenes.0.sceneConfig";
-
-    if (value === SceneName.Twinkle) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        amount: 50,
-      } as Partial<MacroTwinkleConfig>);
-    }
-
-    if (value === SceneName.Ripple) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        waveHeight: 6,
-      } as Partial<MacroRippleConfig>);
-    }
-
-    if (value === SceneName.Marquee) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ffffff",
-        speed: 30,
-        fontSize: 16,
-        text: "hello",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Emoji) {
-      return form.setFieldValue(fieldValue, {
-        name: "smile",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Color) {
-      return form.setFieldValue(fieldValue, {
-        color: "#ff0000",
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Moon) {
-      return form.setFieldValue(fieldValue, {
-        animateStarTwinkle: true,
-      } as Partial<MacroMarqueeConfig>);
-    }
-
-    if (value === SceneName.Message) {
-      return form.setFieldValue(fieldValue, {
-        text: "Hello\nWorld!",
-      } as Partial<MacroTextConfig>);
-    }
-
-    form.setFieldValue(fieldValue, {});
-  });
-
   return (
     <form onSubmit={form.onSubmit(action)} data-testid="preset-form">
       {title && <Title order={2}>{title}</Title>}
-      <Box w="50%" m="auto" mb="md">
-        <PresetPreview preset={form.values} />
-      </Box>
       <Stack>
         <TextInput
           placeholder=""
@@ -131,8 +64,8 @@ export function PresetForm({
           label="Name"
           required
           data-testid="preset-name"
-          key={form.key(PresetField.Name)}
-          {...form.getInputProps(PresetField.Name)}
+          key={form.key("name")}
+          {...form.getInputProps("name")}
         />
 
         <Stack gap={2}>
@@ -167,19 +100,7 @@ export function PresetForm({
 
         <Stack gap="2">
           <InputLabel>Scene</InputLabel>
-          <Scenes form={form} customSceneNames={customSceneNames} />
-          <Button
-            variant="light"
-            data-testid="new-scene-button"
-            onClick={() =>
-              form.insertListItem("scenes", {
-                sceneName: SceneName.Moon,
-                sceneConfig: {},
-              })
-            }
-          >
-            Add new scene
-          </Button>
+          <ScenePicker form={form} />
         </Stack>
         <AdvancedSettings form={form} />
         <Flex mt="xs">
@@ -216,8 +137,8 @@ export function ExpirationTime({ form }: { form: UseFormReturnType<Preset> }) {
             { label: "Forever", value: "0:00" },
           ]}
           data-testid="for-time-select"
-          key={form.key(PresetField.ForTime)}
-          {...form.getInputProps(PresetField.ForTime)}
+          key={form.key("forTime")}
+          {...form.getInputProps("forTime")}
         />
       )}
       {form.values.mode === "until" && (
@@ -229,8 +150,8 @@ export function ExpirationTime({ form }: { form: UseFormReturnType<Preset> }) {
               { label: "Tomorrow", value: "1" },
             ]}
             data-testid="until-hour-select"
-            key={form.key(PresetField.UntilDay)}
-            {...form.getInputProps(PresetField.UntilDay)}
+            key={form.key("untilDay")}
+            {...form.getInputProps("untilDay")}
           />
           <Text>@</Text>
           <Select
@@ -247,8 +168,8 @@ export function ExpirationTime({ form }: { form: UseFormReturnType<Preset> }) {
               { label: "1 PM", value: "13" },
             ]}
             data-testid="until-hour-select"
-            key={form.key(PresetField.UntilHour)}
-            {...form.getInputProps(PresetField.UntilHour)}
+            key={form.key("untilHour")}
+            {...form.getInputProps("untilHour")}
           />
           <Text>:</Text>
           <Select
@@ -260,8 +181,8 @@ export function ExpirationTime({ form }: { form: UseFormReturnType<Preset> }) {
               { label: "45", value: "45" },
             ]}
             data-testid="until-minute-select"
-            key={form.key(PresetField.UntilMinute)}
-            {...form.getInputProps(PresetField.UntilMinute)}
+            key={form.key("untilMinute")}
+            {...form.getInputProps("untilMinute")}
           />
         </Flex>
       )}
@@ -275,7 +196,7 @@ export function AdvancedSettings({
   form: UseFormReturnType<Preset>;
 }) {
   return (
-    <Accordion defaultValue="Apples" variant="filled">
+    <Accordion variant="filled">
       <Accordion.Item key="hardware" value="hardware">
         <Accordion.Control>
           <Text size="sm" c="dimmed">
@@ -288,20 +209,20 @@ export function AdvancedSettings({
               <Group justify="space-between">
                 <Text size="sm">Override Display Brightness</Text>
                 <Switch
-                  checked={!!form.getValues()[PresetField.Brightness]}
+                  checked={!!form.getValues().brightness}
                   onChange={(event) => {
                     const { checked } = event.currentTarget;
                     form.setValues({
-                      [PresetField.Brightness]: checked ? 25 : null,
+                      brightness: checked ? 25 : null,
                     });
                   }}
                 />
               </Group>
               <Slider
                 label={null}
-                disabled={!form.getValues()[PresetField.Brightness]}
-                key={form.key(PresetField.Brightness)}
-                {...form.getInputProps(PresetField.Brightness)}
+                disabled={!form.getValues().brightness}
+                key={form.key("brightness")}
+                {...form.getInputProps("brightness")}
               />
             </Stack>
 
@@ -318,8 +239,8 @@ export function AdvancedSettings({
                 { label: "1 hour", value: "60" },
               ]}
               data-testid="time-adjustment-select"
-              key={form.key(PresetField.TimeAdjustmentAmount)}
-              {...form.getInputProps(PresetField.TimeAdjustmentAmount)}
+              key={form.key("timeAdjustmentAmount")}
+              {...form.getInputProps("timeAdjustmentAmount")}
             />
           </Stack>
         </Accordion.Panel>

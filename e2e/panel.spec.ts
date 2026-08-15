@@ -52,29 +52,4 @@ test.describe("Test", () => {
 
     await expect(page.getByText("Preset 123 until...")).toBeVisible();
   });
-
-  test("activating a custom preset and clearing it", async ({ page }) => {
-    await page.goto("http://localhost:3000");
-
-    await page.getByRole("button", { name: "Custom" }).click();
-
-    await expect(page.getByText("Set custom preset")).toBeVisible();
-
-    await page.getByTestId("change-expiration").click();
-
-    await page.getByTestId("for-time-select").click();
-    await page.getByRole("option", { name: "Forever", exact: true }).click();
-
-    await page.getByRole("button", { name: "Apply now" }).click();
-
-    await page.getByTestId("preset-form").waitFor({ state: "detached" });
-
-    await expect(page.getByText("Custom until...")).toBeVisible();
-    await expect(page.getByText("forever")).toBeVisible();
-
-    await page.getByTestId("panel-menu").click();
-    await page.getByRole("menuitem", { name: "Clear Panel" }).click();
-
-    await expect(page.getByRole("button", { name: "Moon" })).toBeVisible();
-  });
 });

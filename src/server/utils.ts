@@ -9,12 +9,6 @@ function log(message: string) {
   console.log(`[APP] ${message}`);
 }
 
-export function customScenesPath() {
-  return process.env.NODE_ENV === "production"
-    ? "/var/lib/moonclock/custom_scenes"
-    : "./custom_scenes";
-}
-
 export function databaseFile() {
   return process.env.NODE_ENV === "production"
     ? "/var/lib/moonclock/database.json"

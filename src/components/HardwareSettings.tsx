@@ -1,6 +1,6 @@
 import { filterQueuedFramesSnapshotsBySeconds } from "@/helpers/filterQueuedFramesSnapshotsBySeconds";
 import { reloadHardwareScene } from "@/server/actions/hardware";
-import { HardwareState, SceneName } from "@/types";
+import { HardwareState } from "@/types";
 import { LineChart } from "@mantine/charts";
 import {
   Button,
@@ -12,7 +12,7 @@ import {
   Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { PresetPreview } from "./PresetPreview";
+import { HardwarePreview } from "./HardwarePreview";
 
 function getTimeFromDate(date: Date) {
   const minutes = date.getMinutes();
@@ -48,35 +48,18 @@ export function HardwareSettings({
       <Stack>
         <Grid>
           <Grid.Col span={3}>
-            <PresetPreview
-              preset={{
-                name: "hardware",
-                mode: "for",
-                forTime: "0:00",
-                untilDay: "0",
-                untilHour: "0",
-                untilMinute: "0",
-                scenes: [
-                  {
-                    sceneName: SceneName.Hardware,
-                    sceneConfig: { coordinates: hardwareState.virtualPanel },
-                  },
-                ],
-              }}
-            />
+            <HardwarePreview coordinates={hardwareState.virtualPanel} />
           </Grid.Col>
           <Grid.Col span={9}>
             <Grid gap={0}>
               <Grid.Col span={4}>
                 <Text c="dimmed" size="sm" fw="bold">
-                  Scenes:
+                  Scene:
                 </Text>
               </Grid.Col>
               <Grid.Col span={8}>
                 <Text c="dimmed" size="sm">
-                  {preset?.scenes
-                    ?.map(({ sceneName }: any) => sceneName)
-                    .join(", ")}
+                  {preset?.sceneId}
                 </Text>
               </Grid.Col>
               <Grid.Col span={4}>

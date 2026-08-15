@@ -1,12 +1,11 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { Panel, PanelField, SceneName } from "@/types";
+import { Panel } from "@/types";
 import {
   Accordion,
   Button,
   Divider,
-  Group,
   NumberInput,
   Select,
   Slider,
@@ -21,10 +20,9 @@ import { showNotification } from "@mantine/notifications";
 
 interface SettingsProps {
   panel: Panel;
-  customSceneNames: string[];
 }
 
-export function Settings({ panel, customSceneNames }: SettingsProps) {
+export function Settings({ panel }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
@@ -51,8 +49,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           label="Name"
           required
           data-testid="panel-name-input"
-          key={form.key(PanelField.Name)}
-          {...form.getInputProps(PanelField.Name)}
+          key={form.key("name")}
+          {...form.getInputProps("name")}
         />
         <Select
           placeholder="Time increment"
@@ -70,52 +68,9 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           ]}
           data-testid="time-adjustment-select"
           required
-          key={form.key(PanelField.TimeAdjustmentAmount)}
-          {...form.getInputProps(PanelField.TimeAdjustmentAmount)}
+          key={form.key("timeAdjustmentAmount")}
+          {...form.getInputProps("timeAdjustmentAmount")}
         />
-        {form.getValues().defaultPreset.scenes.map((item, index) => (
-          <Group key={index} w="100%">
-            <Select
-              placeholder="Scene"
-              variant="filled"
-              style={{ flex: 1 }}
-              label="Default Scene"
-              description="What will be shown when nothing is active"
-              data={[
-                {
-                  group: "Built-in Scenes",
-                  items: [SceneName.Blank, SceneName.Moon, SceneName.Twinkle],
-                },
-                {
-                  group: "Custom Scenes",
-                  items: customSceneNames,
-                },
-              ]}
-              data-testid="default-scene-select"
-              required
-              key={form.key(`defaultPreset.scenes.${index}.sceneName`)}
-              {...form.getInputProps(`defaultPreset.scenes.${index}.sceneName`)}
-            />
-          </Group>
-        ))}
-        <Divider />
-
-        <Title order={5} mt="md">
-          AI Settings
-        </Title>
-
-        <TextInput
-          placeholder="sk-ant-..."
-          variant="filled"
-          style={{ flex: 1 }}
-          label="Anthropic API Key"
-          description="Required for AI pixel art generation"
-          type="password"
-          data-testid="anthropic-api-key-input"
-          key={form.key(PanelField.AnthropicApiKey)}
-          {...form.getInputProps(PanelField.AnthropicApiKey)}
-        />
-
         <Divider />
 
         <Title order={5} mt="md">
@@ -133,8 +88,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           ]}
           allowDeselect={false}
           data-testid="update-channel-select"
-          key={form.key(PanelField.UpdateChannel)}
-          {...form.getInputProps(PanelField.UpdateChannel)}
+          key={form.key("updateChannel")}
+          {...form.getInputProps("updateChannel")}
         />
 
         <Divider />
@@ -147,8 +102,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
           <Text size="sm">Display Brightness</Text>
           <Slider
             label={null}
-            key={form.key(PanelField.Brightness)}
-            {...form.getInputProps(PanelField.Brightness)}
+            key={form.key("brightness")}
+            {...form.getInputProps("brightness")}
           />
         </Stack>
 
@@ -172,8 +127,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                   </Stack>
                   <Slider
                     max={1000}
-                    key={form.key(PanelField.PwnLsbNanoseconds)}
-                    {...form.getInputProps(PanelField.PwnLsbNanoseconds)}
+                    key={form.key("pwnLsbNanoseconds")}
+                    {...form.getInputProps("pwnLsbNanoseconds")}
                   />
                 </Stack>
 
@@ -190,8 +145,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                   <Slider
                     max={4}
                     min={0}
-                    key={form.key(PanelField.GpioSlowdown)}
-                    {...form.getInputProps(PanelField.GpioSlowdown)}
+                    key={form.key("gpioSlowdown")}
+                    {...form.getInputProps("gpioSlowdown")}
                   />
                 </Stack>
 
@@ -206,8 +161,8 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                   <Slider
                     max={11}
                     min={1}
-                    key={form.key(PanelField.PwmBits)}
-                    {...form.getInputProps(PanelField.PwmBits)}
+                    key={form.key("pwmBits")}
+                    {...form.getInputProps("pwmBits")}
                   />
                 </Stack>
 
@@ -221,27 +176,27 @@ export function Settings({ panel, customSceneNames }: SettingsProps) {
                     { label: "Adafruit HAT (PWM)", value: "adafruit-hat-pwm" },
                     { label: "Regular (Pi 1)", value: "regular-pi1" },
                   ]}
-                  key={form.key(PanelField.HardwareMapping)}
-                  {...form.getInputProps(PanelField.HardwareMapping)}
+                  key={form.key("hardwareMapping")}
+                  {...form.getInputProps("hardwareMapping")}
                 />
 
                 <Stack gap={4}>
                   <Switch
                     label="Enable Button"
                     description="Enable GPIO button to cycle through pinned presets"
-                    key={form.key(PanelField.ButtonEnabled)}
-                    {...form.getInputProps(PanelField.ButtonEnabled, {
+                    key={form.key("buttonEnabled")}
+                    {...form.getInputProps("buttonEnabled", {
                       type: "checkbox",
                     })}
                   />
-                  {form.getValues()[PanelField.ButtonEnabled] && (
+                  {form.getValues().buttonEnabled && (
                     <NumberInput
                       label="Button GPIO Pin"
                       description="GPIO chip-relative offset for the button (e.g. 528 for BCM GPIO16)"
                       variant="filled"
                       min={0}
-                      key={form.key(PanelField.ButtonGpioPin)}
-                      {...form.getInputProps(PanelField.ButtonGpioPin)}
+                      key={form.key("buttonGpioPin")}
+                      {...form.getInputProps("buttonGpioPin")}
                     />
                   )}
                 </Stack>

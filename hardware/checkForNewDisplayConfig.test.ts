@@ -3,7 +3,8 @@ import assert from "node:assert";
 import { defaultData, getData, setData } from "@/server/db";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import timekeeper from "timekeeper";
-import { Preset, SceneName } from "@/types";
+import { Preset } from "@/types";
+import { SceneId } from "@/scenes/types";
 
 describe("checkForUpdates", () => {
   beforeEach(() => {
@@ -24,21 +25,14 @@ describe("checkForUpdates", () => {
 
         const currentHardwarePreset = {
           name: "bedtime",
-          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+          sceneId: SceneId.Moon,
         } as Preset;
 
-        const { displayConfig, preset } =
+        const { scene, preset } =
           (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
 
-        assert.equal(preset?.scenes[0].sceneName, "blank");
-        assert.deepEqual(displayConfig, [
-          {
-            macroConfig: {
-              backgroundColor: "#000000",
-            },
-            macroName: "box",
-          },
-        ]);
+        assert.equal(preset?.sceneId, "blank");
+        assert.equal(typeof scene?.draw, "function");
       });
     });
   });
@@ -51,7 +45,7 @@ describe("checkForUpdates", () => {
 
         const currentHardwarePreset = {
           name: "bedtime",
-          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+          sceneId: SceneId.Moon,
         } as Preset;
 
         setData({
@@ -63,13 +57,12 @@ describe("checkForUpdates", () => {
           panel: defaultData.panel,
         });
 
-        const { displayConfig } =
-          (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
+        const result = await checkForNewDisplayConfig(currentHardwarePreset);
 
         const { scheduledPreset } = await getData();
 
-        assert.equal(scheduledPreset?.preset?.scenes[0].sceneName, "moon");
-        assert.equal(displayConfig, null);
+        assert.equal(scheduledPreset?.preset?.sceneId, "moon");
+        assert.equal(result, null);
       });
     });
 
@@ -80,7 +73,7 @@ describe("checkForUpdates", () => {
 
         const currentHardwarePreset = {
           name: "bedtime",
-          scenes: [{ sceneName: SceneName.Moon, sceneConfig: {} }],
+          sceneId: SceneId.Moon,
         } as Preset;
 
         setData({
@@ -92,21 +85,14 @@ describe("checkForUpdates", () => {
           panel: defaultData.panel,
         });
 
-        const { displayConfig, preset } =
+        const { scene, preset } =
           (await checkForNewDisplayConfig(currentHardwarePreset)) || {};
 
         const { scheduledPreset } = await getData();
 
         assert.equal(scheduledPreset, null);
         assert.deepEqual(preset, defaultData.panel.defaultPreset);
-        assert.deepEqual(displayConfig, [
-          {
-            macroConfig: {
-              backgroundColor: "#000000",
-            },
-            macroName: "box",
-          },
-        ]);
+        assert.equal(typeof scene?.draw, "function");
       });
     });
   });

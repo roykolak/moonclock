@@ -9,7 +9,7 @@ import {
   Group,
   Text,
 } from "@mantine/core";
-import { Preset, PresetField } from "../types";
+import { Preset } from "../types";
 import { PresetPreview } from "./PresetPreview";
 import { IconPin, IconPinFilled } from "@tabler/icons-react";
 import { updatePreset } from "@/server/actions/presets";
@@ -46,11 +46,11 @@ export function PresetItem({
             onClick={() => {
               updatePreset({
                 ...preset,
-                pinned: !(preset[PresetField.Pinned] || false),
+                pinned: !(preset.pinned || false),
               });
             }}
           >
-            {preset[PresetField.Pinned] ? <IconPinFilled /> : <IconPin />}
+            {preset.pinned ? <IconPinFilled /> : <IconPin />}
           </ActionIcon>
           <Button size="sm" variant="light" onClick={onEditClick}>
             Edit

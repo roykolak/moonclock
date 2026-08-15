@@ -1,20 +1,16 @@
 import { getData, setData } from "@/server/db";
-import { Macro } from "../src/display-engine";
-import { Preset, PresetField } from "@/types";
-import { transformPresetToDisplayMacros } from "@/server/actions/transformPresetToDisplayMacros";
+import { Scene } from "../src/display-engine";
+import { Preset } from "@/types";
+import { getScene } from "@/helpers/getScene";
 
 function sceneMatch(preset1: Preset | null, preset2: Preset | null) {
-  return JSON.stringify(preset1?.scenes) === JSON.stringify(preset2?.scenes);
-}
-
-function getSceneName(preset: Preset | null) {
-  return preset?.scenes?.[0].sceneName;
+  return preset1?.sceneId === preset2?.sceneId;
 }
 
 export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
   preset: Preset;
   renderedAt: string;
-  displayConfig: Macro[];
+  scene: Scene | null;
 } | null> {
   try {
     const { scheduledPreset, panel } = await getData();
@@ -22,16 +18,14 @@ export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
     if (!scheduledPreset?.preset) {
       if (!sceneMatch(currentPreset, panel.defaultPreset)) {
         console.log(
-          `[HARDWARE] Default Preset change, rerendering (${getSceneName(
-            currentPreset
-          )} to ${getSceneName(panel.defaultPreset)})`
+          `[HARDWARE] Default Preset change, rerendering (${currentPreset?.sceneId} to ${panel.defaultPreset.sceneId})`,
         );
 
         const preset = panel.defaultPreset;
         const renderedAt = new Date().toJSON();
-        const displayConfig = await transformPresetToDisplayMacros(preset);
+        const scene = getScene(preset.sceneId);
 
-        return { displayConfig, preset, renderedAt };
+        return { scene, preset, renderedAt };
       }
 
       return null;
@@ -42,30 +36,30 @@ export async function checkForNewDisplayConfig(currentPreset: Preset): Promise<{
       new Date().getTime() > new Date(scheduledPreset.endTime).getTime()
     ) {
       console.log(
-        `[HARDWARE] ${scheduledPreset.preset.name} has expired, clearing`
+        `[HARDWARE] ${scheduledPreset.preset.name} has expired, clearing`,
       );
 
       const preset = panel.defaultPreset;
       const renderedAt = new Date().toJSON();
-      const displayConfig = await transformPresetToDisplayMacros(preset);
+      const scene = getScene(preset.sceneId);
 
       await setData({ scheduledPreset: null });
 
-      return { displayConfig, preset, renderedAt };
+      return { scene, preset, renderedAt };
     }
 
     if (!sceneMatch(scheduledPreset.preset, currentPreset)) {
       console.log(
         `[HARDWARE] Rendering ${
-          scheduledPreset.preset[PresetField.Name]
-        } until ${scheduledPreset.endTime}`
+          scheduledPreset.preset.name
+        } until ${scheduledPreset.endTime}`,
       );
 
       const preset = scheduledPreset.preset;
       const renderedAt = new Date().toJSON();
-      const displayConfig = await transformPresetToDisplayMacros(preset);
+      const scene = getScene(preset.sceneId);
 
-      return { displayConfig, preset, renderedAt };
+      return { scene, preset, renderedAt };
     }
   } catch (e) {
     console.log("Error!", e);

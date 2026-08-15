@@ -15,14 +15,9 @@ import {
 interface PresetsListProps {
   presets: Preset[];
   formattedEndTimes: string[];
-  customSceneNames: string[];
 }
 
-export function PresetsList({
-  presets,
-  formattedEndTimes,
-  customSceneNames,
-}: PresetsListProps) {
+export function PresetsList({ presets, formattedEndTimes }: PresetsListProps) {
   const [presetModalOpen, presetModalHandlers] = useDisclosure();
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
 
@@ -37,7 +32,6 @@ export function PresetsList({
         onClose={presetModalHandlers.close}
       >
         <PresetForm
-          customSceneNames={customSceneNames}
           preset={selectedPreset || null}
           action={async (preset) => {
             if (selectedPreset) {

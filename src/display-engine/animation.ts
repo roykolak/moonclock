@@ -1,24 +1,33 @@
-let lastTime = 0;
+import { AnimationConfig } from "./types";
 
-export function getAnimationFrame(
-  callback: (timestamp: number) => void,
-  options: {
-    framesPerSecond: number;
-  }
-) {
+/** A `setTimeout`-based frame scheduler, one instance per animated scene.
+ *
+ *  Each instance tracks its own `lastTime`, so concurrent scenes pace
+ *  independently and each scene's `framesPerSecond` is honored correctly. */
+export function createAnimationLoop(options: AnimationConfig) {
   const frameRate = 1000 / options.framesPerSecond;
+  let lastTime = 0;
+  let timeoutId: NodeJS.Timeout | undefined;
+  let stopped = false;
 
-  const currentTime = performance.now();
-  const timeToCall = Math.min(frameRate - (currentTime - lastTime), frameRate);
+  return {
+    schedule(callback: () => void) {
+      if (stopped) return;
 
-  const timeoutId = setTimeout(() => {
-    lastTime = performance.now();
-    callback(lastTime);
-  }, timeToCall);
+      const currentTime = performance.now();
+      const timeToCall = Math.max(
+        0,
+        Math.min(frameRate - (currentTime - lastTime), frameRate),
+      );
 
-  return timeoutId;
-}
-
-export function stopAnimationFrame(id: NodeJS.Timeout) {
-  clearTimeout(id);
+      timeoutId = setTimeout(() => {
+        lastTime = performance.now();
+        callback();
+      }, timeToCall);
+    },
+    stop() {
+      stopped = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    },
+  };
 }
