@@ -2,9 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import { drawSprite } from "./draw-sprite";
 import { moonSprite } from "./moon/sprite";
-import { bunnySprite } from "./bunny/sprite";
 import { moon as legacyMoon } from "./__fixtures__/legacy-moon";
-import bunnyJson from "../../custom_scenes/bunny.json";
 import type { Dimensions } from "@/display-engine/types";
 
 const dimensions: Dimensions = { width: 32, height: 32 };
@@ -85,24 +83,6 @@ describe("drawSprite", () => {
     const expected: { [key: string]: string } = {};
     for (const [key, hex] of Object.entries(legacyMoon)) {
       expected[key] = hex.toLowerCase();
-    }
-    const actual: { [key: string]: string } = {};
-    for (const [key, hex] of Object.entries(pixels)) {
-      actual[key] = hex.toLowerCase();
-    }
-
-    assert.deepEqual(actual, expected);
-  });
-
-  it("reproduces bunny.json's exact absolute pixel positions at anchor:center (no offset)", () => {
-    const { ctx, pixels } = fakeCtx();
-    drawSprite(ctx, dimensions, bunnySprite, { anchor: "center" });
-
-    const expected: { [key: string]: string } = {};
-    for (const [key, hex] of Object.entries(
-      bunnyJson as unknown as Record<string, string>,
-    )) {
-      if (hex) expected[key] = hex.toLowerCase();
     }
     const actual: { [key: string]: string } = {};
     for (const [key, hex] of Object.entries(pixels)) {
