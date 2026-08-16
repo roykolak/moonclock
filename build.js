@@ -51,6 +51,17 @@ rewriteNativeModulePaths("dist/hardware/test-matrix.cjs");
 
 console.log("\n -> Smoke test script built");
 
+// standalone color-swatch tool, bundled the same way as the smoke test so it
+// reuses the prebuilt native module in dist/hardware/
+await esbuild.build({
+  ...esbuildOptions,
+  entryPoints: ["hardware/color-swatches.ts"],
+  outfile: "dist/hardware/color-swatches.cjs",
+});
+rewriteNativeModulePaths("dist/hardware/color-swatches.cjs");
+
+console.log("\n -> Color-swatch tool built");
+
 fs.cpSync("hardware/prebuilt", "dist/hardware", { recursive: true });
 
 console.log("\n -> Copied prebuilt native modules to dist/hardware");

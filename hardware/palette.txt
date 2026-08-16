@@ -1,0 +1,50 @@
+# Starter palette for hardware/color-swatches.cjs
+# One color per line; trailing "# ..." and blank lines are ignored.
+#   sudo node color-swatches.cjs --file=palette.txt            # grid
+#   sudo node color-swatches.cjs --file=palette.txt --mode=cycle
+#
+# Grouped by hue with a few saturations/luminances each, so you can see which
+# shades survive the panel's gamma at your brightness. Dim/dark shades (the
+# browns and grays) are the usual troublemakers — watch those closely.
+
+# reds
+#ff3030   # punchy red
+#ff8080   # soft red (bunny fur)
+#b01818   # deep red
+
+# oranges / browns
+#ff8c1a   # orange
+#ffb066   # peach
+#81450e   # brown (bunny) — notoriously muddy on LEDs
+#5a3208   # dark brown
+
+# yellows
+#ffe000   # yellow
+#fff59b   # pale yellow
+
+# greens
+#33d13a   # green
+#8ef08e   # mint
+#1f7a2a   # forest — test low-luminance green
+
+# cyans / teals
+#22d3d3   # cyan
+#0f8f8f   # teal
+
+# blues
+#3355ff   # blue
+#8aa6ff   # sky
+#132a9c   # navy — test dark blue
+
+# purples / magentas
+#a24bff   # violet
+#ff4bd6   # magenta
+
+# pinks
+#ff9ecb   # pink
+
+# neutrals — luminance ladder, worst case for LEDs
+#ffffff   # white
+#fff2d6   # warm white
+#888888   # mid gray
+#333333   # dark gray
