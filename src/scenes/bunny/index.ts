@@ -69,22 +69,20 @@ const eyesUpSprite: Sprite = {
   pixels: eyesUpPixels,
 };
 
-// --- Yawn ------------------------------------------------------------------
-// On the same "stir" beat as the eyes, the nose lifts a row and the resting
-// `‿` smile gapes into a small open oval — a tiny yawn as the loaf inhales.
-// The planted nose (13:18, 14:18) is repainted as the mouth's new top row,
-// closing the smile into a ring, while a fresh nose is drawn one row higher.
-// So this patch changes only 4 pixels over the grounded cat.
-const NOSE_COLOR = bunnySprite.pixels["13:18"];
-const MOUTH_COLOR = bunnySprite.pixels["12:19"];
-const yawnSprite: Sprite = {
+// --- Inhale mouth ----------------------------------------------------------
+// While the crown is lifted (the inhale), the resting `‿` smile grows two
+// pixels downward, deepening into a small open mouth — as if the loaf is
+// drawing a slow breath. The nose and smile stay planted; this patch only
+// adds the extra depth below the mouth. The added pixels use a lighter tan
+// than the #6e5238 mouth so they read as the softer inner-mouth opening
+// rather than another line of the smile.
+const INHALE_COLOR = "#b98f66";
+const inhaleSprite: Sprite = {
   width: bunnySprite.width,
   height: bunnySprite.height,
   pixels: {
-    "13:17": NOSE_COLOR, // nose lifted one row...
-    "14:17": NOSE_COLOR,
-    "13:18": MOUTH_COLOR, // ...its old cells become the open mouth's top edge
-    "14:18": MOUTH_COLOR,
+    "13:21": INHALE_COLOR,
+    "14:21": INHALE_COLOR,
   },
 };
 
@@ -138,7 +136,7 @@ interface BunnyState {
   full: HTMLCanvasElement;
   back: HTMLCanvasElement;
   eyes: HTMLCanvasElement;
-  yawn: HTMLCanvasElement;
+  inhale: HTMLCanvasElement;
 }
 
 async function prerender(
@@ -165,13 +163,13 @@ export const bunnyScene: Scene<BunnyState> = {
   framesPerSecond: 12,
   async init({ createCanvas }) {
     // Pre-render each layer once: the whole cat, the crown pixels that
-    // breathe, the raised-eye patch, and the yawn patch. Redrawing ~412
-    // pixels every frame is wasteful.
+    // breathe, the raised-eye patch, and the inhale-mouth patch. Redrawing
+    // ~412 pixels every frame is wasteful.
     const full = await prerender(createCanvas, bunnySprite);
     const back = await prerender(createCanvas, backSprite);
     const eyes = await prerender(createCanvas, eyesUpSprite);
-    const yawn = await prerender(createCanvas, yawnSprite);
-    return { full, back, eyes, yawn };
+    const inhale = await prerender(createCanvas, inhaleSprite);
+    return { full, back, eyes, inhale };
   },
   draw({ ctx, dimensions, elapsed, state }) {
     const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
@@ -184,6 +182,7 @@ export const bunnyScene: Scene<BunnyState> = {
 
     // Layer A: the planted cat. Layer B: the raised crown, one row up at the
     // inhale peak (layer A backs the row it lifts from, so no gap appears).
+    // Layer C: the mouth deepens open through the same inhale.
     ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
     if (breath) {
       ctx.drawImage(
@@ -191,17 +190,16 @@ export const bunnyScene: Scene<BunnyState> = {
         ox,
         oy - breath,
       );
+      ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
     }
 
-    // Layer C: the eyes, lifted a beat after the crown and settled a beat
+    // Layer D: the eyes, lifted a beat after the crown and settled a beat
     // before it drops. The patch is pre-baked one row up, so no extra offset.
-    // Layer D: the yawn (nose up + mouth agape) rides the same window.
     const cyclePos =
       (((elapsed % BREATH_PERIOD_MS) + BREATH_PERIOD_MS) % BREATH_PERIOD_MS) /
       BREATH_PERIOD_MS;
     if (cyclePos >= EYE_RISE && cyclePos < EYE_FALL) {
       ctx.drawImage(state.eyes as unknown as CanvasImageSource, ox, oy);
-      ctx.drawImage(state.yawn as unknown as CanvasImageSource, ox, oy);
     }
 
     for (const z of zList(elapsed)) drawZ(ctx, z);
