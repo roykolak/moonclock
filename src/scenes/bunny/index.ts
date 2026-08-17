@@ -10,15 +10,18 @@ import { SceneId } from "../types";
 const BREATH_PERIOD_MS = 4200;
 
 // --- Breath staging --------------------------------------------------------
-// The inhale unfolds in two ordered beats and the exhale replays them in
-// reverse. Each beat is an on/off window centred on the peak of the breath,
-// and the windows are NESTED — the mouth's is wider, the eyes' narrower — so
-// they switch on in order and off in reverse:
-//   1. mouth opens   (wider window   → first on,  last off)
-//   2. eyes lift      (narrower       → last on,   first off)
-// giving p:0→1 the sequence mouth → eyes … eyes → mouth.
-const MOUTH_ON = 0.12; // mouth opens at p; closes at 1 - MOUTH_ON
-const EYES_ON = 0.4; //   eyes lift at p;  lower at 1 - EYES_ON
+// The breath is a four-beat sequence, each beat keyed to a fraction of the
+// cycle. The mouth and eye windows OVERLAP in a staggered "canon" rather than
+// nesting, so the order over p:0→1 is:
+//   1. mouth opens
+//   2. eyes rise
+//   3. mouth closes   (a short beat after the eyes rise)
+//   4. eyes fall
+// then the face rests until the cycle loops.
+const MOUTH_OPEN = 0.12; // mouth opens
+const EYES_RISE = 0.4; //   eyes rise
+const MOUTH_CLOSE = 0.5; //  mouth closes (just after the eyes rise)
+const EYES_FALL = 0.78; //   eyes fall
 
 // --- Eyes ------------------------------------------------------------------
 // The two closed `‿‿` eyes (sprite-box coords). They are the innermost beat
@@ -168,13 +171,13 @@ export const bunnyScene: Scene<BunnyState> = {
     // Layer A: the planted cat, always drawn first — it never translates.
     ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
 
-    // Two nested inhale beats (see MOUTH_ON/EYES_ON). Because the windows are
-    // nested and centred on the peak, they light up in order on the inhale
-    // (mouth → eyes) and unwind in reverse on the exhale (eyes → mouth).
-    if (cyclePos >= MOUTH_ON && cyclePos < 1 - MOUTH_ON) {
+    // Four-beat breath (see the *_OPEN/*_RISE/*_CLOSE/*_FALL thresholds): the
+    // mouth opens, the eyes rise, the mouth closes just after, then the eyes
+    // fall. The mouth and eye windows overlap, so the beats stagger.
+    if (cyclePos >= MOUTH_OPEN && cyclePos < MOUTH_CLOSE) {
       ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
     }
-    if (cyclePos >= EYES_ON && cyclePos < 1 - EYES_ON) {
+    if (cyclePos >= EYES_RISE && cyclePos < EYES_FALL) {
       ctx.drawImage(state.eyes as unknown as CanvasImageSource, ox, oy);
     }
 
