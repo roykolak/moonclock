@@ -21,7 +21,7 @@ const BACK_KEYS = new Set([
   "15:10",
   "16:10",
 ]);
-const BREATH_PERIOD_MS = 2600;
+const BREATH_PERIOD_MS = 4200;
 
 const backSprite: Sprite = {
   width: bunnySprite.width,
