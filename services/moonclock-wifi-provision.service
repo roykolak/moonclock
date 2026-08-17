@@ -1,0 +1,19 @@
+[Unit]
+Description=Moonclock WiFi Provisioning ({VERSION})
+After=NetworkManager.service
+Wants=NetworkManager.service
+# Own port 80 before the web app starts, so the captive portal can bind it.
+Before=moonclock-app.service
+
+[Service]
+User=root
+Group=root
+Type=oneshot
+# wifi-connect blocks until the user finishes setup, which can take minutes.
+# Without this, systemd's default start timeout would kill it mid-setup.
+TimeoutStartSec=infinity
+WorkingDirectory=/usr/local/bin/moonclock/current
+ExecStart=/usr/local/bin/moonclock/current/bin/wifi-provision
+
+[Install]
+WantedBy=default.target

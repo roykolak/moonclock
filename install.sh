@@ -61,6 +61,7 @@ log " -> Copying services to /etc/systemd/system/"
 
 sudo cp services/moonclock-app.service /etc/systemd/system/
 sudo cp services/moonclock-hardware.service /etc/systemd/system/
+sudo cp services/moonclock-wifi-provision.service /etc/systemd/system/
 sudo cp services/moonclock-update-checker.service /etc/systemd/system/
 sudo cp services/moonclock-update-checker.timer /etc/systemd/system/
 
@@ -72,6 +73,7 @@ log " -> Enabling services to start on restart"
 
 sudo systemctl enable moonclock-app
 sudo systemctl enable moonclock-hardware
+sudo systemctl enable moonclock-wifi-provision
 sudo systemctl enable moonclock-update-checker.timer
 
 log " -> Seeding database file"

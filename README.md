@@ -66,7 +66,7 @@ Wire the panel according to the wiring chart [here](https://github.com/hzeller/r
 
 ## Installation
 
-Install the latest raspbian (not desktop verion!) on your pi and join it to your network. Then ssh into the machine and run...
+Install the latest raspbian (not desktop verion!) on your pi. Joining it to WiFi up front is optional — you can also let Moonclock walk you through it after it's running (see [WiFi setup](#wifi-setup)). Then ssh into the machine and run...
 
 ```
 curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash
@@ -78,6 +78,7 @@ Specifically, it...
 
 - Disables onboard sound, which `hzeller/rpi-rgb-led-matrix` [requires](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound)
 - Configures GPIO 16 and its udev rule, for the optional external button
+- Installs `wifi-connect` and NetworkManager for the WiFi setup portal
 - Downloads and installs the latest release
 - Reboots to apply the boot config
 
@@ -98,6 +99,28 @@ To start Moonclock immediate run...
 ```
 sudo mc start
 ```
+
+## WiFi setup
+
+If the pi boots without a network connection, Moonclock guides you through joining
+one — no keyboard, screen, or ssh required:
+
+1. The LED panel shows a pulsing amber **WiFi "searching" animation** — its
+   signal for "I need to be set up."
+2. On your phone, open WiFi settings and join the open **Moonclock** network. A
+   setup page pops up automatically.
+3. Pick your home WiFi, enter its password, and submit.
+4. The pi connects, the setup hotspot disappears, and the panel scrolls the IP
+   address where you can reach the app.
+
+Under the hood this is [balena wifi-connect](https://github.com/balena-os/wifi-connect)
+running a captive portal, coordinated with the panel by the
+`moonclock-wifi-provision` service. Once the pi is connected, the web app starts
+as usual.
+
+**Changing networks later** (e.g. you moved): press and hold the external button
+for ~5 seconds. The panel shows a "Reset WiFi?" countdown; keep holding and the
+pi forgets its saved networks and reboots back into the setup flow above.
 
 ## Updating
 

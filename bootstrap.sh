@@ -98,6 +98,59 @@ else
   echo "   -> gpio udev rule exists, skipping"
 fi
 
+echo " -> Setting up WiFi provisioning (NetworkManager + wifi-connect)"
+
+# NetworkManager manages WiFi on Raspberry Pi OS Bookworm (already present on a
+# stock image; installed here defensively). dnsmasq-base gives NetworkManager
+# the DNS/DHCP it needs to run the setup hotspot's captive portal.
+apt-get install -y network-manager dnsmasq-base
+
+# balena wifi-connect: brings up an open hotspot + captive portal when the Pi is
+# offline so a phone can hand it WiFi credentials. Binary and web UI ship as
+# separate release assets. See bin/wifi-provision for how it's launched at boot.
+WC_VERSION="v4.11.84"
+WC_BIN="/usr/local/sbin/wifi-connect"
+WC_UI_DIR="/usr/local/share/wifi-connect/ui"
+
+if [ ! -x "$WC_BIN" ]; then
+  case "$(uname -m)" in
+    aarch64)
+      WC_ASSET="wifi-connect-aarch64-unknown-linux-gnu.tar.gz" ;;
+    armv7l | armv6l)
+      WC_ASSET="wifi-connect-armv7-unknown-linux-gnueabihf.tar.gz" ;;
+    *)
+      WC_ASSET="" ;;
+  esac
+
+  if [ -z "$WC_ASSET" ]; then
+    echo "   -> Unsupported architecture $(uname -m) for wifi-connect; skipping."
+    echo "   -> WiFi setup portal will be unavailable, but Moonclock will still run."
+  else
+    WC_BASE="https://github.com/balena-os/wifi-connect/releases/download/$WC_VERSION"
+
+    curl -fsSL -o "$WORK_DIR/wifi-connect.tar.gz" "$WC_BASE/$WC_ASSET"
+    curl -fsSL -o "$WORK_DIR/wifi-connect-ui.tar.gz" "$WC_BASE/wifi-connect-ui.tar.gz"
+
+    tar -xzf "$WORK_DIR/wifi-connect.tar.gz" -C "$WORK_DIR"
+    WC_EXTRACTED="$(find "$WORK_DIR" -type f -name wifi-connect | head -n1)"
+    install -m 0755 "$WC_EXTRACTED" "$WC_BIN"
+
+    # The UI archive may nest its files under a top-level ui/ directory; flatten
+    # so index.html ends up directly in $WC_UI_DIR.
+    rm -rf "$WC_UI_DIR"
+    mkdir -p "$WC_UI_DIR"
+    tar -xzf "$WORK_DIR/wifi-connect-ui.tar.gz" -C "$WC_UI_DIR"
+    if [ -d "$WC_UI_DIR/ui" ]; then
+      mv "$WC_UI_DIR/ui/"* "$WC_UI_DIR/"
+      rmdir "$WC_UI_DIR/ui"
+    fi
+
+    echo "   -> Installed wifi-connect $WC_VERSION"
+  fi
+else
+  echo "   -> wifi-connect already installed, skipping"
+fi
+
 echo "Downloading Moonclock"
 
 curl -fsSL -o "$WORK_DIR/release.tar.gz" "$DOWNLOAD_URL"
