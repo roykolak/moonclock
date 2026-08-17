@@ -61,8 +61,10 @@ const EYE_KEYS = [
 
 // A patch that both erases the planted eyes (backfilling face cream) and
 // repaints them one row higher, so drawing it over the grounded cat lifts the
-// eyes 1px with no doubled arc. Built from the sprite's own colours.
-const EYE_COLOR = bunnySprite.pixels[EYE_KEYS[0]];
+// eyes 1px with no doubled arc. The lifted eyes use a lighter warm brown than
+// the resting `#2b1d0f` line, so they soften as they rise — reading as a
+// gentle stir toward waking rather than the hard sleeping line.
+const EYE_UP_COLOR = "#6e5238";
 const FACE_FILL = bunnySprite.pixels["13:13"];
 const eyesUpPixels: Record<string, string> = {};
 for (const k of EYE_KEYS) {
@@ -71,7 +73,7 @@ for (const k of EYE_KEYS) {
 }
 for (const k of EYE_KEYS) {
   const [x, y] = k.split(":").map(Number);
-  eyesUpPixels[`${x}:${y - 1}`] = EYE_COLOR; // repaint one row up
+  eyesUpPixels[`${x}:${y - 1}`] = EYE_UP_COLOR; // repaint one row up, lighter
 }
 const eyesUpSprite: Sprite = {
   width: bunnySprite.width,
