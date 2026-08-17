@@ -4,45 +4,21 @@ import type { Scene, Sprite } from "../types";
 import { SceneId } from "../types";
 
 // --- Breathing -------------------------------------------------------------
-// Only the loaf's crown rises. These are the top-of-head pixels (sprite-box
-// coords); at the inhale peak they're painted one row higher over the planted
-// cat, so the crown gently lifts while the ears, face, paws and cushion stay
-// put. The full sprite is always drawn at its grounded origin first, so the
-// whole cat never translates up and down — only the crown moves.
-const BACK_KEYS = new Set([
-  "12:9",
-  "13:9",
-  "14:9",
-  "15:9",
-  "11:10",
-  "12:10",
-  "13:10",
-  "14:10",
-  "15:10",
-  "16:10",
-]);
+// The loaf never translates — the "breath" is carried entirely by the face:
+// the mouth opens and the eyes stir. The full sprite is always drawn at its
+// grounded origin so nothing bounces up and down.
 const BREATH_PERIOD_MS = 4200;
 
 // --- Breath staging --------------------------------------------------------
-// The inhale unfolds in three ordered beats and the exhale replays them in
+// The inhale unfolds in two ordered beats and the exhale replays them in
 // reverse. Each beat is an on/off window centred on the peak of the breath,
-// and the windows are NESTED — the mouth's is widest, the eyes' narrowest —
-// so they switch on in order and off in reverse:
-//   1. mouth opens   (widest window  → first on,  last off)
-//   2. chest rises    (middle window  → second on, second off)
-//   3. eyes lift      (narrowest      → last on,   first off)
-// giving p:0→1 the sequence mouth → chest → eyes … eyes → chest → mouth.
+// and the windows are NESTED — the mouth's is wider, the eyes' narrower — so
+// they switch on in order and off in reverse:
+//   1. mouth opens   (wider window   → first on,  last off)
+//   2. eyes lift      (narrower       → last on,   first off)
+// giving p:0→1 the sequence mouth → eyes … eyes → mouth.
 const MOUTH_ON = 0.12; // mouth opens at p; closes at 1 - MOUTH_ON
-const CHEST_ON = 0.26; // chest rises at p; falls at 1 - CHEST_ON
 const EYES_ON = 0.4; //   eyes lift at p;  lower at 1 - EYES_ON
-
-const backSprite: Sprite = {
-  width: bunnySprite.width,
-  height: bunnySprite.height,
-  pixels: Object.fromEntries(
-    Object.entries(bunnySprite.pixels).filter(([k]) => BACK_KEYS.has(k)),
-  ),
-};
 
 // --- Eyes ------------------------------------------------------------------
 // The two closed `‿‿` eyes (sprite-box coords). They are the innermost beat
@@ -146,7 +122,6 @@ function drawZ(ctx: CanvasRenderingContext2D, z: Zed): void {
 
 interface BunnyState {
   full: HTMLCanvasElement;
-  back: HTMLCanvasElement;
   eyes: HTMLCanvasElement;
   inhale: HTMLCanvasElement;
 }
@@ -174,14 +149,12 @@ export const bunnyScene: Scene<BunnyState> = {
   label: "Cat",
   framesPerSecond: 12,
   async init({ createCanvas }) {
-    // Pre-render each layer once: the whole cat, the crown pixels that
-    // breathe, the raised-eye patch, and the inhale-mouth patch. Redrawing
-    // ~412 pixels every frame is wasteful.
+    // Pre-render each layer once: the whole cat, the raised-eye patch, and
+    // the inhale-mouth patch. Redrawing ~412 pixels every frame is wasteful.
     const full = await prerender(createCanvas, bunnySprite);
-    const back = await prerender(createCanvas, backSprite);
     const eyes = await prerender(createCanvas, eyesUpSprite);
     const inhale = await prerender(createCanvas, inhaleSprite);
-    return { full, back, eyes, inhale };
+    return { full, eyes, inhale };
   },
   draw({ ctx, dimensions, elapsed, state }) {
     const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
@@ -195,15 +168,11 @@ export const bunnyScene: Scene<BunnyState> = {
     // Layer A: the planted cat, always drawn first — it never translates.
     ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
 
-    // Three nested inhale beats (see MOUTH_ON/CHEST_ON/EYES_ON). Because the
-    // windows are nested and centred on the peak, they light up in order on
-    // the inhale (mouth → chest → eyes) and unwind in reverse on the exhale.
+    // Two nested inhale beats (see MOUTH_ON/EYES_ON). Because the windows are
+    // nested and centred on the peak, they light up in order on the inhale
+    // (mouth → eyes) and unwind in reverse on the exhale (eyes → mouth).
     if (cyclePos >= MOUTH_ON && cyclePos < 1 - MOUTH_ON) {
       ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
-    }
-    if (cyclePos >= CHEST_ON && cyclePos < 1 - CHEST_ON) {
-      // The crown/back copy, one row up; layer A backs the row it lifts from.
-      ctx.drawImage(state.back as unknown as CanvasImageSource, ox, oy - 1);
     }
     if (cyclePos >= EYES_ON && cyclePos < 1 - EYES_ON) {
       ctx.drawImage(state.eyes as unknown as CanvasImageSource, ox, oy);
