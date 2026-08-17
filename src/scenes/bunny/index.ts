@@ -23,6 +23,19 @@ const BACK_KEYS = new Set([
 ]);
 const BREATH_PERIOD_MS = 4200;
 
+// --- Breath staging --------------------------------------------------------
+// The inhale unfolds in three ordered beats and the exhale replays them in
+// reverse. Each beat is an on/off window centred on the peak of the breath,
+// and the windows are NESTED — the mouth's is widest, the eyes' narrowest —
+// so they switch on in order and off in reverse:
+//   1. mouth opens   (widest window  → first on,  last off)
+//   2. chest rises    (middle window  → second on, second off)
+//   3. eyes lift      (narrowest      → last on,   first off)
+// giving p:0→1 the sequence mouth → chest → eyes … eyes → chest → mouth.
+const MOUTH_ON = 0.12; // mouth opens at p; closes at 1 - MOUTH_ON
+const CHEST_ON = 0.26; // chest rises at p; falls at 1 - CHEST_ON
+const EYES_ON = 0.4; //   eyes lift at p;  lower at 1 - EYES_ON
+
 const backSprite: Sprite = {
   width: bunnySprite.width,
   height: bunnySprite.height,
@@ -32,10 +45,9 @@ const backSprite: Sprite = {
 };
 
 // --- Eyes ------------------------------------------------------------------
-// The two closed `‿‿` eyes (sprite-box coords). Coupled to the breath but
-// phase-lagged: they rise a beat AFTER the crown lifts and settle a beat
-// BEFORE it falls (EYE_RISE/EYE_FALL sit inside the crown's [0.25, 0.75]
-// window), so the face gives a small secondary "stir" as the loaf inhales.
+// The two closed `‿‿` eyes (sprite-box coords). They are the innermost beat
+// of the breath (see EYES_ON): they lift LAST on the inhale and lower FIRST
+// on the exhale, a small secondary "stir" that peaks with the deepest breath.
 const EYE_KEYS = [
   "8:16",
   "11:16",
@@ -46,8 +58,6 @@ const EYE_KEYS = [
   "17:17",
   "18:17",
 ];
-const EYE_RISE = 0.34; // fraction of the breath cycle when the eyes lift
-const EYE_FALL = 0.66; // ...and when they settle back down
 
 // A patch that both erases the planted eyes (backfilling face cream) and
 // repaints them one row higher, so drawing it over the grounded cat lifts the
@@ -175,30 +185,25 @@ export const bunnyScene: Scene<BunnyState> = {
     const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
     const oy = Math.floor((dimensions.height - bunnySprite.height) / 2);
 
-    // 0 → 1 → 0: a slow inhale that lifts the crown by a single pixel.
-    const breath = Math.round(
-      0.5 - 0.5 * Math.cos((elapsed / BREATH_PERIOD_MS) * Math.PI * 2),
-    );
-
-    // Layer A: the planted cat. Layer B: the raised crown, one row up at the
-    // inhale peak (layer A backs the row it lifts from, so no gap appears).
-    // Layer C: the mouth deepens open through the same inhale.
-    ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
-    if (breath) {
-      ctx.drawImage(
-        state.back as unknown as CanvasImageSource,
-        ox,
-        oy - breath,
-      );
-      ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
-    }
-
-    // Layer D: the eyes, lifted a beat after the crown and settled a beat
-    // before it drops. The patch is pre-baked one row up, so no extra offset.
+    // Position within the breath cycle: 0 at rest, 0.5 at the deepest inhale.
     const cyclePos =
       (((elapsed % BREATH_PERIOD_MS) + BREATH_PERIOD_MS) % BREATH_PERIOD_MS) /
       BREATH_PERIOD_MS;
-    if (cyclePos >= EYE_RISE && cyclePos < EYE_FALL) {
+
+    // Layer A: the planted cat, always drawn first — it never translates.
+    ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
+
+    // Three nested inhale beats (see MOUTH_ON/CHEST_ON/EYES_ON). Because the
+    // windows are nested and centred on the peak, they light up in order on
+    // the inhale (mouth → chest → eyes) and unwind in reverse on the exhale.
+    if (cyclePos >= MOUTH_ON && cyclePos < 1 - MOUTH_ON) {
+      ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
+    }
+    if (cyclePos >= CHEST_ON && cyclePos < 1 - CHEST_ON) {
+      // The crown/back copy, one row up; layer A backs the row it lifts from.
+      ctx.drawImage(state.back as unknown as CanvasImageSource, ox, oy - 1);
+    }
+    if (cyclePos >= EYES_ON && cyclePos < 1 - EYES_ON) {
       ctx.drawImage(state.eyes as unknown as CanvasImageSource, ox, oy);
     }
 
