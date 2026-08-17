@@ -83,7 +83,7 @@ const inhaleSprite: Sprite = {
 // the RIGHT, fading to nothing partway up; then a fresh one begins after a
 // short beat. Unlike the sprite, it may drift off the top / upper-right of the
 // panel (those rows aren't buffered) — it just clips away.
-const Z_ORIGIN = { x: 15, y: 11 };
+const Z_ORIGIN = { x: 15, y: 8 };
 const Z_COLOR = "#8a90a3";
 const Z_CYCLE = 5400;
 const Z_RISE = 10;
