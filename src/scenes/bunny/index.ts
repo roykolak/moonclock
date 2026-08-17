@@ -64,7 +64,7 @@ const eyesUpSprite: Sprite = {
 // adds the extra depth below the mouth. The added pixels use a lighter tan
 // than the #6e5238 mouth so they read as the softer inner-mouth opening
 // rather than another line of the smile.
-const INHALE_COLOR = "#b98f66";
+const INHALE_COLOR = "#ffb066";
 const inhaleSprite: Sprite = {
   width: bunnySprite.width,
   height: bunnySprite.height,
