@@ -43,16 +43,6 @@ export interface QueuedFramesSnapshot {
   count: number;
 }
 
-export interface HardwareState {
-  queuedFramesSnapshots: QueuedFramesSnapshot[];
-  renderedAt: string;
-  lastLoopRunAt: string;
-  preset: Preset;
-  syncSpeed: number;
-  virtualPanel: { [k: string]: string };
-  brightness: number;
-}
-
 export interface Preset {
   id?: string;
   name: string;

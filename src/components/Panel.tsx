@@ -2,7 +2,6 @@
 
 import {
   ActionIcon,
-  Alert,
   Badge,
   Box,
   Button,
@@ -14,14 +13,8 @@ import {
   Modal,
   Stack,
   Text,
-  useMantineTheme,
 } from "@mantine/core";
-import {
-  HardwareState,
-  Panel as PanelType,
-  Preset,
-  ScheduledPreset,
-} from "../types";
+import { Panel as PanelType, Preset, ScheduledPreset } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
 import { LivePanelPreview } from "./LivePanelPreview";
 import { useDisclosure } from "@mantine/hooks";
@@ -35,8 +28,7 @@ import { reloadHardwareScene } from "@/server/actions/hardware";
 import { showNotification } from "@mantine/notifications";
 import { IconDots } from "@tabler/icons-react";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
-import { useEffect, useState } from "react";
-import { isFrameRateLagging } from "@/helpers/isFrameRateLagging";
+import { useState } from "react";
 import { updatePreset } from "@/server/actions/presets";
 
 interface PanelProps {
@@ -55,22 +47,6 @@ export default function Panel({
   const [customPresetModalOpen, customPresetModalHandlers] = useDisclosure();
 
   const [presetEditting, setPresetEditting] = useState<Preset | null>(null);
-
-  const [hardwareState, setHardwareState] = useState<HardwareState | null>(
-    null,
-  );
-
-  const theme = useMantineTheme();
-
-  useEffect(() => {
-    const loop = setInterval(() => {
-      fetch(`http://${window.location.hostname}:3001/api/state`)
-        .then((response) => response.json())
-        .then(setHardwareState);
-    }, 1000);
-
-    return () => clearInterval(loop);
-  }, []);
 
   const timeAdjustment = parseInt(
     scheduledPreset?.preset?.timeAdjustmentAmount || panel.timeAdjustmentAmount,
@@ -98,17 +74,6 @@ export default function Panel({
           submitLabel={scheduledPreset?.preset?.id ? "Update" : "Apply now"}
         />
       </Modal>
-      {isFrameRateLagging(hardwareState) && (
-        <Alert color="red" p="xs" mb="md">
-          <Stack>
-            <Text c={theme.colors.red[5]}>Framerate is lagging!</Text>
-            <Text c={theme.colors.red[1]} size="sm">
-              To improve the framerate, try reducing the speed of your scenes or
-              removing scenes.
-            </Text>
-          </Stack>
-        </Alert>
-      )}
       <Card
         shadow="sm"
         padding="lg"
