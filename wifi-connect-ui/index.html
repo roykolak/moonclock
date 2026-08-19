@@ -8,12 +8,22 @@
     />
     <title>Moonclock setup</title>
     <!--
-      Custom captive-portal UI served by balena wifi-connect via
-      `--ui-directory`. A captive portal has no internet, so everything here is
-      self-contained: inline CSS/JS, a locally bundled font, and a local image.
-      The only contract with wifi-connect is its HTTP API:
-        GET  /networks  -> [{ ssid, security }]   (security: "", "wpa2", "enterprise", ...)
-        POST /connect   -> { ssid, identity, passphrase } as JSON; 200 = accepted
+      Custom captive-portal UI served by balena wifi-connect via `--ui-directory`
+      (a documented flag). A captive portal has no internet, so everything here
+      is self-contained: inline CSS/JS, a locally bundled font, and a local image.
+
+      We talk to wifi-connect's HTTP API directly. That API is not a documented
+      public contract, so rather than guess it, the calls below mirror balena's
+      own React UI at the version we pin (WC_VERSION in bootstrap.sh). Sources,
+      wifi-connect v4.11.84:
+        ui/src/components/App.tsx
+          interface Network     { ssid: string; security: string }
+          interface NetworkInfo { ssid?: string; identity?: string; passphrase?: string }
+          GET  /networks -> Network[]
+          POST /connect  <- NetworkInfo as JSON ("Content-Type: application/json")
+        ui/src/components/NetworkInfoForm.tsx
+          the identity field is shown only when security === "enterprise"
+      When bumping WC_VERSION, re-check those two files against this page.
     -->
     <style>
       @font-face {
@@ -294,7 +304,6 @@
       var ssidSel = document.getElementById("ssid");
       var identityRow = document.getElementById("identityRow");
       var identityInput = document.getElementById("identity");
-      var passRow = document.getElementById("passRow");
       var passInput = document.getElementById("passphrase");
       var toggle = document.getElementById("toggle");
       var form = document.getElementById("form");
@@ -314,12 +323,15 @@
         return n ? n.security || "" : "";
       }
 
-      // Show a username field only for enterprise (802.1x) networks, and hide the
-      // password entirely for open networks.
+      // Mirrors balena's NetworkInfoForm (v4.11.84): the identity/username field
+      // is shown only for enterprise (802.1x) networks. Every other network type
+      // just uses the passphrase, which stays visible — like balena, we don't
+      // branch on any other `security` value, so there's nothing to guess about
+      // what an open network reports. (Leaving the passphrase blank on an open
+      // network is fine; we post it as "".)
       function syncFields() {
-        var sec = securityOf(ssidSel.value).toLowerCase();
-        identityRow.classList.toggle("hidden", sec !== "enterprise");
-        passRow.classList.toggle("hidden", sec === "" || sec === "none");
+        var isEnterprise = securityOf(ssidSel.value) === "enterprise";
+        identityRow.classList.toggle("hidden", !isEnterprise);
       }
 
       function populate() {

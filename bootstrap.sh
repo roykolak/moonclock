@@ -109,6 +109,11 @@ apt-get install -y network-manager dnsmasq-base
 # offline so a phone can hand it WiFi credentials. We only need balena's binary —
 # the portal page is our own, shipped in the release and pointed at via
 # --ui-directory (see bin/wifi-provision). See there for how it's launched.
+#
+# Our portal talks to wifi-connect's /networks and /connect HTTP API, which isn't
+# a documented contract — wifi-connect-ui/index.html mirrors balena's own UI for
+# THIS version. When bumping WC_VERSION, re-check that page against balena's
+# ui/src at the new tag.
 WC_VERSION="v4.11.84"
 WC_BIN="/usr/local/sbin/wifi-connect"
 

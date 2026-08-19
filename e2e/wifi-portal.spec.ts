@@ -113,10 +113,14 @@ test.describe("WiFi setup portal", () => {
     await expect(page.getByLabel("Username", { exact: true })).toBeHidden();
   });
 
-  test("hides the password entirely for an open network", async ({ page }) => {
+  test("keeps the password but no username for an open network", async ({
+    page,
+  }) => {
+    // Like balena's own UI, we only special-case enterprise; open networks still
+    // show the passphrase (left blank), rather than guessing open-network values.
     await gotoPortal(page);
     await page.getByLabel("WiFi network").selectOption("CoffeeShop Guest");
-    await expect(page.getByLabel("Password", { exact: true })).toBeHidden();
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Username", { exact: true })).toBeHidden();
   });
 
