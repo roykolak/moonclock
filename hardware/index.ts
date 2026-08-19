@@ -3,7 +3,7 @@ import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Pixel, Scene } from "../src/display-engine/types";
 import { getData, setData } from "@/server/db";
-import { Preset, QueuedFramesSnapshot } from "@/types";
+import { Preset } from "@/types";
 import { Canvas, FontLibrary } from "skia-canvas";
 import { getEndDate } from "@/helpers/getEndDate";
 
@@ -80,17 +80,6 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   });
 
-  function recordQueuedFramesSnapshot(count: number) {
-    queuedFramesSnapshots.push({
-      timestamp: Date.now(),
-      count: count > 50 ? 75 : count,
-    });
-
-    if (queuedFramesSnapshots.length > 2000) {
-      queuedFramesSnapshots.shift();
-    }
-  }
-
   const app = express();
   const port = 3001;
 
@@ -111,18 +100,6 @@ export async function createCanvas(dimensions: Dimensions) {
   });
 
   app.use(express.json());
-
-  app.get("/api/state", (req, res) => {
-    res.send({
-      queuedFramesSnapshots,
-      preset,
-      renderedAt,
-      lastLoopRunAt,
-      syncSpeed,
-      virtualPanel,
-      brightness: brightness || panel.brightness,
-    });
-  });
 
   app.get("/api/reload", (req, res) => {
     runConditionalRenderUpdate();
@@ -206,11 +183,8 @@ export async function createCanvas(dimensions: Dimensions) {
 
   let scene: Scene | null = getScene(panel.defaultPreset.sceneId);
   let preset: Preset = panel.defaultPreset;
-  let renderedAt: string = new Date().toJSON();
-  let lastLoopRunAt: string = "";
 
   let updateQueue: Pixel[][] = [];
-  let queuedFramesSnapshots: QueuedFramesSnapshot[] = [];
 
   if (!params.emulate) {
     console.log("[HARDWARE] Initing LED Matrix...");
@@ -232,8 +206,6 @@ export async function createCanvas(dimensions: Dimensions) {
     matrix.afterSync(() => {
       const pixelUpdates = updateQueue.shift();
 
-      recordQueuedFramesSnapshot(updateQueue.length);
-
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
           const hexA = updateVirtualPanel(pixel);
@@ -252,8 +224,6 @@ export async function createCanvas(dimensions: Dimensions) {
   } else {
     function fakeSync() {
       const pixelUpdates = updateQueue.shift();
-
-      recordQueuedFramesSnapshot(updateQueue.length);
 
       if (pixelUpdates) {
         for (const pixel of pixelUpdates) {
@@ -376,15 +346,12 @@ export async function createCanvas(dimensions: Dimensions) {
   engine.render(null);
 
   async function runConditionalRenderUpdate() {
-    lastLoopRunAt = new Date().toJSON();
-
     const result = await checkForNewDisplayConfig(preset);
 
     if (result) {
       updateQueue = [];
-      queuedFramesSnapshots = [];
 
-      ({ scene, renderedAt, preset } = result);
+      ({ scene, preset } = result);
 
       brightness = preset.brightness || null;
 
@@ -458,12 +425,10 @@ export async function createCanvas(dimensions: Dimensions) {
       // is always visible.
       const { panel: latestPanel } = getData();
       preset = latestPanel.defaultPreset;
-      renderedAt = new Date().toJSON();
       scene = getScene(preset.sceneId);
       brightness = preset.brightness || null;
       syncSpeed = 0;
       updateQueue = [];
-      queuedFramesSnapshots = [];
       engine.render(scene);
       return;
     } else {

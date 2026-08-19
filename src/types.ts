@@ -38,11 +38,6 @@ export interface Panel {
   defaultPreset: Preset;
 }
 
-export interface QueuedFramesSnapshot {
-  timestamp: number;
-  count: number;
-}
-
 export interface Preset {
   id?: string;
   name: string;
