@@ -90,6 +90,13 @@ fs.cpSync("dist", `${releaseFolder}/dist`, { recursive: true });
 fs.cpSync("bin", `${releaseFolder}/bin`, { recursive: true });
 fs.cpSync("services", `${releaseFolder}/services`, { recursive: true });
 
+// Custom Moonclock captive-portal UI, served by wifi-connect via --ui-directory
+// (see bin/wifi-provision). Shipping it inside the release means it self-updates
+// with the app and we don't depend on balena's stock UI download.
+fs.cpSync("wifi-connect-ui", `${releaseFolder}/wifi-connect-ui`, {
+  recursive: true,
+});
+
 console.log("\n -> Updating systemd services to include version");
 
 const services = [

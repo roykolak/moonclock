@@ -106,11 +106,11 @@ echo " -> Setting up WiFi provisioning (NetworkManager + wifi-connect)"
 apt-get install -y network-manager dnsmasq-base
 
 # balena wifi-connect: brings up an open hotspot + captive portal when the Pi is
-# offline so a phone can hand it WiFi credentials. Binary and web UI ship as
-# separate release assets. See bin/wifi-provision for how it's launched at boot.
+# offline so a phone can hand it WiFi credentials. We only need balena's binary —
+# the portal page is our own, shipped in the release and pointed at via
+# --ui-directory (see bin/wifi-provision). See there for how it's launched.
 WC_VERSION="v4.11.84"
 WC_BIN="/usr/local/sbin/wifi-connect"
-WC_UI_DIR="/usr/local/share/wifi-connect/ui"
 
 if [ ! -x "$WC_BIN" ]; then
   case "$(uname -m)" in
@@ -129,21 +129,10 @@ if [ ! -x "$WC_BIN" ]; then
     WC_BASE="https://github.com/balena-os/wifi-connect/releases/download/$WC_VERSION"
 
     curl -fsSL -o "$WORK_DIR/wifi-connect.tar.gz" "$WC_BASE/$WC_ASSET"
-    curl -fsSL -o "$WORK_DIR/wifi-connect-ui.tar.gz" "$WC_BASE/wifi-connect-ui.tar.gz"
 
     tar -xzf "$WORK_DIR/wifi-connect.tar.gz" -C "$WORK_DIR"
     WC_EXTRACTED="$(find "$WORK_DIR" -type f -name wifi-connect | head -n1)"
     install -m 0755 "$WC_EXTRACTED" "$WC_BIN"
-
-    # The UI archive may nest its files under a top-level ui/ directory; flatten
-    # so index.html ends up directly in $WC_UI_DIR.
-    rm -rf "$WC_UI_DIR"
-    mkdir -p "$WC_UI_DIR"
-    tar -xzf "$WORK_DIR/wifi-connect-ui.tar.gz" -C "$WC_UI_DIR"
-    if [ -d "$WC_UI_DIR/ui" ]; then
-      mv "$WC_UI_DIR/ui/"* "$WC_UI_DIR/"
-      rmdir "$WC_UI_DIR/ui"
-    fi
 
     echo "   -> Installed wifi-connect $WC_VERSION"
   fi

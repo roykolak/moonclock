@@ -114,9 +114,10 @@ one — no keyboard, screen, or ssh required:
    address where you can reach the app.
 
 Under the hood this is [balena wifi-connect](https://github.com/balena-os/wifi-connect)
-running a captive portal, coordinated with the panel by the
-`moonclock-wifi-provision` service. Once the pi is connected, the web app starts
-as usual.
+running a captive portal — with our own Moonclock-branded setup page
+(`wifi-connect-ui/`, shipped in the release) in place of its stock UI —
+coordinated with the panel by the `moonclock-wifi-provision` service. Once the pi
+is connected, the web app starts as usual.
 
 **Changing networks later** (e.g. you moved): press and hold the external button
 for ~5 seconds. The panel shows a "Reset WiFi?" countdown; keep holding and the

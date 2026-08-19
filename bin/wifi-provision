@@ -4,15 +4,19 @@ set -euo pipefail
 # Runs at boot before the web app. If the Pi already has a network connection,
 # it exits immediately and the app starts as usual. If it's offline, it launches
 # balena wifi-connect, which broadcasts an open "$PORTAL_SSID" hotspot and serves
-# a captive portal where the user picks their network and enters the password.
-# wifi-connect blocks until the device is connected, then exits — at which point
-# systemd lets moonclock-app start.
+# our custom captive portal (wifi-connect-ui/) where the user picks their network
+# and enters the password. wifi-connect blocks until the device is connected,
+# then exits — at which point systemd lets moonclock-app start.
 #
 # The moonclock-hardware service runs independently and mirrors this state on the
-# LED panel (join-QR + instructions) via hardware/wifi.
+# LED panel (a "setup needed" animation) via hardware/wifi.
 
-# Must match PORTAL_SSID in hardware/wifi/index.ts, which renders the join-QR.
+# Broadcast SSID for the setup hotspot the user connects their phone to.
 PORTAL_SSID="Moonclock"
+
+# Our own portal page, shipped inside the release so it self-updates with the
+# app. `current` symlinks to the active release (see install.sh).
+UI_DIR="/usr/local/bin/moonclock/current/wifi-connect-ui"
 
 # Give NetworkManager a moment on a cold boot to bring up a known network before
 # we decide the device is offline.
@@ -31,4 +35,4 @@ fi
 echo "[wifi-provision] Offline — starting setup portal (SSID: $PORTAL_SSID)."
 exec wifi-connect \
   --portal-ssid "$PORTAL_SSID" \
-  --ui-directory /usr/local/share/wifi-connect/ui
+  --ui-directory "$UI_DIR"
