@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Moonclock setup</title>
+    <!--
+      Custom captive-portal UI served by balena wifi-connect via `--ui-directory`
+      (a documented flag). A captive portal has no internet, so everything here
+      is self-contained: inline CSS/JS, a locally bundled font, and a local image.
+
+      We talk to wifi-connect's HTTP API directly. That API is not a documented
+      public contract, so rather than guess it, the calls below mirror balena's
+      own React UI at the version we pin (WC_VERSION in bootstrap.sh). Sources,
+      wifi-connect v4.11.84:
+        ui/src/components/App.tsx
+          interface Network     { ssid: string; security: string }
+          interface NetworkInfo { ssid?: string; identity?: string; passphrase?: string }
+          GET  /networks -> Network[]
+          POST /connect  <- NetworkInfo as JSON ("Content-Type: application/json")
+        ui/src/components/NetworkInfoForm.tsx
+          the identity field is shown only when security === "enterprise"
+      When bumping WC_VERSION, re-check those two files against this page.
+    -->
+    <style>
+      @font-face {
+        font-family: "Tiny5";
+        src: url("Tiny5-Regular.ttf") format("truetype");
+        font-display: swap;
+      }
+      :root {
+        --bg: #111014;
+        --card: #1d1c23;
+        --field: #26242d;
+        --border: #38353f;
+        --text: #f4f3f7;
+        --muted: #a09eab;
+        --gold: #ffcc33;
+        --gold-press: #f0b91f;
+        --danger: #ff6b6b;
+        --ok: #6ee7a0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font:
+          16px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          system-ui,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+      }
+      .card {
+        width: 100%;
+        max-width: 400px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 28px 22px 26px;
+        margin-top: 6vh;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      }
+      .brand {
+        text-align: center;
+        margin-bottom: 22px;
+      }
+      .brand img {
+        width: 72px;
+        height: 72px;
+        image-rendering: pixelated;
+        display: block;
+        margin: 0 auto 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
+      .brand h1 {
+        font-family: "Tiny5", monospace;
+        font-weight: 400;
+        font-size: 30px;
+        letter-spacing: 1px;
+        color: var(--gold);
+        margin: 0;
+      }
+      .brand p {
+        color: var(--muted);
+        margin: 6px 0 0;
+        font-size: 14.5px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 6px;
+      }
+      .row {
+        margin-bottom: 18px;
+      }
+      .row.hidden {
+        display: none;
+      }
+
+      select,
+      input {
+        width: 100%;
+        background: var(--field);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 13px 14px;
+        font-size: 16px;
+        appearance: none;
+        -webkit-appearance: none;
+      }
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: var(--gold);
+      }
+      select {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5" fill="none" stroke="%23a09eab" stroke-width="2" stroke-linecap="round"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 38px;
+      }
+      .pass-wrap {
+        position: relative;
+      }
+      .pass-wrap input {
+        padding-right: 62px;
+      }
+      .toggle {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: 0;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+      .toggle:active {
+        color: var(--gold);
+      }
+
+      button.connect {
+        width: 100%;
+        background: var(--gold);
+        color: #1a1408;
+        border: 0;
+        border-radius: 999px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      button.connect:active {
+        background: var(--gold-press);
+      }
+      button.connect:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .status {
+        margin-top: 16px;
+        font-size: 14px;
+        text-align: center;
+        min-height: 20px;
+      }
+      .status.err {
+        color: var(--danger);
+      }
+      .status.ok {
+        color: var(--ok);
+      }
+      .link {
+        background: none;
+        border: 0;
+        color: var(--gold);
+        font-size: 13.5px;
+        cursor: pointer;
+        padding: 6px;
+        text-decoration: underline;
+      }
+      .center {
+        text-align: center;
+      }
+      .spinner {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        vertical-align: -2px;
+        margin-right: 7px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Success takeover */
+      .done {
+        text-align: center;
+        padding: 10px 4px;
+      }
+      .done .moon {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+        margin-bottom: 14px;
+      }
+      .done h2 {
+        font-family: "Tiny5", monospace;
+        font-weight: 400;
+        color: var(--gold);
+        font-size: 22px;
+        margin: 0 0 10px;
+      }
+      .done p {
+        color: var(--muted);
+        font-size: 14.5px;
+        margin: 0 0 8px;
+      }
+      .done strong {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card" id="card">
+      <div class="brand">
+        <img src="moon.png" alt="Moonclock" />
+        <h1>MOONCLOCK</h1>
+        <p>Let's get your clock online.</p>
+      </div>
+
+      <form id="form">
+        <div class="row">
+          <label for="ssid">WiFi network</label>
+          <select id="ssid" name="ssid" required></select>
+        </div>
+
+        <div class="row hidden" id="identityRow">
+          <label for="identity">Username</label>
+          <input
+            id="identity"
+            name="identity"
+            type="text"
+            autocomplete="username"
+            autocapitalize="none"
+          />
+        </div>
+
+        <div class="row" id="passRow">
+          <label for="passphrase">Password</label>
+          <div class="pass-wrap">
+            <input
+              id="passphrase"
+              name="passphrase"
+              type="password"
+              autocomplete="current-password"
+              autocapitalize="none"
+            />
+            <button
+              type="button"
+              class="toggle"
+              id="toggle"
+              aria-label="Show password"
+            >
+              Show
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="connect" id="connect">Connect</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <script>
+      var ssidSel = document.getElementById("ssid");
+      var identityRow = document.getElementById("identityRow");
+      var identityInput = document.getElementById("identity");
+      var passInput = document.getElementById("passphrase");
+      var toggle = document.getElementById("toggle");
+      var form = document.getElementById("form");
+      var connectBtn = document.getElementById("connect");
+      var statusEl = document.getElementById("status");
+      var networks = [];
+
+      function setStatus(msg, kind) {
+        statusEl.className = "status" + (kind ? " " + kind : "");
+        statusEl.innerHTML = msg;
+      }
+
+      function securityOf(ssid) {
+        var n = networks.find(function (x) {
+          return x.ssid === ssid;
+        });
+        return n ? n.security || "" : "";
+      }
+
+      // Mirrors balena's NetworkInfoForm (v4.11.84): the identity/username field
+      // is shown only for enterprise (802.1x) networks. Every other network type
+      // just uses the passphrase, which stays visible — like balena, we don't
+      // branch on any other `security` value, so there's nothing to guess about
+      // what an open network reports. (Leaving the passphrase blank on an open
+      // network is fine; we post it as "".)
+      function syncFields() {
+        var isEnterprise = securityOf(ssidSel.value) === "enterprise";
+        identityRow.classList.toggle("hidden", !isEnterprise);
+      }
+
+      function populate() {
+        ssidSel.innerHTML = "";
+        var seen = {};
+        networks.forEach(function (n) {
+          if (!n.ssid || seen[n.ssid]) return;
+          seen[n.ssid] = true;
+          var o = document.createElement("option");
+          o.value = n.ssid;
+          o.textContent = n.ssid;
+          ssidSel.appendChild(o);
+        });
+        syncFields();
+      }
+
+      function loadNetworks() {
+        setStatus('<span class="spinner"></span>Looking for networks…');
+        fetch("/networks")
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.statusText);
+            return r.json();
+          })
+          .then(function (list) {
+            networks = Array.isArray(list) ? list : [];
+            if (!networks.length) {
+              setStatus(
+                'No networks found. <button type="button" class="link" id="retry">Scan again</button>',
+                "err",
+              );
+              document.getElementById("retry").onclick = loadNetworks;
+              return;
+            }
+            populate();
+            setStatus("");
+          })
+          .catch(function () {
+            setStatus(
+              'Couldn\'t load networks. <button type="button" class="link" id="retry">Try again</button>',
+              "err",
+            );
+            document.getElementById("retry").onclick = loadNetworks;
+          });
+      }
+
+      toggle.onclick = function () {
+        var show = passInput.type === "password";
+        passInput.type = show ? "text" : "password";
+        toggle.textContent = show ? "Hide" : "Show";
+      };
+
+      ssidSel.onchange = syncFields;
+
+      form.onsubmit = function (e) {
+        e.preventDefault();
+        var ssid = ssidSel.value;
+        if (!ssid) return;
+        connectBtn.disabled = true;
+        setStatus('<span class="spinner"></span>Connecting to “' + ssid + "”…");
+
+        fetch("/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ssid: ssid,
+            identity: identityInput.value || "",
+            passphrase: passInput.value || "",
+          }),
+        })
+          .then(function (r) {
+            if (r.status !== 200)
+              throw new Error(r.statusText || "connection failed");
+            showDone(ssid);
+          })
+          .catch(function () {
+            connectBtn.disabled = false;
+            setStatus(
+              "Couldn't connect. Double-check the password and try again.",
+              "err",
+            );
+          });
+      };
+
+      // wifi-connect tears down the hotspot once it joins, so this page will lose
+      // its connection — which is exactly the signal that setup worked.
+      function showDone(ssid) {
+        document.getElementById("card").innerHTML =
+          '<div class="done">' +
+          '<img class="moon" src="moon.png" alt="" />' +
+          "<h2>ALMOST THERE</h2>" +
+          "<p>Your Moonclock is joining <strong>" +
+          ssid.replace(/[<>&]/g, "") +
+          "</strong>.</p>" +
+          "<p>This setup network will disappear in a moment — that means it worked. " +
+          "Reconnect your phone to your normal WiFi to find your Moonclock.</p>" +
+          "</div>";
+      }
+
+      loadNetworks();
+    </script>
+  </body>
+</html>
