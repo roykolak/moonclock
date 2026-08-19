@@ -9,15 +9,13 @@ type Coordinates = { [key: string]: string };
  *
  *  The server sends one `snapshot` event on connect, then `delta` events
  *  carrying only the pixels that changed — so a static scene produces no
- *  traffic. `version` increments on every message so consumers can cheaply key
- *  a re-render without diffing/serialising the whole map. */
+ *  traffic. Each event replaces the map with a new object reference, so
+ *  consumers can key a repaint off `coordinates` identity. */
 export function usePanelStream(): {
   coordinates: Coordinates;
-  version: number;
   connected: boolean;
 } {
   const [coordinates, setCoordinates] = useState<Coordinates>({});
-  const [version, setVersion] = useState(0);
   const [connected, setConnected] = useState(false);
 
   // Hold the map in a ref so delta merges don't depend on the latest render's
@@ -34,7 +32,6 @@ export function usePanelStream(): {
     source.addEventListener("snapshot", (event) => {
       coordinatesRef.current = JSON.parse(event.data);
       setCoordinates(coordinatesRef.current);
-      setVersion((v) => v + 1);
       setConnected(true);
     });
 
@@ -44,7 +41,6 @@ export function usePanelStream(): {
         ...JSON.parse(event.data),
       };
       setCoordinates(coordinatesRef.current);
-      setVersion((v) => v + 1);
     });
 
     source.addEventListener("error", () => setConnected(false));
@@ -52,5 +48,5 @@ export function usePanelStream(): {
     return () => source.close();
   }, []);
 
-  return { coordinates, version, connected };
+  return { coordinates, connected };
 }
