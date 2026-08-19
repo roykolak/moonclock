@@ -22,11 +22,26 @@ const execAsync = promisify(exec);
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
 
+// Pixels whose colour has changed since the last SSE delta flush. Only real
+// changes are recorded here, so a static scene accumulates nothing and costs
+// the stream zero traffic.
+const dirtyPixels = new Set<string>();
+
+// Open Server-Sent Events connections mirroring the live panel.
+const sseClients = new Set<express.Response>();
+
 let brightness: number | null = null;
 
 function updateVirtualPanel(pixel: Pixel) {
   const hexA = pixel.rgba ? RGBAToHexA(pixel.rgba, true) : "000000";
-  virtualPanel[pixel.x + ":" + pixel.y] = "#" + hexA;
+  const key = pixel.x + ":" + pixel.y;
+  const value = "#" + hexA;
+
+  if (virtualPanel[key] !== value) {
+    virtualPanel[key] = value;
+    dirtyPixels.add(key);
+  }
+
   return hexA;
 }
 
@@ -114,6 +129,25 @@ export async function createCanvas(dimensions: Dimensions) {
     res.send(true);
   });
 
+  // Live pixel mirror over Server-Sent Events. Sends the full panel once on
+  // connect, then only changed pixels (see the flush interval below), so a
+  // static scene streams nothing until it actually changes.
+  app.get("/api/panel/stream", (req, res) => {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    res.write(`event: snapshot\ndata: ${JSON.stringify(virtualPanel)}\n\n`);
+
+    sseClients.add(res);
+
+    req.on("close", () => {
+      sseClients.delete(res);
+    });
+  });
+
   app.post("/api/throttle", (req, res) => {
     syncSpeed = req.body.value;
     res.send(true);
@@ -125,6 +159,30 @@ export async function createCanvas(dimensions: Dimensions) {
     await handleButtonPress();
     res.send(true);
   });
+
+  // Push accumulated pixel changes to every connected client, capped at ~16fps.
+  // One timer for all clients; nothing is written while the panel is idle.
+  setInterval(() => {
+    if (dirtyPixels.size === 0 || sseClients.size === 0) return;
+
+    const delta: { [k: string]: string } = {};
+    for (const key of dirtyPixels) {
+      delta[key] = virtualPanel[key];
+    }
+    dirtyPixels.clear();
+
+    const payload = `event: delta\ndata: ${JSON.stringify(delta)}\n\n`;
+    for (const client of sseClients) {
+      client.write(payload);
+    }
+  }, 60);
+
+  // Keep idle SSE connections alive through proxies.
+  setInterval(() => {
+    for (const client of sseClients) {
+      client.write(`: ping\n\n`);
+    }
+  }, 15000);
 
   app.listen(port, () => {
     console.log(`[HARDWARE] Server running on port ${port}`);

@@ -16,7 +16,6 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import Link from "next/link";
 import {
   HardwareState,
   Panel as PanelType,
@@ -24,7 +23,7 @@ import {
   ScheduledPreset,
 } from "../types";
 import { getEndDate } from "@/helpers/getEndDate";
-import { PresetPreview } from "./PresetPreview";
+import { LivePanelPreview } from "./LivePanelPreview";
 import { useDisclosure } from "@mantine/hooks";
 import { PresetForm } from "./PresetForm";
 import {
@@ -32,6 +31,8 @@ import {
   createCustomScheduledPreset,
   updateScheduledPreset,
 } from "@/server/actions/scheduledPreset";
+import { reloadHardwareScene } from "@/server/actions/hardware";
+import { showNotification } from "@mantine/notifications";
 import { IconDots } from "@tabler/icons-react";
 import { getFriendlyTimeAdjustmentAmount } from "@/helpers/getFriendlyTimeAdjustmentAmount";
 import { useEffect, useState } from "react";
@@ -100,18 +101,7 @@ export default function Panel({
       {isFrameRateLagging(hardwareState) && (
         <Alert color="red" p="xs" mb="md">
           <Stack>
-            <Group justify="space-between" w="100%">
-              <Text c={theme.colors.red[5]}>Framerate is lagging!</Text>
-              <Button
-                component={Link}
-                href="/hardware"
-                variant="light"
-                color="red"
-                size="compact-sm"
-              >
-                More..
-              </Button>
-            </Group>
+            <Text c={theme.colors.red[5]}>Framerate is lagging!</Text>
             <Text c={theme.colors.red[1]} size="sm">
               To improve the framerate, try reducing the speed of your scenes or
               removing scenes.
@@ -163,16 +153,32 @@ export default function Panel({
                 >
                   Clear Panel
                 </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  onClick={async () => {
+                    await fetch(
+                      `http://${window.location.hostname}:3001/api/button-press`,
+                      { method: "POST" },
+                    );
+                  }}
+                >
+                  Simulate Button Press
+                </Menu.Item>
+                <Menu.Item
+                  onClick={async () => {
+                    showNotification({ message: "Reloaded hardware" });
+                    await reloadHardwareScene();
+                  }}
+                >
+                  Reload Hardware
+                </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           </Group>
         </Card.Section>
         <Card.Section>
           <div style={{ position: "relative" }}>
-            <PresetPreview
-              preset={scheduledPreset?.preset || panel.defaultPreset}
-              isDefaultPreset={!scheduledPreset?.preset}
-            />
+            <LivePanelPreview isDefaultPreset={!scheduledPreset?.preset} />
 
             {!scheduledPreset?.preset && (
               <Stack

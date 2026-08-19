@@ -23,8 +23,8 @@ async function createCanvas(dimensions: Dimensions) {
 
 /** Runs `scene` through the display engine on an offscreen canvas and
  *  returns the rendered frame as a data URL, re-rendering whenever
- *  `sceneKey` changes. Shared by every preview surface (PresetPreview,
- *  HardwarePreview) so the canvas/engine bootstrapping lives in one place.
+ *  `sceneKey` changes. Used by PresetPreview to run scene definitions (with
+ *  animation, fonts, etc.) through the display engine on an offscreen canvas.
  *
  *  `sceneKey` identifies what's being requested, not a serialization of
  *  `scene` itself — a Scene's `draw`/`init` are functions, which
