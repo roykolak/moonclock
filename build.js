@@ -95,6 +95,7 @@ console.log("\n -> Updating systemd services to include version");
 const services = [
   "moonclock-app.service",
   "moonclock-hardware.service",
+  "moonclock-wifi-provision.service",
   "moonclock-update-checker.service",
   "moonclock-update-checker.timer",
 ];

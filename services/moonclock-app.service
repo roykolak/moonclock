@@ -1,7 +1,10 @@
 [Unit]
 Description=Moonclock App ({VERSION})
-After=network.target
+After=network.target moonclock-wifi-provision.service
 Wants=network.target
+# Wait for WiFi provisioning to finish (it releases port 80 when it exits or is
+# skipped) before starting the web app on port 80.
+Wants=moonclock-wifi-provision.service
 
 [Service]
 User=root

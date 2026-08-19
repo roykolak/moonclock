@@ -9,9 +9,15 @@ import { getEndDate } from "@/helpers/getEndDate";
 
 import express from "express";
 import Bonjour from "bonjour-service";
-import { waitForIpAddress } from "./getIpAddress";
+import { exec } from "child_process";
+import { promisify } from "util";
+import { getIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 import { getScene } from "@/helpers/getScene";
+import { forgetWifiNetworks, isProvisioning } from "./wifi";
+import { createHoldToResetScene, createSetupNeededScene } from "./wifi/scenes";
+
+const execAsync = promisify(exec);
 
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
@@ -230,7 +236,47 @@ export async function createCanvas(dimensions: Dimensions) {
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    const ipAddress = await waitForIpAddress();
+    // Resolve the network state before showing the IP marquee. While the
+    // wifi-connect setup portal is up, the device is offline and its own hotspot
+    // hands out a gateway IP (e.g. 192.168.42.1) — so provisioning must take
+    // precedence and we must NOT accept an address until it ends. Otherwise we
+    // wait for a real IP (DHCP can lag a few seconds behind link-up on boot).
+    let ipAddress: string | null = null;
+    let showingSetupPrompt = false;
+    const bootStartedAt = Date.now();
+
+    while (true) {
+      if (await isProvisioning()) {
+        if (!showingSetupPrompt) {
+          clearInterval(connectionLoadingInterval);
+          engine.render(createSetupNeededScene());
+          showingSetupPrompt = true;
+          console.log(
+            "[HARDWARE] WiFi setup portal active — prompting on panel",
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+
+      ipAddress = getIpAddress();
+      if (ipAddress) {
+        // Setup just finished: wifi-connect tears down its hotspot, so give
+        // NetworkManager a moment to bring up the real connection before we
+        // read the address to scroll.
+        if (showingSetupPrompt) {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          ipAddress = getIpAddress();
+        }
+        break;
+      }
+
+      // Not provisioning and still no IP after two minutes: give up waiting and
+      // surface the disconnected state rather than hang the boot screen.
+      if (Date.now() - bootStartedAt > 120000) break;
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
 
     clearInterval(connectionLoadingInterval);
 
@@ -423,19 +469,85 @@ export async function createCanvas(dimensions: Dimensions) {
     await runConditionalRenderUpdate();
   }
 
+  // Held-button action: forget saved WiFi and reboot into setup mode. Rebooting
+  // (rather than juggling services live) keeps port 80 free for the wifi-connect
+  // portal and is the robust way to re-enter provisioning when the device moves
+  // to a new network.
+  async function handleLongPress() {
+    console.log("[HARDWARE] Long press — resetting WiFi and rebooting");
+
+    engine.render({
+      draw({ ctx }) {
+        ctx.textBaseline = "top";
+        ctx.font = "8px Tiny5";
+        ctx.fillStyle = "#F87171";
+        ctx.fillText("WiFi", 0, 2);
+        ctx.fillText("reset", 0, 11);
+        ctx.fillStyle = "#AAAAAA";
+        ctx.fillText("reboot", 0, 22);
+      },
+    });
+
+    await forgetWifiNetworks();
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    try {
+      await execAsync("reboot");
+    } catch (error) {
+      console.error("[HARDWARE] Failed to reboot after WiFi reset:", error);
+    }
+  }
+
   if (panel.buttonEnabled) {
     try {
       const { Gpio } = await import("onoff");
-      const button = new Gpio(panel.buttonGpioPin, "in", "falling", {
+      // Watch both edges so we can measure how long the button is held and tell
+      // a short tap (cycle presets) apart from a long hold (reset WiFi).
+      const button = new Gpio(panel.buttonGpioPin, "in", "both", {
         debounceTimeout: 50,
       });
 
-      button.watch((err) => {
+      const LONG_PRESS_MS = 5000;
+      const HOLD_FEEDBACK_DELAY_MS = 1500;
+
+      let longPressTimer: NodeJS.Timeout | null = null;
+      let holdFeedbackTimer: NodeJS.Timeout | null = null;
+      let longPressFired = false;
+
+      button.watch((err, value) => {
         if (err) {
           console.error("[HARDWARE] Button watch error:", err);
           return;
         }
-        handleButtonPress();
+
+        // Active-low with a pull-up: 0 = pressed, 1 = released.
+        if (value === 0) {
+          longPressFired = false;
+
+          // After a short delay (so quick taps don't flash it), show the
+          // "keep holding to reset" progress until the threshold is reached.
+          holdFeedbackTimer = setTimeout(() => {
+            engine.render(
+              createHoldToResetScene(LONG_PRESS_MS - HOLD_FEEDBACK_DELAY_MS),
+            );
+          }, HOLD_FEEDBACK_DELAY_MS);
+
+          longPressTimer = setTimeout(() => {
+            longPressFired = true;
+            handleLongPress();
+          }, LONG_PRESS_MS);
+        } else {
+          if (holdFeedbackTimer) clearTimeout(holdFeedbackTimer);
+          if (longPressTimer) clearTimeout(longPressTimer);
+          holdFeedbackTimer = null;
+          longPressTimer = null;
+
+          // The long-press action already fired (and is rebooting); ignore the
+          // release. Otherwise treat it as a normal preset-cycling tap.
+          if (!longPressFired) {
+            handleButtonPress();
+          }
+        }
       });
 
       console.log(
