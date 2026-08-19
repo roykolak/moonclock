@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   IconAdjustmentsHorizontal,
-  IconCpu,
   IconDeviceTv,
   IconExclamationCircleFilled,
   IconLayersIntersect,
@@ -139,17 +138,6 @@ function App({
         />
 
         <Divider my="xs" />
-        <NavLink
-          component={Link}
-          href="/hardware"
-          label="Hardware"
-          active={pathname.includes("/hardware")}
-          leftSection={
-            <ActionIcon variant="light">
-              <IconCpu style={{ width: "70%", height: "70%" }} stroke={1.5} />
-            </ActionIcon>
-          }
-        />
         <NavLink
           component={Link}
           href="/logs"
