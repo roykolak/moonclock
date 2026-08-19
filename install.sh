@@ -9,6 +9,35 @@ log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
 }
 
+# Optional LED panel settings, applied to the database once the app is copied.
+# Only the flags passed here are changed; everything else keeps its default or
+# previously-tuned value. See dist/hardware/configure-panel.cjs.
+PANEL_ARGS=()
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: install.sh [LED panel options]
+
+LED panel options (all optional, --flag=value form):
+  --brightness=N            Panel brightness, 0-100
+  --hardware-mapping=NAME    regular | adafruit-hat | adafruit-hat-pwm | regular-pi1
+  --pwm-bits=N               PWM bits, 1-11
+  --gpio-slowdown=N          GPIO slowdown, 0-4
+  --pwm-lsb-nanoseconds=N    PWM LSB nanoseconds
+EOF
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --brightness=* | --hardware-mapping=* | --pwm-bits=* | \
+    --gpio-slowdown=* | --pwm-lsb-nanoseconds=*)
+      PANEL_ARGS+=("$1"); shift ;;
+    -h | --help) usage ;;
+    *) echo "Unknown option: $1" >&2; usage ;;
+  esac
+done
+
 if [ ! -d "$DATA_FOLDER" ]; then
     sudo mkdir -p "$DATA_FOLDER"
 fi
@@ -80,6 +109,11 @@ log " -> Seeding database file"
 
 sudo touch $DATA_FOLDER/database.json
 sudo chmod 666 $DATA_FOLDER/database.json
+
+if [ ${#PANEL_ARGS[@]} -gt 0 ]; then
+  log " -> Applying LED panel configuration"
+  NODE_ENV=production node ./dist/hardware/configure-panel.cjs "${PANEL_ARGS[@]}"
+fi
 
 log " -> Loosen fontconfig cache permissions"
 

@@ -14,13 +14,23 @@ set -euo pipefail
 
 DOWNLOAD_URL="https://github.com/roykolak/moonclock/releases/latest/download/release.tar.gz"
 SKIP_REBOOT=""
+# LED panel flags to forward to install.sh (see its --help).
+INSTALL_ARGS=()
 
 usage() {
   cat >&2 <<'EOF'
-Usage: bootstrap.sh [--no-reboot]
+Usage: bootstrap.sh [--no-reboot] [LED panel options]
 
   --no-reboot   Don't reboot when finished. The panel will not work correctly
                 until you reboot yourself.
+
+LED panel options (all optional, --flag=value form) are forwarded to install.sh
+and configure the panel on first boot instead of via the Settings page:
+  --brightness=N            Panel brightness, 0-100
+  --hardware-mapping=NAME    regular | adafruit-hat | adafruit-hat-pwm | regular-pi1
+  --pwm-bits=N               PWM bits, 1-11
+  --gpio-slowdown=N          GPIO slowdown, 0-4
+  --pwm-lsb-nanoseconds=N    PWM LSB nanoseconds
 EOF
   exit 1
 }
@@ -28,6 +38,9 @@ EOF
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-reboot) SKIP_REBOOT="1"; shift ;;
+    --brightness=* | --hardware-mapping=* | --pwm-bits=* | \
+    --gpio-slowdown=* | --pwm-lsb-nanoseconds=*)
+      INSTALL_ARGS+=("$1"); shift ;;
     -h | --help) usage ;;
     *) echo "Unknown option: $1" >&2; usage ;;
   esac
@@ -161,7 +174,7 @@ chmod +x "$RELEASE_DIR/install.sh" "$RELEASE_DIR/install-dependencies.sh"
 echo "Running install.sh"
 
 cd "$RELEASE_DIR"
-./install.sh
+./install.sh ${INSTALL_ARGS[@]+"${INSTALL_ARGS[@]}"}
 
 echo ""
 

@@ -62,6 +62,16 @@ rewriteNativeModulePaths("dist/hardware/color-swatches.cjs");
 
 console.log("\n -> Color-swatch tool built");
 
+// install-time LED panel configurator. Only touches the JSON database (no
+// native module), so it doesn't need rewriteNativeModulePaths.
+await esbuild.build({
+  ...esbuildOptions,
+  entryPoints: ["hardware/configure-panel.ts"],
+  outfile: "dist/hardware/configure-panel.cjs",
+});
+
+console.log("\n -> Panel configurator built");
+
 fs.cpSync("hardware/prebuilt", "dist/hardware", { recursive: true });
 
 console.log("\n -> Copied prebuilt native modules to dist/hardware");

@@ -1,0 +1,118 @@
+// Applies LED panel settings to the database from the command line.
+//
+// install.sh runs this (as `NODE_ENV=production node configure-panel.cjs ...`)
+// so the panel can be configured at install time instead of by hand on the
+// Settings page after first boot. Only the fields you pass are changed; every
+// other panel field and all presets are left alone. Passing no flags is a
+// no-op.
+//
+//   node configure-panel.cjs \
+//     --brightness=50 --hardware-mapping=adafruit-hat-pwm \
+//     --pwm-bits=11 --gpio-slowdown=4 --pwm-lsb-nanoseconds=130
+//
+// getData()/setData() choose the database file from NODE_ENV (see
+// databaseFile() in src/server/utils.ts), so run with NODE_ENV=production to
+// target /var/lib/moonclock/database.json.
+
+import { getData, setData } from "@/server/db";
+import type { Panel } from "@/types";
+
+const HARDWARE_MAPPINGS = [
+  "regular",
+  "adafruit-hat",
+  "adafruit-hat-pwm",
+  "regular-pi1",
+];
+
+function parseArgs(argv: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const arg of argv) {
+    const match = arg.match(/^--([^=]+)=(.*)$/);
+    if (match) {
+      out[match[1]] = match[2];
+    } else {
+      fail(`Unrecognized argument: ${arg} (expected --flag=value)`);
+    }
+  }
+  return out;
+}
+
+function fail(message: string): never {
+  console.error(`configure-panel: ${message}`);
+  process.exit(1);
+}
+
+// Parses an integer flag and checks it falls within [min, max] inclusive.
+function intInRange(
+  args: Record<string, string>,
+  flag: string,
+  min: number,
+  max: number,
+): number | undefined {
+  const raw = args[flag];
+  if (raw === undefined) return undefined;
+  if (!/^-?\d+$/.test(raw.trim())) {
+    fail(`--${flag} must be an integer, got "${raw}"`);
+  }
+  const value = Number(raw);
+  if (value < min || value > max) {
+    fail(`--${flag} must be between ${min} and ${max}, got ${value}`);
+  }
+  return value;
+}
+
+const args = parseArgs(process.argv.slice(2));
+
+const KNOWN_FLAGS = [
+  "brightness",
+  "hardware-mapping",
+  "pwm-bits",
+  "gpio-slowdown",
+  "pwm-lsb-nanoseconds",
+];
+for (const flag of Object.keys(args)) {
+  if (!KNOWN_FLAGS.includes(flag)) {
+    fail(`Unknown flag --${flag}. Known flags: ${KNOWN_FLAGS.join(", ")}`);
+  }
+}
+
+const overrides: Partial<Panel> = {};
+
+const brightness = intInRange(args, "brightness", 0, 100);
+if (brightness !== undefined) overrides.brightness = brightness;
+
+const pwmBits = intInRange(args, "pwm-bits", 1, 11);
+if (pwmBits !== undefined) overrides.pwmBits = pwmBits as Panel["pwmBits"];
+
+const gpioSlowdown = intInRange(args, "gpio-slowdown", 0, 4);
+if (gpioSlowdown !== undefined) {
+  overrides.gpioSlowdown = gpioSlowdown as Panel["gpioSlowdown"];
+}
+
+const pwnLsbNanoseconds = intInRange(args, "pwm-lsb-nanoseconds", 1, 100000);
+if (pwnLsbNanoseconds !== undefined) {
+  overrides.pwnLsbNanoseconds = pwnLsbNanoseconds;
+}
+
+if (args["hardware-mapping"] !== undefined) {
+  const mapping = args["hardware-mapping"];
+  if (!HARDWARE_MAPPINGS.includes(mapping)) {
+    fail(
+      `--hardware-mapping must be one of ${HARDWARE_MAPPINGS.join(", ")}, got "${mapping}"`,
+    );
+  }
+  overrides.hardwareMapping = mapping;
+}
+
+if (Object.keys(overrides).length === 0) {
+  console.log("configure-panel: no panel flags passed, nothing to do");
+  process.exit(0);
+}
+
+const { panel } = getData();
+setData({ panel: { ...panel, ...overrides } });
+
+const applied = Object.entries(overrides)
+  .map(([key, value]) => `${key}=${value}`)
+  .join(" ");
+console.log(`configure-panel: applied ${applied}`);

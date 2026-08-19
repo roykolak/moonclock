@@ -92,6 +92,26 @@ Pass `--no-reboot` if you'd rather reboot yourself:
 curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- --no-reboot
 ```
 
+You can configure the LED panel up front instead of editing it on the Settings
+page after first boot. Any of these flags are forwarded to the installer, and
+only the fields you pass are changed:
+
+```
+curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- \
+  --brightness=50 --hardware-mapping=adafruit-hat-pwm --pwm-bits=11 \
+  --gpio-slowdown=4 --pwm-lsb-nanoseconds=130
+```
+
+- `--brightness=N` — panel brightness, 0-100
+- `--hardware-mapping=NAME` — `regular`, `adafruit-hat`, `adafruit-hat-pwm`, or `regular-pi1`
+- `--pwm-bits=N` — PWM bits, 1-11
+- `--gpio-slowdown=N` — GPIO slowdown, 0-4
+- `--pwm-lsb-nanoseconds=N` — PWM LSB nanoseconds
+
+Re-running with these flags overwrites those fields even if you've since tuned
+them on the Settings page. The flags require a release that includes them, so
+they're a no-op against older releases.
+
 Your moonclock will automatically start after any pi restarts.
 
 To start Moonclock immediate run...
