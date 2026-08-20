@@ -241,7 +241,12 @@ export default function MainScreen({
         <Settings panel={panel} nextVersion={nextVersion} />
       </Modal>
 
-      <Modal opened={logsOpen} onClose={logsHandlers.close} size="xl">
+      <Modal
+        opened={logsOpen}
+        onClose={logsHandlers.close}
+        title="Logs"
+        size="xl"
+      >
         <LogsViewer />
       </Modal>
 
