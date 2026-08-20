@@ -72,6 +72,10 @@ apt-get update
 # with jq. Newer releases use node.
 apt-get install -y jq
 
+# fontconfig provides /etc/fonts so skia-canvas (the panel renderer) can resolve
+# a default font config instead of erroring at startup.
+apt-get install -y fontconfig
+
 echo "Preparing the machine"
 
 echo " -> Disabling onboard sound (required by rpi-rgb-led-matrix)"

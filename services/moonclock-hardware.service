@@ -6,6 +6,9 @@ Wants=network.target
 [Service]
 User=root
 Group=root
+# skia-canvas's bundled fontconfig can't find a default config on its own
+# ("Cannot load default config file"); point it at the system one.
+Environment=FONTCONFIG_PATH=/etc/fonts
 Type=simple
 Restart=always
 RestartSec=5

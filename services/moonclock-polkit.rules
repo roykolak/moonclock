@@ -1,0 +1,19 @@
+// Moonclock's hardware service runs headless as root under systemd, which has
+// no active logind session. polkit authorizes reboot and NetworkManager changes
+// on session activity, NOT on uid — so without this rule even a root process is
+// denied ("Interactive authentication required" / "Insufficient privileges").
+// The long-press WiFi-reset flow needs exactly these actions: forget saved
+// networks (NetworkManager) and reboot into the setup portal (logind).
+polkit.addRule(function (action, subject) {
+  if (subject.user !== "root") {
+    return;
+  }
+
+  if (
+    action.id === "org.freedesktop.login1.reboot" ||
+    action.id === "org.freedesktop.login1.reboot-multiple-sessions" ||
+    action.id.indexOf("org.freedesktop.NetworkManager.") === 0
+  ) {
+    return polkit.Result.YES;
+  }
+});
