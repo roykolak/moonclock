@@ -386,14 +386,14 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
-  let currentPinnedIndex = -1;
+  let currentPresetIndex = -1;
   let activePreview: {
     timeoutId: NodeJS.Timeout | null;
     cancelled: boolean;
     resolve: (() => void) | null;
   } | null = null;
 
-  // Cycles through pinned presets (then a clear step), exactly as a hardware
+  // Cycles through presets (then a clear step), exactly as a hardware
   // button press would. Exposed so both the GPIO watcher and the
   // POST /api/button-press endpoint drive the identical code path.
   async function handleButtonPress() {
@@ -415,19 +415,18 @@ export async function createCanvas(dimensions: Dimensions) {
     };
     activePreview = op;
 
-    console.log("[HARDWARE] Button pressed! Cycling to next pinned preset...");
+    console.log("[HARDWARE] Button pressed! Cycling to next preset...");
 
     const { presets } = getData();
-    const pinnedPresets = presets.filter((p) => p.pinned);
 
-    if (pinnedPresets.length === 0) {
-      console.log("[HARDWARE] No pinned presets found");
+    if (presets.length === 0) {
+      console.log("[HARDWARE] No presets found");
       return;
     }
 
-    currentPinnedIndex = (currentPinnedIndex + 1) % (pinnedPresets.length + 1);
+    currentPresetIndex = (currentPresetIndex + 1) % (presets.length + 1);
 
-    if (currentPinnedIndex === pinnedPresets.length) {
+    if (currentPresetIndex === presets.length) {
       console.log("[HARDWARE] Clearing scheduled preset");
 
       setData({
@@ -448,7 +447,7 @@ export async function createCanvas(dimensions: Dimensions) {
       engine.render(scene);
       return;
     } else {
-      const nextPreset = pinnedPresets[currentPinnedIndex];
+      const nextPreset = presets[currentPresetIndex];
 
       console.log(`[HARDWARE] Switching to preset: ${nextPreset.name}`);
 

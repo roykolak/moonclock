@@ -182,7 +182,7 @@ export function Settings({ panel }: SettingsProps) {
                 <Stack gap={4}>
                   <Switch
                     label="Enable Button"
-                    description="Enable GPIO button to cycle through pinned presets"
+                    description="Enable GPIO button to cycle through presets"
                     key={form.key("buttonEnabled")}
                     {...form.getInputProps("buttonEnabled", {
                       type: "checkbox",

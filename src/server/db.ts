@@ -42,7 +42,6 @@ export const defaultData: DataTypes = {
       untilHour: "7",
       untilMinute: "00",
       forTime: "",
-      pinned: true,
     },
     {
       id: randomUUID(),
@@ -53,7 +52,6 @@ export const defaultData: DataTypes = {
       untilHour: "0",
       untilMinute: "0",
       forTime: "2:00",
-      pinned: false,
     },
   ],
 };

@@ -47,7 +47,6 @@ export interface Preset {
   forTime: string;
   timeAdjustmentAmount?: string;
   brightness?: number | null;
-  pinned?: boolean;
   /** A scene id from src/scenes/catalog.ts. */
   sceneId: string;
 }
