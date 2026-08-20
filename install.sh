@@ -102,6 +102,70 @@ log " -> Installing polkit rule (lets the root service reboot + manage WiFi)"
 sudo mkdir -p /etc/polkit-1/rules.d
 sudo cp services/moonclock-polkit.rules /etc/polkit-1/rules.d/10-moonclock.rules
 
+log " -> Configuring boot settings (sound off, button GPIO)"
+
+# Sound and the external-button GPIO pull-up live in the Pi's boot config. Unlike
+# the rest of install.sh they only take effect on reboot, so they converge on the
+# NEXT restart rather than immediately. Doing this here (not just once in
+# bootstrap.sh) is what lets these settings reach already-installed clocks on
+# update — bootstrap.sh no longer touches the boot config.
+BOOT_CONFIG=""
+if [ -f /boot/firmware/config.txt ]; then
+  BOOT_CONFIG="/boot/firmware/config.txt"
+elif [ -f /boot/config.txt ]; then
+  BOOT_CONFIG="/boot/config.txt"
+fi
+
+if [ -z "$BOOT_CONFIG" ]; then
+  # No Raspberry Pi boot layout (e.g. a dev VM) — nothing to configure here.
+  log "   -> No Pi boot config found, skipping boot settings"
+else
+  BOOT_CONFIG_CHANGED=""
+
+  # Disable onboard sound (required by rpi-rgb-led-matrix).
+  BLACKLIST_FILE="/etc/modprobe.d/blacklist-rgb-matrix.conf"
+  if [ ! -f "$BLACKLIST_FILE" ]; then
+    echo "blacklist snd_bcm2835" | sudo tee "$BLACKLIST_FILE" > /dev/null
+    sudo update-initramfs -u
+    BOOT_CONFIG_CHANGED="1"
+  fi
+
+  if grep -qE '^[[:space:]]*dtparam=audio=on' "$BOOT_CONFIG"; then
+    sudo sed -i 's/^[[:space:]]*dtparam=audio=on/dtparam=audio=off/' "$BOOT_CONFIG"
+    BOOT_CONFIG_CHANGED="1"
+  elif ! grep -qE '^[[:space:]]*dtparam=audio=off' "$BOOT_CONFIG"; then
+    echo "dtparam=audio=off" | sudo tee -a "$BOOT_CONFIG" > /dev/null
+    BOOT_CONFIG_CHANGED="1"
+  fi
+
+  # External-button pull-up on BCM 25 (must match BUTTON_GPIO_PIN in the hardware
+  # service). Drop the old gpio=16 line moonclock used to write — BCM 16 is a
+  # matrix data pin — so updating an older install migrates cleanly instead of
+  # leaving a conflicting pull-up behind.
+  if grep -qE '^[[:space:]]*gpio=16=ip,pu' "$BOOT_CONFIG"; then
+    sudo sed -i '/^[[:space:]]*gpio=16=ip,pu/d' "$BOOT_CONFIG"
+    BOOT_CONFIG_CHANGED="1"
+  fi
+  if ! grep -qE '^[[:space:]]*gpio=25=ip,pu' "$BOOT_CONFIG"; then
+    echo "gpio=25=ip,pu" | sudo tee -a "$BOOT_CONFIG" > /dev/null
+    BOOT_CONFIG_CHANGED="1"
+  fi
+
+  # GPIO access for the (root) hardware service.
+  sudo usermod -a -G gpio root
+
+  GPIO_RULES="/etc/udev/rules.d/99-gpio.rules"
+  if [ ! -f "$GPIO_RULES" ]; then
+    echo 'SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"' | sudo tee "$GPIO_RULES" > /dev/null
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+  fi
+
+  if [ -n "$BOOT_CONFIG_CHANGED" ]; then
+    log "   -> Boot config changed — reboot to apply the sound/GPIO settings"
+  fi
+fi
+
 log " -> Reloading systemd daemons"
 
 sudo systemctl daemon-reload

@@ -2,8 +2,9 @@
 set -euo pipefail
 
 # Takes a freshly flashed Raspberry Pi OS Lite card from nothing to a running
-# moonclock. Prepares the machine (sound, GPIO), downloads the latest release,
-# and runs install.sh.
+# moonclock. Installs the system packages that need the network up front,
+# downloads the latest release, and runs install.sh — which configures the
+# machine (sound, GPIO boot config, services) and installs the app.
 #
 #   curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash
 #
@@ -51,16 +52,6 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-if [ -f /boot/firmware/config.txt ]; then
-  BOOT_CONFIG="/boot/firmware/config.txt"
-elif [ -f /boot/config.txt ]; then
-  BOOT_CONFIG="/boot/config.txt"
-else
-  echo "Can't find config.txt in /boot/firmware or /boot." >&2
-  echo "This doesn't look like a Raspberry Pi running Raspberry Pi OS." >&2
-  exit 1
-fi
-
 WORK_DIR=$(mktemp -d)
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -75,45 +66,6 @@ apt-get install -y jq
 # fontconfig provides /etc/fonts so skia-canvas (the panel renderer) can resolve
 # a default font config instead of erroring at startup.
 apt-get install -y fontconfig
-
-echo "Preparing the machine"
-
-echo " -> Disabling onboard sound (required by rpi-rgb-led-matrix)"
-
-BLACKLIST_FILE="/etc/modprobe.d/blacklist-rgb-matrix.conf"
-if [ ! -f "$BLACKLIST_FILE" ]; then
-  echo "blacklist snd_bcm2835" > "$BLACKLIST_FILE"
-  update-initramfs -u
-else
-  echo "   -> already blacklisted, skipping"
-fi
-
-if grep -qE '^[[:space:]]*dtparam=audio=on' "$BOOT_CONFIG"; then
-  sed -i 's/^[[:space:]]*dtparam=audio=on/dtparam=audio=off/' "$BOOT_CONFIG"
-elif ! grep -qE '^[[:space:]]*dtparam=audio=off' "$BOOT_CONFIG"; then
-  echo "dtparam=audio=off" >> "$BOOT_CONFIG"
-else
-  echo "   -> audio already off, skipping"
-fi
-
-echo " -> Configuring GPIO for the external button"
-
-if ! grep -qE '^[[:space:]]*gpio=25=ip,pu' "$BOOT_CONFIG"; then
-  echo "gpio=25=ip,pu" >> "$BOOT_CONFIG"
-else
-  echo "   -> gpio=25 already configured, skipping"
-fi
-
-usermod -a -G gpio root
-
-GPIO_RULES="/etc/udev/rules.d/99-gpio.rules"
-if [ ! -f "$GPIO_RULES" ]; then
-  echo 'SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"' > "$GPIO_RULES"
-  udevadm control --reload-rules
-  udevadm trigger
-else
-  echo "   -> gpio udev rule exists, skipping"
-fi
 
 echo " -> Setting up WiFi provisioning (NetworkManager + wifi-connect)"
 
