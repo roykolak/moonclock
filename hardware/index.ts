@@ -20,6 +20,12 @@ import { createHoldToResetScene, createSetupNeededScene } from "./wifi/scenes";
 
 const execAsync = promisify(exec);
 
+// The button's GPIO pin is fixed, not configurable: its pull-up is enabled by
+// `gpio=25=ip,pu` in bootstrap.sh's boot config, and that pin has to match what
+// we open here. 537 = global gpiochip offset 512 + BCM 25 (physical pin 22, a
+// free pin under the adafruit-hat mapping, next to a GND).
+const BUTTON_GPIO_PIN = 537;
+
 let syncSpeed = 0;
 const virtualPanel: { [k: string]: string } = {};
 
@@ -529,7 +535,7 @@ export async function createCanvas(dimensions: Dimensions) {
       const { Gpio } = await import("onoff");
       // Watch both edges so we can measure how long the button is held and tell
       // a short tap (cycle presets) apart from a long hold (reset WiFi).
-      const button = new Gpio(panel.buttonGpioPin, "in", "both", {
+      const button = new Gpio(BUTTON_GPIO_PIN, "in", "both", {
         debounceTimeout: 50,
       });
 
@@ -576,9 +582,7 @@ export async function createCanvas(dimensions: Dimensions) {
         }
       });
 
-      console.log(
-        `[HARDWARE] Button initialized on GPIO ${panel.buttonGpioPin}`,
-      );
+      console.log(`[HARDWARE] Button initialized on GPIO ${BUTTON_GPIO_PIN}`);
     } catch (error) {
       console.error("[HARDWARE] Failed to initialize button GPIO:", error);
       console.error("[HARDWARE] Button functionality will be disabled");

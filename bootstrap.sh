@@ -98,10 +98,10 @@ fi
 
 echo " -> Configuring GPIO for the external button"
 
-if ! grep -qE '^[[:space:]]*gpio=16=ip,pu' "$BOOT_CONFIG"; then
-  echo "gpio=16=ip,pu" >> "$BOOT_CONFIG"
+if ! grep -qE '^[[:space:]]*gpio=25=ip,pu' "$BOOT_CONFIG"; then
+  echo "gpio=25=ip,pu" >> "$BOOT_CONFIG"
 else
-  echo "   -> gpio=16 already configured, skipping"
+  echo "   -> gpio=25 already configured, skipping"
 fi
 
 usermod -a -G gpio root
