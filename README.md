@@ -77,7 +77,7 @@ That's the whole thing. It prepares the machine, downloads the latest release, i
 Specifically, it...
 
 - Disables onboard sound, which `hzeller/rpi-rgb-led-matrix` [requires](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound)
-- Configures GPIO 16 and its udev rule, for the optional external button
+- Configures GPIO 25 and its udev rule, for the optional external button
 - Installs `wifi-connect` and NetworkManager for the WiFi setup portal
 - Downloads and installs the latest release
 - Reboots to apply the boot config

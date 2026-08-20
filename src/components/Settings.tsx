@@ -192,7 +192,7 @@ export function Settings({ panel }: SettingsProps) {
                   {form.getValues().buttonEnabled && (
                     <NumberInput
                       label="Button GPIO Pin"
-                      description="GPIO chip-relative offset for the button (e.g. 528 for BCM GPIO16)"
+                      description="GPIO chip-relative offset for the button (e.g. 537 for BCM GPIO25)"
                       variant="filled"
                       min={0}
                       key={form.key("buttonGpioPin")}
