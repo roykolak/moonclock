@@ -9,6 +9,7 @@ export function getFriendlyEndTime(preset: Preset) {
     return `Until ${endDate?.toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit",
+      hour12: true,
     })} tomorrow`;
   }
 
