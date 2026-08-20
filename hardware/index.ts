@@ -1,4 +1,4 @@
-import { LedMatrix, GpioMapping } from "rpi-led-matrix";
+import { LedMatrix, GpioMapping, RuntimeFlag } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Pixel, Scene } from "../src/display-engine/types";
@@ -210,6 +210,13 @@ export async function createCanvas(dimensions: Dimensions) {
       {
         ...LedMatrix.defaultRuntimeOptions(),
         gpioSlowdown: panel.gpioSlowdown,
+        // The library defaults dropPrivileges to On, which setuids the whole
+        // process from root to `daemon` (uid 1) right after GPIO init. That
+        // silently breaks the long-press WiFi reset: `nmcli` and `reboot` then
+        // run as uid 1, so NetworkManager/logind polkit denies them (our rule
+        // only grants root). Stay root — this is a headless appliance whose
+        // whole reset flow needs elevated privs.
+        dropPrivileges: RuntimeFlag.Off,
       },
     );
     matrix.afterSync(() => {
