@@ -11,6 +11,7 @@ import express from "express";
 import Bonjour from "bonjour-service";
 import { exec } from "child_process";
 import { promisify } from "util";
+import os from "os";
 import { getIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 import { getScene } from "@/helpers/getScene";
@@ -165,18 +166,20 @@ export async function createCanvas(dimensions: Dimensions) {
     console.log(`[HARDWARE] Server running on port ${port}`);
 
     const bonjour = new Bonjour();
-    bonjour.publish({ name: "moonclock", type: "moonclock", port });
+    // A per-device instance name (mDNS hostnames are unique on the link) keeps
+    // multiple clocks from colliding on the same network — a duplicate name is
+    // rejected with "Service name is already in use". Handle the error so a
+    // collision (e.g. a stale record after a hard restart) stays non-fatal
+    // rather than throwing from bonjour's internals.
+    const service = bonjour.publish({
+      name: `moonclock-${os.hostname()}`,
+      type: "moonclock",
+      port,
+    });
+    service.on("error", (error) => {
+      console.error("[HARDWARE] mDNS publish error:", error);
+    });
     console.log(`[HARDWARE] Advertising as _moonclock._tcp via mDNS`);
-
-    const browser = bonjour.find({ type: "moonclock" });
-    browser.on("up", (service) => {
-      console.log(
-        `[HARDWARE] Discovered peer: ${service.name} at ${service.addresses?.[0]}:${service.port}`,
-      );
-    });
-    browser.on("down", (service) => {
-      console.log(`[HARDWARE] Peer went offline: ${service.name}`);
-    });
   });
 
   const { panel } = await getData();

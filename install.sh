@@ -94,6 +94,14 @@ sudo cp services/moonclock-wifi-provision.service /etc/systemd/system/
 sudo cp services/moonclock-update-checker.service /etc/systemd/system/
 sudo cp services/moonclock-update-checker.timer /etc/systemd/system/
 
+log " -> Installing polkit rule (lets the root service reboot + manage WiFi)"
+
+# polkit gates reboot and NetworkManager changes on an active login session, so
+# the headless service is denied even as root without this. rules.d is watched
+# and hot-reloaded by polkit, so no restart is needed.
+sudo mkdir -p /etc/polkit-1/rules.d
+sudo cp services/moonclock-polkit.rules /etc/polkit-1/rules.d/10-moonclock.rules
+
 log " -> Reloading systemd daemons"
 
 sudo systemctl daemon-reload
