@@ -79,21 +79,10 @@ test.describe("Test", () => {
     await expect(lastPreset).not.toHaveText("Updated custom preset");
   });
 
-  test("pinning a preset", async ({ page }) => {
+  test("presets appear as launch buttons on the panel", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByRole("button", { name: "Bunny" })).toHaveCount(0);
-
-    await page.getByRole("link", { name: "Presets" }).click();
-
-    const bunnyPreset = page
-      .getByTestId("preset-item")
-      .filter({ hasText: "Bunny" });
-
-    await bunnyPreset.getByTestId("pin-toggle").click();
-
-    await page.getByRole("link", { name: "Panel" }).click();
-
+    await expect(page.getByRole("button", { name: "Moon" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Bunny" })).toHaveCount(1);
   });
 });
