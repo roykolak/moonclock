@@ -1,33 +1,63 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { Panel } from "@/types";
+import { NextVersion, Panel } from "@/types";
 import {
   Accordion,
   Button,
   Divider,
+  Group,
   Select,
   Slider,
   Stack,
-  Switch,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import { IconRefresh } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import packageInfo from "../../package.json";
+import { UpdatePrompt } from "./UpdatePrompt";
 
 interface SettingsProps {
   panel: Panel;
+  nextVersion: NextVersion | null;
 }
 
-export function Settings({ panel }: SettingsProps) {
+export function Settings({ panel, nextVersion }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
       updateChannel: panel.updateChannel ?? "stable",
     },
   });
+
+  const router = useRouter();
+  const [checkingForUpdate, setCheckingForUpdate] = useState(false);
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
+
+  const handleCheckForUpdate = async () => {
+    setCheckingForUpdate(true);
+    try {
+      const response = await fetch("/api/check-for-update", { method: "PUT" });
+      const data = await response.json();
+      if (data.available) {
+        router.refresh();
+        setReleaseNotesOpen(true);
+      } else if (data.message?.includes("Error")) {
+        showNotification({ message: data.message, color: "red" });
+      } else {
+        showNotification({ message: "You're up to date!" });
+      }
+    } catch {
+      showNotification({ message: "Failed to check for update", color: "red" });
+    } finally {
+      setCheckingForUpdate(false);
+    }
+  };
 
   return (
     <form
@@ -37,9 +67,6 @@ export function Settings({ panel }: SettingsProps) {
       })}
       data-testid="preset-form"
     >
-      <Title order={2} mb="md">
-        Panel Settings
-      </Title>
       <Stack>
         <TextInput
           placeholder=""
@@ -50,25 +77,6 @@ export function Settings({ panel }: SettingsProps) {
           data-testid="panel-name-input"
           key={form.key("name")}
           {...form.getInputProps("name")}
-        />
-        <Select
-          placeholder="Time increment"
-          variant="filled"
-          style={{ flex: 1 }}
-          label="Time increment"
-          description="Adjust +/- controls for time amounts"
-          data={[
-            { label: "1 minute", value: "1" },
-            { label: "5 minutes", value: "5" },
-            { label: "10 minutes", value: "10" },
-            { label: "20 minutes", value: "20" },
-            { label: "30 minutes", value: "30" },
-            { label: "1 hour", value: "60" },
-          ]}
-          data-testid="time-adjustment-select"
-          required
-          key={form.key("timeAdjustmentAmount")}
-          {...form.getInputProps("timeAdjustmentAmount")}
         />
         <Divider />
 
@@ -90,6 +98,29 @@ export function Settings({ panel }: SettingsProps) {
           key={form.key("updateChannel")}
           {...form.getInputProps("updateChannel")}
         />
+
+        <Group justify="space-between" align="center">
+          <Text c="dimmed" size="sm">
+            v{packageInfo.version}
+          </Text>
+          <Group gap="xs" align="center">
+            <UpdatePrompt
+              nextVersion={nextVersion}
+              releaseNotesOpen={releaseNotesOpen}
+              onReleaseNotesOpenChange={setReleaseNotesOpen}
+            />
+            <Button
+              size="xs"
+              variant="default"
+              leftSection={<IconRefresh size={16} stroke={1.5} />}
+              onClick={handleCheckForUpdate}
+              loading={checkingForUpdate}
+              data-testid="check-for-update-button"
+            >
+              Check for updates
+            </Button>
+          </Group>
+        </Group>
 
         <Divider />
 
@@ -178,17 +209,6 @@ export function Settings({ panel }: SettingsProps) {
                   key={form.key("hardwareMapping")}
                   {...form.getInputProps("hardwareMapping")}
                 />
-
-                <Stack gap={4}>
-                  <Switch
-                    label="Enable Button"
-                    description="Enable GPIO button to cycle through presets"
-                    key={form.key("buttonEnabled")}
-                    {...form.getInputProps("buttonEnabled", {
-                      type: "checkbox",
-                    })}
-                  />
-                </Stack>
               </Stack>
             </Accordion.Panel>
           </Accordion.Item>

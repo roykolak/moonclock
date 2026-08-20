@@ -17,14 +17,12 @@ const defaultPreset: Preset = {
 export const defaultData: DataTypes = {
   panel: {
     name: "My Moonclock",
-    timeAdjustmentAmount: "5",
     defaultPreset,
     brightness: 30,
     pwnLsbNanoseconds: 130,
     gpioSlowdown: 4,
     pwmBits: 11,
     hardwareMapping: "adafruit-hat",
-    buttonEnabled: false,
     updateChannel: "stable",
   },
   scheduledPreset: {

@@ -1,5 +1,6 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "./global.css";
 import {
   ColorSchemeScript,
   createTheme,

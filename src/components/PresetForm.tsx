@@ -225,23 +225,6 @@ export function AdvancedSettings({
                 {...form.getInputProps("brightness")}
               />
             </Stack>
-
-            <Select
-              label="Time adjustment interval"
-              description="Configure a custom time adjustment interval in the UI"
-              placeholder="Select..."
-              data={[
-                { label: "1 minute", value: "1" },
-                { label: "5 minutes", value: "5" },
-                { label: "10 minutes", value: "10" },
-                { label: "20 minutes", value: "20" },
-                { label: "30 minutes", value: "30" },
-                { label: "1 hour", value: "60" },
-              ]}
-              data-testid="time-adjustment-select"
-              key={form.key("timeAdjustmentAmount")}
-              {...form.getInputProps("timeAdjustmentAmount")}
-            />
           </Stack>
         </Accordion.Panel>
       </Accordion.Item>

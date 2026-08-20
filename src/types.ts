@@ -25,13 +25,11 @@ export type UpdateChannel = "stable" | "beta";
 
 export interface Panel {
   name: string;
-  timeAdjustmentAmount: string;
   brightness: number;
   pwnLsbNanoseconds: number;
   gpioSlowdown: 0 | 1 | 2 | 3 | 4;
   pwmBits: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
   hardwareMapping: string;
-  buttonEnabled: boolean;
   updateChannel?: UpdateChannel;
   updatedAt?: string;
   defaultPreset: Preset;
@@ -45,7 +43,6 @@ export interface Preset {
   untilHour: string;
   untilMinute: string;
   forTime: string;
-  timeAdjustmentAmount?: string;
   brightness?: number | null;
   /** A scene id from src/scenes/catalog.ts. */
   sceneId: string;

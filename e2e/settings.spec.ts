@@ -14,12 +14,9 @@ test.describe("Updating panel settings", () => {
 
     await expect(page.getByText("My Moonclock")).toBeVisible();
 
-    await page.getByRole("link", { name: "Settings" }).click();
+    await page.getByTestId("open-settings").click();
 
     await page.getByTestId("panel-name-input").fill("New Moonclock");
-
-    await page.getByTestId("time-adjustment-select").click();
-    await page.getByRole("option", { name: "1 hour" }).click();
 
     await expect(page.getByTestId("update-channel-select")).toHaveValue(
       "Stable",
@@ -30,17 +27,14 @@ test.describe("Updating panel settings", () => {
 
     await page.getByRole("button", { name: "Save" }).click();
 
-    await page.getByRole("link", { name: "Panel" }).click();
+    await page.keyboard.press("Escape");
 
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
     await expect(page.getByAltText("blank scene")).toBeVisible();
 
     await page.getByRole("button", { name: "Moon" }).click();
 
-    await expect(page.getByRole("button", { name: "+1 hour" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "-1 hour" })).toBeVisible();
-
-    await page.getByRole("link", { name: "Settings" }).click();
+    await page.getByTestId("open-settings").click();
 
     await expect(page.getByTestId("update-channel-select")).toHaveValue("Beta");
   });

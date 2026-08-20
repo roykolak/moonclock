@@ -10,7 +10,6 @@ import {
   ScrollArea,
   Stack,
   Text,
-  Title,
 } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -136,8 +135,6 @@ export function LogsViewer() {
 
   return (
     <Stack h="calc(100vh - 100px)" gap="sm">
-      <Title order={2}>Logs</Title>
-
       <Chip.Group
         multiple
         value={enabledGroups}
