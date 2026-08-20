@@ -12,7 +12,7 @@ test.describe("Updating panel settings", () => {
   test("updating settings", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByText("My Moonclock")).toBeVisible();
+    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
 
     await page.getByTestId("open-settings").click();
 
@@ -30,9 +30,9 @@ test.describe("Updating panel settings", () => {
     await page.keyboard.press("Escape");
 
     await expect(page.getByTestId("panel-name")).toHaveText("New Moonclock");
-    await expect(page.getByAltText("blank scene")).toBeVisible();
 
-    await page.getByRole("button", { name: "Moon" }).click();
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("menuitem", { name: "Moon" }).click();
 
     await page.getByTestId("open-settings").click();
 

@@ -17,7 +17,9 @@ test.describe("Test", () => {
     await page.getByTestId("preset-dropdown").click();
     await page.getByRole("menuitem", { name: "Create new preset" }).click();
 
-    await expect(page.getByText("Create New Preset")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Create New Preset" }),
+    ).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Custom preset");
 
@@ -34,17 +36,19 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    // New preset appears as a launch button on the idle panel
+    // New preset appears in the dropdown menu
+    await page.getByTestId("preset-dropdown").click();
     await expect(
-      page.getByRole("button", { name: "Custom preset" }),
+      page.getByRole("menuitem", { name: "Custom preset" }),
     ).toBeVisible();
 
     // Edit Preset via the dropdown's edit button
 
-    await page.getByTestId("preset-dropdown").click();
     await page.getByRole("button", { name: "Edit Custom preset" }).click();
 
-    await expect(page.getByText("Edit Preset")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Edit Preset" }),
+    ).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Updated custom preset");
 
@@ -62,28 +66,33 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Update Preset" }).click();
 
+    // Updated name appears in the dropdown menu
+    await page.getByTestId("preset-dropdown").click();
     await expect(
-      page.getByRole("button", { name: "Updated custom preset" }),
+      page.getByRole("menuitem", { name: "Updated custom preset" }),
     ).toBeVisible();
 
     // Delete Preset via the dropdown's edit button
 
-    await page.getByTestId("preset-dropdown").click();
     await page
       .getByRole("button", { name: "Edit Updated custom preset" })
       .click();
 
     await page.getByRole("button", { name: "Delete Preset" }).click();
 
+    // Preset is gone from the dropdown menu
+    await page.getByTestId("preset-dropdown").click();
     await expect(
-      page.getByRole("button", { name: "Updated custom preset" }),
+      page.getByRole("menuitem", { name: "Updated custom preset" }),
     ).toHaveCount(0);
   });
 
-  test("presets appear as launch buttons on the panel", async ({ page }) => {
+  test("presets appear in the dropdown menu", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByRole("button", { name: "Moon" })).toHaveCount(1);
-    await expect(page.getByRole("button", { name: "Bunny" })).toHaveCount(1);
+    await page.getByTestId("preset-dropdown").click();
+
+    await expect(page.getByRole("menuitem", { name: "Moon" })).toHaveCount(1);
+    await expect(page.getByRole("menuitem", { name: "Bunny" })).toHaveCount(1);
   });
 });

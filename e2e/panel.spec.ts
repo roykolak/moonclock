@@ -9,47 +9,43 @@ test.describe("Test", () => {
     } catch {}
   });
 
-  test("activating a preset, adjusting the end time, and clearing it", async ({
-    page,
-  }) => {
+  test("activating a preset and clearing it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("button", { name: "Moon" }).click();
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
 
-    const endTime = page.getByTestId("end-time");
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("menuitem", { name: "Moon" }).click();
 
-    await expect(page.getByText("Moon until...")).toBeVisible();
-    await expect(endTime).toHaveText("7:00 AM");
-
-    await page.getByRole("button", { name: "+5 min" }).click();
-    await expect(endTime).toHaveText("7:05 AM");
-
-    await page.getByRole("button", { name: "+5 min" }).click();
-    await expect(endTime).toHaveText("7:10 AM");
-
-    await page.getByRole("button", { name: "-5 min" }).click();
-    await expect(endTime).toHaveText("7:05 AM");
+    await expect(page.getByTestId("preset-dropdown")).toContainText("Moon");
+    await expect(page.getByTestId("end-time")).toContainText("7:00 AM");
 
     await page.getByTestId("panel-menu").click();
     await page.getByRole("menuitem", { name: "Clear Panel" }).click();
 
-    await expect(page.getByRole("button", { name: "Moon" })).toBeVisible();
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
+    await expect(page.getByTestId("end-time")).toHaveCount(0);
   });
 
   test("activating a preset and editting it", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("button", { name: "Moon" }).click();
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("menuitem", { name: "Moon" }).click();
 
     await page.getByTestId("panel-menu").click();
     await page.getByRole("menuitem", { name: "Edit Preset" }).click();
 
-    await expect(page.getByText("Update Preset")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Update Preset" }),
+    ).toBeVisible();
 
     await page.getByTestId("preset-name").fill("Preset 123");
 
     await page.getByRole("button", { name: "Update", exact: true }).click();
 
-    await expect(page.getByText("Preset 123 until...")).toBeVisible();
+    await expect(page.getByTestId("preset-dropdown")).toContainText(
+      "Preset 123",
+    );
   });
 });
