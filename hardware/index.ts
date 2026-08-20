@@ -17,6 +17,7 @@ import { shouldRunBootCode } from "./shouldRunBootCode";
 import { getScene } from "@/helpers/getScene";
 import { forgetWifiNetworks, isProvisioning } from "./wifi";
 import { createHoldToResetScene, createSetupNeededScene } from "./wifi/scenes";
+import { createStartupConverge } from "@/scenes/startup";
 
 const execAsync = promisify(exec);
 
@@ -264,19 +265,10 @@ export async function createCanvas(dimensions: Dimensions) {
   if (shouldRunBootCode()) {
     console.log("[HARDWARE] Running boot message");
 
-    let loadingBit = true;
-
-    const connectionLoadingInterval = setInterval(() => {
-      loadingBit = loadingBit ? false : true;
-      engine.render({
-        draw({ ctx }) {
-          ctx.fillStyle = loadingBit ? "#6495ED" : "#000000";
-          ctx.fillRect(0, 0, 1, 1);
-          ctx.fillStyle = loadingBit ? "#000000" : "#facc0d";
-          ctx.fillRect(0, 1, 1, 1);
-        },
-      });
-    }, 500);
+    // Startup animation while we wait for the network to come up. The display
+    // engine drives its own loop; rendering the next scene (setup prompt or IP
+    // marquee) replaces it, so there's nothing to tear down here.
+    engine.render(createStartupConverge());
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -292,7 +284,6 @@ export async function createCanvas(dimensions: Dimensions) {
     while (true) {
       if (await isProvisioning()) {
         if (!showingSetupPrompt) {
-          clearInterval(connectionLoadingInterval);
           engine.render(createSetupNeededScene());
           showingSetupPrompt = true;
           console.log(
@@ -321,8 +312,6 @@ export async function createCanvas(dimensions: Dimensions) {
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-
-    clearInterval(connectionLoadingInterval);
 
     const ipText = ipAddress || "Not connected :(";
     const ipSpeed = 20; // px/sec, was the marquee macro's fps (1px/frame @ 20fps)
