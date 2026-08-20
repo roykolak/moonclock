@@ -6,7 +6,6 @@ import {
   Accordion,
   Button,
   Divider,
-  NumberInput,
   Select,
   Slider,
   Stack,
@@ -189,16 +188,6 @@ export function Settings({ panel }: SettingsProps) {
                       type: "checkbox",
                     })}
                   />
-                  {form.getValues().buttonEnabled && (
-                    <NumberInput
-                      label="Button GPIO Pin"
-                      description="GPIO chip-relative offset for the button (e.g. 537 for BCM GPIO25)"
-                      variant="filled"
-                      min={0}
-                      key={form.key("buttonGpioPin")}
-                      {...form.getInputProps("buttonGpioPin")}
-                    />
-                  )}
                 </Stack>
               </Stack>
             </Accordion.Panel>
