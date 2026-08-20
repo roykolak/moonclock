@@ -536,64 +536,62 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
-  if (panel.buttonEnabled) {
-    try {
-      const { Gpio } = await import("onoff");
-      // Watch both edges so we can measure how long the button is held and tell
-      // a short tap (cycle presets) apart from a long hold (reset WiFi).
-      const button = new Gpio(BUTTON_GPIO_PIN, "in", "both", {
-        debounceTimeout: 50,
-      });
+  try {
+    const { Gpio } = await import("onoff");
+    // Watch both edges so we can measure how long the button is held and tell
+    // a short tap (cycle presets) apart from a long hold (reset WiFi).
+    const button = new Gpio(BUTTON_GPIO_PIN, "in", "both", {
+      debounceTimeout: 50,
+    });
 
-      const LONG_PRESS_MS = 5000;
-      const HOLD_FEEDBACK_DELAY_MS = 1500;
+    const LONG_PRESS_MS = 5000;
+    const HOLD_FEEDBACK_DELAY_MS = 1500;
 
-      let longPressTimer: NodeJS.Timeout | null = null;
-      let holdFeedbackTimer: NodeJS.Timeout | null = null;
-      let longPressFired = false;
+    let longPressTimer: NodeJS.Timeout | null = null;
+    let holdFeedbackTimer: NodeJS.Timeout | null = null;
+    let longPressFired = false;
 
-      button.watch((err, value) => {
-        if (err) {
-          console.error("[HARDWARE] Button watch error:", err);
-          return;
+    button.watch((err, value) => {
+      if (err) {
+        console.error("[HARDWARE] Button watch error:", err);
+        return;
+      }
+
+      // Active-low with a pull-up: 0 = pressed, 1 = released.
+      if (value === 0) {
+        longPressFired = false;
+
+        // After a short delay (so quick taps don't flash it), show the
+        // "keep holding to reset" progress until the threshold is reached.
+        holdFeedbackTimer = setTimeout(() => {
+          engine.render(
+            createHoldToResetScene(LONG_PRESS_MS - HOLD_FEEDBACK_DELAY_MS),
+          );
+        }, HOLD_FEEDBACK_DELAY_MS);
+
+        longPressTimer = setTimeout(() => {
+          longPressFired = true;
+          handleLongPress();
+        }, LONG_PRESS_MS);
+      } else {
+        if (holdFeedbackTimer) clearTimeout(holdFeedbackTimer);
+        if (longPressTimer) clearTimeout(longPressTimer);
+        holdFeedbackTimer = null;
+        longPressTimer = null;
+
+        // The long-press action already fired (and is rebooting); ignore the
+        // release. Otherwise treat it as a normal preset-cycling tap.
+        if (!longPressFired) {
+          handleButtonPress();
         }
+      }
+    });
 
-        // Active-low with a pull-up: 0 = pressed, 1 = released.
-        if (value === 0) {
-          longPressFired = false;
-
-          // After a short delay (so quick taps don't flash it), show the
-          // "keep holding to reset" progress until the threshold is reached.
-          holdFeedbackTimer = setTimeout(() => {
-            engine.render(
-              createHoldToResetScene(LONG_PRESS_MS - HOLD_FEEDBACK_DELAY_MS),
-            );
-          }, HOLD_FEEDBACK_DELAY_MS);
-
-          longPressTimer = setTimeout(() => {
-            longPressFired = true;
-            handleLongPress();
-          }, LONG_PRESS_MS);
-        } else {
-          if (holdFeedbackTimer) clearTimeout(holdFeedbackTimer);
-          if (longPressTimer) clearTimeout(longPressTimer);
-          holdFeedbackTimer = null;
-          longPressTimer = null;
-
-          // The long-press action already fired (and is rebooting); ignore the
-          // release. Otherwise treat it as a normal preset-cycling tap.
-          if (!longPressFired) {
-            handleButtonPress();
-          }
-        }
-      });
-
-      console.log(`[HARDWARE] Button initialized on GPIO ${BUTTON_GPIO_PIN}`);
-    } catch (error) {
-      console.error("[HARDWARE] Failed to initialize button GPIO:", error);
-      console.error("[HARDWARE] Button functionality will be disabled");
-      console.error("[HARDWARE] See instructions in README.");
-    }
+    console.log(`[HARDWARE] Button initialized on GPIO ${BUTTON_GPIO_PIN}`);
+  } catch (error) {
+    console.error("[HARDWARE] Failed to initialize button GPIO:", error);
+    console.error("[HARDWARE] Button functionality will be disabled");
+    console.error("[HARDWARE] See instructions in README.");
   }
 
   setInterval(async () => {

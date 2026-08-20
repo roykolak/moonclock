@@ -1,5 +1,4 @@
-import App from "../../components/App";
-import Panel from "../../components/Panel";
+import MainScreen from "../../components/MainScreen";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
 
@@ -25,13 +24,12 @@ export default async function Page() {
   }
 
   return (
-    <App nextVersion={nextVersion}>
-      <Panel
-        panel={panel}
-        scheduledPreset={scheduledPreset}
-        formattedEndTime={formattedEndTime}
-        presets={presets}
-      />
-    </App>
+    <MainScreen
+      panel={panel}
+      scheduledPreset={scheduledPreset}
+      formattedEndTime={formattedEndTime}
+      presets={presets}
+      nextVersion={nextVersion}
+    />
   );
 }

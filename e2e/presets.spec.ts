@@ -12,11 +12,10 @@ test.describe("Test", () => {
   test("create, edit, and delete a 'for mode' preset", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.getByRole("link", { name: "Presets" }).click();
-
     // Create Preset
 
-    await page.getByRole("button", { name: "New Preset" }).click();
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("menuitem", { name: "Create new preset" }).click();
 
     await expect(page.getByText("Create New Preset")).toBeVisible();
 
@@ -35,17 +34,15 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Create Preset" }).click();
 
-    const newPreset = page.getByTestId("preset-item").last();
+    // New preset appears as a launch button on the idle panel
+    await expect(
+      page.getByRole("button", { name: "Custom preset" }),
+    ).toBeVisible();
 
-    await expect(newPreset).toBeVisible();
+    // Edit Preset via the dropdown's edit button
 
-    await expect(newPreset.getByText("Custom preset")).toBeVisible();
-    await expect(newPreset.getByText("For 30 minutes")).toBeVisible();
-    await expect(newPreset.getByAltText("moon scene")).toBeVisible();
-
-    // Edit Preset
-
-    await newPreset.getByRole("button", { name: "Edit" }).click();
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("button", { name: "Edit Custom preset" }).click();
 
     await expect(page.getByText("Edit Preset")).toBeVisible();
 
@@ -65,18 +62,22 @@ test.describe("Test", () => {
 
     await page.getByRole("button", { name: "Update Preset" }).click();
 
-    await expect(newPreset.getByText("Updated custom preset")).toBeVisible();
-    await expect(newPreset.getByText("For 1 hours & 30 mins")).toBeVisible();
-    await expect(newPreset.getByAltText("bunny scene")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Updated custom preset" }),
+    ).toBeVisible();
 
-    // Delete Preset
+    // Delete Preset via the dropdown's edit button
 
-    await newPreset.getByRole("button", { name: "Edit" }).click();
+    await page.getByTestId("preset-dropdown").click();
+    await page
+      .getByRole("button", { name: "Edit Updated custom preset" })
+      .click();
 
-    await page.getByRole("button", { name: "Delete preset" }).click();
+    await page.getByRole("button", { name: "Delete Preset" }).click();
 
-    const lastPreset = page.getByTestId("preset-item").last();
-    await expect(lastPreset).not.toHaveText("Updated custom preset");
+    await expect(
+      page.getByRole("button", { name: "Updated custom preset" }),
+    ).toHaveCount(0);
   });
 
   test("presets appear as launch buttons on the panel", async ({ page }) => {
