@@ -19,6 +19,7 @@ export default async function Page() {
       ? new Date(scheduledPreset.endTime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
+          hour12: true,
         })
       : "forever";
   }
