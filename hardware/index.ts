@@ -17,7 +17,7 @@ import { shouldRunBootCode } from "./shouldRunBootCode";
 import { getScene } from "@/helpers/getScene";
 import { forgetWifiNetworks, isProvisioning } from "./wifi";
 import { createHoldToResetScene, createSetupNeededScene } from "./wifi/scenes";
-import { createStartupConverge } from "@/scenes/startup";
+import { createStartupRing } from "@/scenes/startup";
 
 const execAsync = promisify(exec);
 
@@ -268,7 +268,7 @@ export async function createCanvas(dimensions: Dimensions) {
     // Startup animation while we wait for the network to come up. The display
     // engine drives its own loop; rendering the next scene (setup prompt or IP
     // marquee) replaces it, so there's nothing to tear down here.
-    engine.render(createStartupConverge());
+    engine.render(createStartupRing());
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
