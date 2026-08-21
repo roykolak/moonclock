@@ -24,6 +24,9 @@ LED panel options (all optional, --flag=value form):
   --pwm-bits=N               PWM bits, 1-11
   --gpio-slowdown=N          GPIO slowdown, 0-4
   --pwm-lsb-nanoseconds=N    PWM LSB nanoseconds
+  --pwm-dither-bits=N        Time-dither the lowest bits, 0-2
+  --limit-refresh-hz=N       Cap refresh rate in Hz, 0 for no limit
+  --panel-type=NAME          Empty for standard HUB75, or FM6126A | FM6127
 EOF
   exit 1
 }
@@ -31,7 +34,8 @@ EOF
 while [ $# -gt 0 ]; do
   case "$1" in
     --brightness=* | --hardware-mapping=* | --pwm-bits=* | \
-    --gpio-slowdown=* | --pwm-lsb-nanoseconds=*)
+    --gpio-slowdown=* | --pwm-lsb-nanoseconds=* | --pwm-dither-bits=* | \
+    --limit-refresh-hz=* | --panel-type=*)
       PANEL_ARGS+=("$1"); shift ;;
     -h | --help) usage ;;
     *) echo "Unknown option: $1" >&2; usage ;;
@@ -102,7 +106,7 @@ log " -> Installing polkit rule (lets the root service reboot + manage WiFi)"
 sudo mkdir -p /etc/polkit-1/rules.d
 sudo cp services/moonclock-polkit.rules /etc/polkit-1/rules.d/10-moonclock.rules
 
-log " -> Configuring boot settings (sound off, button GPIO)"
+log " -> Configuring boot settings (sound off, button GPIO, isolated CPU)"
 
 # Sound and the external-button GPIO pull-up live in the Pi's boot config. Unlike
 # the rest of install.sh they only take effect on reboot, so they converge on the
@@ -151,6 +155,25 @@ else
     BOOT_CONFIG_CHANGED="1"
   fi
 
+  # Hand core 3 to the matrix. rpi-rgb-led-matrix pins its refresh thread to
+  # that core and switches it to the `performance` governor when the kernel has
+  # isolated it, which keeps everything else on the Pi — Next.js, the update
+  # checker, us — from jittering the panel's OE pulse timing. Without it the
+  # library just prints a suggestion to add this and carries on. isolcpus is a
+  # kernel parameter, so it lives on the single line in cmdline.txt, not in
+  # config.txt with the settings above.
+  CMDLINE=""
+  if [ -f /boot/firmware/cmdline.txt ]; then
+    CMDLINE="/boot/firmware/cmdline.txt"
+  elif [ -f /boot/cmdline.txt ]; then
+    CMDLINE="/boot/cmdline.txt"
+  fi
+
+  if [ -n "$CMDLINE" ] && ! grep -q 'isolcpus=' "$CMDLINE"; then
+    sudo sed -i '1s/[[:space:]]*$/ isolcpus=3/' "$CMDLINE"
+    BOOT_CONFIG_CHANGED="1"
+  fi
+
   # GPIO access for the (root) hardware service.
   sudo usermod -a -G gpio root
 
@@ -162,7 +185,7 @@ else
   fi
 
   if [ -n "$BOOT_CONFIG_CHANGED" ]; then
-    log "   -> Boot config changed — reboot to apply the sound/GPIO settings"
+    log "   -> Boot config changed — reboot to apply the sound/GPIO/CPU settings"
   fi
 fi
 

@@ -8,14 +8,15 @@
 //
 //   node configure-panel.cjs \
 //     --brightness=50 --hardware-mapping=adafruit-hat-pwm \
-//     --pwm-bits=11 --gpio-slowdown=4 --pwm-lsb-nanoseconds=130
+//     --pwm-bits=11 --gpio-slowdown=4 --pwm-lsb-nanoseconds=130 \
+//     --pwm-dither-bits=0 --limit-refresh-hz=0 --panel-type=
 //
 // getData()/setData() choose the database file from NODE_ENV (see
 // databaseFile() in src/server/utils.ts), so run with NODE_ENV=production to
 // target /var/lib/moonclock/database.json.
 
 import { getData, setData } from "@/server/db";
-import type { Panel } from "@/types";
+import type { Panel, PanelType } from "@/types";
 
 const HARDWARE_MAPPINGS = [
   "regular",
@@ -23,6 +24,8 @@ const HARDWARE_MAPPINGS = [
   "adafruit-hat-pwm",
   "regular-pi1",
 ];
+
+const PANEL_TYPES = ["", "FM6126A", "FM6127"];
 
 function parseArgs(argv: string[]): Record<string, string> {
   const out: Record<string, string> = {};
@@ -69,6 +72,9 @@ const KNOWN_FLAGS = [
   "pwm-bits",
   "gpio-slowdown",
   "pwm-lsb-nanoseconds",
+  "pwm-dither-bits",
+  "limit-refresh-hz",
+  "panel-type",
 ];
 for (const flag of Object.keys(args)) {
   if (!KNOWN_FLAGS.includes(flag)) {
@@ -92,6 +98,26 @@ if (gpioSlowdown !== undefined) {
 const pwnLsbNanoseconds = intInRange(args, "pwm-lsb-nanoseconds", 1, 100000);
 if (pwnLsbNanoseconds !== undefined) {
   overrides.pwnLsbNanoseconds = pwnLsbNanoseconds;
+}
+
+const pwmDitherBits = intInRange(args, "pwm-dither-bits", 0, 2);
+if (pwmDitherBits !== undefined) {
+  overrides.pwmDitherBits = pwmDitherBits as Panel["pwmDitherBits"];
+}
+
+const limitRefreshRateHz = intInRange(args, "limit-refresh-hz", 0, 10000);
+if (limitRefreshRateHz !== undefined) {
+  overrides.limitRefreshRateHz = limitRefreshRateHz;
+}
+
+if (args["panel-type"] !== undefined) {
+  const panelType = args["panel-type"];
+  if (!PANEL_TYPES.includes(panelType)) {
+    fail(
+      `--panel-type must be one of ${PANEL_TYPES.map((t) => t || '""').join(", ")}, got "${panelType}"`,
+    );
+  }
+  overrides.panelType = panelType as PanelType;
 }
 
 if (args["hardware-mapping"] !== undefined) {

@@ -42,6 +42,21 @@ const CONNECTED_HOLD_MS = 1500;
 const BUTTON_GPIO_PIN = 537;
 
 let syncSpeed = 0;
+
+const PANEL_WIDTH = 32;
+const PANEL_HEIGHT = 32;
+
+// How long to wait before re-arming sync() when there's no frame queued.
+// sync() blocks the event loop until the panel finishes a frame — SwapOnVSync
+// ends in an unbounded pthread_cond_wait — while the refresh thread keeps
+// redisplaying the current frame on its own regardless. So syncing an empty
+// queue buys nothing and parks the main thread for a frame period, delaying the
+// web server, the SSE flush and the button handler behind it. A clock sits in
+// that state nearly all the time: an `fps: 0` scene draws one frame and then
+// queues nothing until the scene changes. Only applied when the queue is empty;
+// a queued frame still goes out at `syncSpeed`.
+const IDLE_SYNC_MS = 16;
+
 const virtualPanel: { [k: string]: string } = {};
 
 // Pixels whose colour has changed since the last SSE delta flush. Only real
@@ -258,12 +273,21 @@ export async function createCanvas(dimensions: Dimensions) {
     const matrix = new LedMatrix(
       {
         ...LedMatrix.defaultMatrixOptions(),
-        rows: 32,
-        cols: 32,
+        rows: PANEL_HEIGHT,
+        cols: PANEL_WIDTH,
         chainLength: 1,
         hardwareMapping: panel.hardwareMapping as GpioMapping,
+        // Ghosting/refresh timing. The shortest a row is lit for is
+        // `pwmLsbNanoseconds * 2 ** (11 - pwmBits)`; when that approaches the
+        // time it takes to clock 32 columns in (which happens with a low
+        // pwmLsbNanoseconds, a high pwmBits, or a high gpioSlowdown), the panel
+        // spends much of its lit time showing half-shifted data and you get
+        // smearing. See hardware/test-matrix.ts to tune these against a panel.
         pwmLsbNanoseconds: panel.pwnLsbNanoseconds,
         pwmBits: panel.pwmBits,
+        pwmDitherBits: panel.pwmDitherBits ?? 0,
+        limitRefreshRateHz: panel.limitRefreshRateHz ?? 0,
+        panelType: panel.panelType ?? "",
       },
       {
         ...LedMatrix.defaultRuntimeOptions(),
@@ -285,18 +309,24 @@ export async function createCanvas(dimensions: Dimensions) {
           firstFrameLogged = true;
           bootMark("first pixel on panel");
         }
+
+        // SetBrightness applies to pixels set after it, for every created
+        // FrameCanvas, so one call a frame is equivalent to the per-pixel call
+        // this replaces — and saves 1024 trips across the native boundary.
+        matrix.brightness(brightness || panel.brightness);
+
         for (const pixel of pixelUpdates) {
           const hexA = updateVirtualPanel(pixel);
-          matrix
-            .brightness(brightness || panel.brightness)
-            .fgColor(parseInt(hexA, 16))
-            .setPixel(pixel.x, pixel.y);
+          matrix.fgColor(parseInt(hexA, 16)).setPixel(pixel.x, pixel.y);
         }
       }
 
-      setTimeout(() => {
-        matrix.sync();
-      }, syncSpeed);
+      setTimeout(
+        () => {
+          matrix.sync();
+        },
+        pixelUpdates ? syncSpeed : Math.max(syncSpeed, IDLE_SYNC_MS),
+      );
     });
     matrix.sync();
   } else {
@@ -309,7 +339,10 @@ export async function createCanvas(dimensions: Dimensions) {
         }
       }
 
-      setTimeout(fakeSync, syncSpeed);
+      setTimeout(
+        fakeSync,
+        pixelUpdates ? syncSpeed : Math.max(syncSpeed, IDLE_SYNC_MS),
+      );
     }
     fakeSync();
     console.log("[HARDWARE] Emulating LED Matrix...");
@@ -318,7 +351,7 @@ export async function createCanvas(dimensions: Dimensions) {
   bootMark("matrix ready");
 
   const engine = createDisplayEngine({
-    dimensions: { width: 32, height: 32 },
+    dimensions: { width: PANEL_WIDTH, height: PANEL_HEIGHT },
     createCanvas,
     onPixelsChange: (pixels) => {
       updateQueue.push(pixels);

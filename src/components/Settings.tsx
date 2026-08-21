@@ -32,6 +32,9 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
     initialValues: {
       ...panel,
       updateChannel: panel.updateChannel ?? "stable",
+      pwmDitherBits: panel.pwmDitherBits ?? 0,
+      limitRefreshRateHz: panel.limitRefreshRateHz ?? 0,
+      panelType: panel.panelType ?? "",
     },
   });
 
@@ -146,6 +149,11 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
             </Accordion.Control>
             <Accordion.Panel>
               <Stack gap="lg">
+                <Text c="dimmed" size="xs">
+                  These are read when the panel starts up, so they take effect
+                  on the next restart of the hardware service, not on save.
+                </Text>
+
                 <Stack gap={4}>
                   <Stack gap={0}>
                     <Text size="sm">LED PWN LSB nanoseconds</Text>
@@ -184,8 +192,10 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
                   <Stack gap={4}>
                     <Text size="sm">PWN Bits</Text>
                     <Text c="dimmed" size="xs">
-                      Lower values will increase performance at the expense of
-                      color precision.
+                      Lower values shorten color precision but lengthen the
+                      shortest pulse each row gets, which is what reduces
+                      ghosting. The shortest pulse is the LSB nanoseconds
+                      doubled once for every bit below 11.
                     </Text>
                   </Stack>
                   <Slider
@@ -196,9 +206,45 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
                   />
                 </Stack>
 
+                <Stack gap={4}>
+                  <Stack gap={4}>
+                    <Text size="sm">PWM Dither Bits</Text>
+                    <Text c="dimmed" size="xs">
+                      Spreads the lowest bits across frames so they can be shown
+                      for less time. Only has an effect at 11 PWM bits.
+                    </Text>
+                  </Stack>
+                  <Slider
+                    max={2}
+                    min={0}
+                    data-testid="pwm-dither-bits-slider"
+                    key={form.key("pwmDitherBits")}
+                    {...form.getInputProps("pwmDitherBits")}
+                  />
+                </Stack>
+
+                <Stack gap={4}>
+                  <Stack gap={4}>
+                    <Text size="sm">Limit Refresh Rate (Hz)</Text>
+                    <Text c="dimmed" size="xs">
+                      Holds the refresh rate steady instead of letting it drift
+                      with system load. 0 means no limit. Setting this well
+                      below the rate the panel actually reaches idles it in the
+                      dark, which dims the display and can add flicker.
+                    </Text>
+                  </Stack>
+                  <Slider
+                    max={300}
+                    min={0}
+                    data-testid="limit-refresh-hz-slider"
+                    key={form.key("limitRefreshRateHz")}
+                    {...form.getInputProps("limitRefreshRateHz")}
+                  />
+                </Stack>
+
                 <Select
                   label="Hardware Mapping"
-                  description="GPIO wiring layout for your LED matrix HAT or adapter"
+                  description="GPIO wiring layout for your LED matrix HAT or adapter. Adafruit HAT puts Output Enable on GPIO 4, which the matrix library can't pulse in hardware — it falls back to jittery software timing. Adafruit HAT (PWM) uses GPIO 18 instead and needs GPIO 4 and 18 bridged on the HAT, but gives markedly less ghosting and flicker."
                   variant="filled"
                   data={[
                     { label: "Regular", value: "regular" },
@@ -208,6 +254,21 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
                   ]}
                   key={form.key("hardwareMapping")}
                   {...form.getInputProps("hardwareMapping")}
+                />
+
+                <Select
+                  label="Panel Type"
+                  description="Leave as Standard unless the panel needs a special init sequence. The FM6126A/FM6127 sequences will garble a panel that doesn't use those chipsets."
+                  variant="filled"
+                  data={[
+                    { label: "Standard (HUB75)", value: "" },
+                    { label: "FM6126A", value: "FM6126A" },
+                    { label: "FM6127", value: "FM6127" },
+                  ]}
+                  allowDeselect={false}
+                  data-testid="panel-type-select"
+                  key={form.key("panelType")}
+                  {...form.getInputProps("panelType")}
                 />
               </Stack>
             </Accordion.Panel>
