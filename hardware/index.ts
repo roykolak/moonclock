@@ -1,3 +1,6 @@
+// Imported first, ahead of skia-canvas, so its module-eval timestamp predates
+// the ~29 MB skia.node dlopen and the first bootMark() can attribute that cost.
+import { bootMark } from "./bootClock";
 import { LedMatrix, GpioMapping, RuntimeFlag } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
@@ -76,8 +79,10 @@ function registerFonts() {
   FontLibrary.use("Tiny5", "./public/fonts/Tiny5-Regular.ttf");
   FontLibrary.use("Silkscreen", "./public/fonts/Silkscreen-Regular.ttf");
   fontsRegistered = true;
+  bootMark("fonts registered");
 }
 
+let firstCanvasLogged = false;
 export async function createCanvas(dimensions: Dimensions) {
   const { width, height } = dimensions;
 
@@ -85,10 +90,20 @@ export async function createCanvas(dimensions: Dimensions) {
 
   canvas.gpu = false;
 
+  if (!firstCanvasLogged) {
+    firstCanvasLogged = true;
+    bootMark("skia canvas first created");
+  }
+
   return canvas as unknown as HTMLCanvasElement;
 }
 
 (async () => {
+  // First line of real work: everything imported above — including the ~29 MB
+  // skia.node and the other native addons — has finished dlopen'ing and
+  // evaluating by now. A large Δ here is the native-module load tax.
+  bootMark("imports loaded (skia + native addons dlopen'd)");
+
   const args = process.argv.slice(2);
   const params: any = { emulate: false };
 
@@ -210,11 +225,15 @@ export async function createCanvas(dimensions: Dimensions) {
   }
 
   const { panel } = await getData();
+  bootMark("data loaded");
 
   let scene: Scene | null = getScene(panel.defaultPreset.sceneId);
   let preset: Preset = panel.defaultPreset;
 
   let updateQueue: Pixel[][] = [];
+  // Flipped by the first non-empty frame that actually reaches the panel — the
+  // real "time to first pixel" milestone.
+  let firstFrameLogged = false;
 
   if (!params.emulate) {
     console.log("[HARDWARE] Initing LED Matrix...");
@@ -244,6 +263,10 @@ export async function createCanvas(dimensions: Dimensions) {
       const pixelUpdates = updateQueue.shift();
 
       if (pixelUpdates) {
+        if (!firstFrameLogged) {
+          firstFrameLogged = true;
+          bootMark("first pixel on panel");
+        }
         for (const pixel of pixelUpdates) {
           const hexA = updateVirtualPanel(pixel);
           matrix
@@ -274,6 +297,8 @@ export async function createCanvas(dimensions: Dimensions) {
     console.log("[HARDWARE] Emulating LED Matrix...");
   }
 
+  bootMark("matrix ready");
+
   const engine = createDisplayEngine({
     dimensions: { width: 32, height: 32 },
     createCanvas,
@@ -281,6 +306,7 @@ export async function createCanvas(dimensions: Dimensions) {
       updateQueue.push(pixels);
     },
   });
+  bootMark("engine created");
 
   if (shouldRunBootCode()) {
     console.log("[HARDWARE] Running boot message");
