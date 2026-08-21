@@ -544,6 +544,17 @@ export async function createCanvas(dimensions: Dimensions) {
     await runConditionalRenderUpdate();
   }
 
+  // Repaints whatever scene is already current. The hold-to-reset feedback is
+  // painted straight to the engine without touching `preset`, so
+  // checkForNewDisplayConfig sees no change and skips the render — the same
+  // stale-frame trap the clear-preset branch above works around. Anything that
+  // abandons that feedback scene has to put the real one back itself.
+  function repaintCurrentScene() {
+    updateQueue = [];
+    syncSpeed = 0;
+    engine.render(scene);
+  }
+
   // Held-button action: forget saved WiFi and reboot into setup mode. Rebooting
   // (rather than juggling services live) keeps port 80 free for the wifi-connect
   // portal and is the robust way to re-enter provisioning when the device moves
@@ -587,6 +598,20 @@ export async function createCanvas(dimensions: Dimensions) {
     let longPressTimer: NodeJS.Timeout | null = null;
     let holdFeedbackTimer: NodeJS.Timeout | null = null;
     let longPressFired = false;
+    // onoff debounces with a trailing timer that reports whatever the pin reads
+    // once it settles. It never compares against the value it reported last, so
+    // it guarantees neither alternating values nor an event per edge: a bouncy
+    // contact yields two presses in a row, and a press and release inside one
+    // debounce window collapse into a single callback. Track the state we've
+    // acted on and drop any event that doesn't move it.
+    let pressed = false;
+
+    const clearHoldTimers = () => {
+      if (holdFeedbackTimer) clearTimeout(holdFeedbackTimer);
+      if (longPressTimer) clearTimeout(longPressTimer);
+      holdFeedbackTimer = null;
+      longPressTimer = null;
+    };
 
     button.watch((err, value) => {
       if (err) {
@@ -596,7 +621,15 @@ export async function createCanvas(dimensions: Dimensions) {
 
       // Active-low with a pull-up: 0 = pressed, 1 = released.
       if (value === 0) {
+        // A repeat press would overwrite both timer handles while the first
+        // pair is still armed. The release below could then only cancel the
+        // newer pair, leaving the orphaned long-press timer to wipe the WiFi
+        // config 5s later with the button long since back up.
+        if (pressed) return;
+
+        pressed = true;
         longPressFired = false;
+        clearHoldTimers();
 
         // After a short delay (so quick taps don't flash it), show the
         // "keep holding to reset" progress until the threshold is reached.
@@ -607,14 +640,29 @@ export async function createCanvas(dimensions: Dimensions) {
         }, HOLD_FEEDBACK_DELAY_MS);
 
         longPressTimer = setTimeout(() => {
+          // Forgetting the network is destructive and a release edge can go
+          // missing, so confirm the button is genuinely still down rather than
+          // trusting the timer on its own. This is also what unsticks
+          // `pressed` when the release event never arrived.
+          if (button.readSync() !== 0) {
+            console.log(
+              "[HARDWARE] Long press elapsed but button is up — ignoring",
+            );
+            pressed = false;
+            clearHoldTimers();
+            repaintCurrentScene();
+            return;
+          }
+
           longPressFired = true;
           handleLongPress();
         }, LONG_PRESS_MS);
       } else {
-        if (holdFeedbackTimer) clearTimeout(holdFeedbackTimer);
-        if (longPressTimer) clearTimeout(longPressTimer);
-        holdFeedbackTimer = null;
-        longPressTimer = null;
+        // Nothing armed to release, so this is a stray edge rather than a tap.
+        if (!pressed) return;
+
+        pressed = false;
+        clearHoldTimers();
 
         // The long-press action already fired (and is rebooting); ignore the
         // release. Otherwise treat it as a normal preset-cycling tap.
