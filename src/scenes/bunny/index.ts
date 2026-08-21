@@ -9,6 +9,13 @@ import { SceneId } from "../types";
 // grounded origin so nothing bounces up and down.
 const BREATH_PERIOD_MS = 4200;
 
+// --- Vertical placement ----------------------------------------------------
+// The 28x28 sprite box centers at panel origin (2,2), but its ink only spans
+// rows 4-27 of the box, so a centered cat sits visually low. Lift every layer
+// by this much when drawing. The drifting z is anchored to the same lift (see
+// Z_ORIGIN) so it keeps emerging from the notch between the ears.
+const SPRITE_LIFT = 1;
+
 // --- Breath staging --------------------------------------------------------
 // The breath is a four-beat sequence, each beat keyed to a fraction of the
 // cycle. The mouth and eye windows OVERLAP in a staggered "canon" rather than
@@ -83,7 +90,7 @@ const inhaleSprite: Sprite = {
 // the RIGHT, fading to nothing partway up; then a fresh one begins after a
 // short beat. Unlike the sprite, it may drift off the top / upper-right of the
 // panel (those rows aren't buffered) — it just clips away.
-const Z_ORIGIN = { x: 15, y: 9 };
+const Z_ORIGIN = { x: 15, y: 9 - SPRITE_LIFT };
 const Z_COLOR = "#8a90a3";
 const Z_CYCLE = 5400;
 const Z_RISE = 10;
@@ -98,8 +105,10 @@ interface Zed {
 
 function zList(elapsed: number): Zed[] {
   // One z at a time: it rises up-right and fades out over the first Z_FADE of
-  // the cycle, then pauses (nothing on screen) before a fresh z begins.
-  const Z_FADE = 0.82;
+  // the cycle, then pauses (nothing on screen) before a fresh z begins. The
+  // drift/rise are keyed to the full cycle, so a smaller Z_FADE also means the
+  // z vanishes lower in its arc — it dissolves well before the ears clear.
+  const Z_FADE = 0.6;
   const p = (((elapsed % Z_CYCLE) + Z_CYCLE) % Z_CYCLE) / Z_CYCLE;
   if (p >= Z_FADE) return [];
   const alpha = Math.sin((p / Z_FADE) * Math.PI);
@@ -161,7 +170,8 @@ export const bunnyScene: Scene<BunnyState> = {
   },
   draw({ ctx, dimensions, elapsed, state }) {
     const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
-    const oy = Math.floor((dimensions.height - bunnySprite.height) / 2);
+    const oy =
+      Math.floor((dimensions.height - bunnySprite.height) / 2) - SPRITE_LIFT;
 
     // Position within the breath cycle: 0 at rest, 0.5 at the deepest inhale.
     const cyclePos =
