@@ -15,12 +15,6 @@ const esbuildOptions = {
   loader: {
     ".node": "file",
   },
-  // Minify to shrink the bundle: fewer bytes to read off the SD card and less
-  // for V8 to parse at process start — the dominant cost of getting the boot
-  // loader onto the panel (see hardware/bootClock.ts). keepNames preserves
-  // function/class names so anything relying on them (error names, etc.) is
-  // unaffected.
-  minify: true,
   keepNames: true,
   external: ["*.node"],
 };

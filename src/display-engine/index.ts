@@ -44,6 +44,17 @@ export function createDisplayEngine({
       const canvas = await createCanvas(dimensions);
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
+      // skia-canvas's Context2D keeps only a WeakRef to its canvas. If nothing
+      // else holds the canvas strongly, GC can free it mid-scene and the next
+      // getImageData (in syncFromCanvas) throws a Neon "failed to downcast"
+      // error. Pin the canvas onto the ctx we retain and touch every frame: a
+      // property write on a live object is a real side effect, so — unlike a
+      // bare `void canvas` statement — bundler dead-code elimination can't drop
+      // it (esbuild minify silently removed the old keepalive, freeing the
+      // canvas the instant boot-time GC ran).
+      (ctx as unknown as { __canvasKeepalive?: unknown }).__canvasKeepalive =
+        canvas;
+
       // A scene without `init` never reads `state` in `draw`, so the
       // `undefined` here is safe even though `S` may not include it.
       const state = (
@@ -82,10 +93,6 @@ export function createDisplayEngine({
       stop = () => {
         running = false;
         loop.stop();
-        // skia-canvas's context only holds a WeakRef to its canvas, so we
-        // must keep `canvas` reachable for the scene's lifetime — otherwise
-        // GC frees it and getImageData fails with a Neon downcast error.
-        void canvas;
       };
 
       return stop;
