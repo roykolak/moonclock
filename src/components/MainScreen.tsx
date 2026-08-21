@@ -33,6 +33,7 @@ import {
 import Panel from "./Panel";
 import { Settings } from "./Settings";
 import { LogsViewer } from "./LogsViewer";
+import { UpdatePrompt } from "./UpdatePrompt";
 import { PresetForm } from "./PresetForm";
 import { getEndDate } from "@/helpers/getEndDate";
 import { updateScheduledPreset } from "@/server/actions/scheduledPreset";
@@ -64,6 +65,7 @@ export default function MainScreen({
   const [createPresetOpen, createPresetHandlers] = useDisclosure();
   const [editPresetOpen, editPresetHandlers] = useDisclosure();
 
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
   const [presetMenuOpen, setPresetMenuOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
 
@@ -220,6 +222,11 @@ export default function MainScreen({
                 <IconTerminal2 size={22} stroke={1.5} />
               </ActionIcon>
             </Tooltip>
+            <UpdatePrompt
+              nextVersion={nextVersion}
+              releaseNotesOpen={releaseNotesOpen}
+              onReleaseNotesOpenChange={setReleaseNotesOpen}
+            />
           </Group>
 
           {activePreset && formattedEndTime && (
@@ -238,7 +245,10 @@ export default function MainScreen({
         title="Settings"
         size="lg"
       >
-        <Settings panel={panel} nextVersion={nextVersion} />
+        <Settings
+          panel={panel}
+          onUpdateAvailable={() => setReleaseNotesOpen(true)}
+        />
       </Modal>
 
       <Modal

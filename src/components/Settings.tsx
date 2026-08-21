@@ -1,7 +1,7 @@
 "use client";
 
 import { updatePanel } from "@/server/actions/panel";
-import { NextVersion, Panel } from "@/types";
+import { Panel } from "@/types";
 import {
   Accordion,
   Button,
@@ -20,14 +20,13 @@ import { IconRefresh } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import packageInfo from "../../package.json";
-import { UpdatePrompt } from "./UpdatePrompt";
 
 interface SettingsProps {
   panel: Panel;
-  nextVersion: NextVersion | null;
+  onUpdateAvailable: () => void;
 }
 
-export function Settings({ panel, nextVersion }: SettingsProps) {
+export function Settings({ panel, onUpdateAvailable }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
@@ -40,7 +39,6 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
 
   const router = useRouter();
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
-  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
 
   const handleCheckForUpdate = async () => {
     setCheckingForUpdate(true);
@@ -49,7 +47,7 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
       const data = await response.json();
       if (data.available) {
         router.refresh();
-        setReleaseNotesOpen(true);
+        onUpdateAvailable();
       } else if (data.message?.includes("Error")) {
         showNotification({ message: data.message, color: "red" });
       } else {
@@ -106,23 +104,16 @@ export function Settings({ panel, nextVersion }: SettingsProps) {
           <Text c="dimmed" size="sm">
             v{packageInfo.version}
           </Text>
-          <Group gap="xs" align="center">
-            <UpdatePrompt
-              nextVersion={nextVersion}
-              releaseNotesOpen={releaseNotesOpen}
-              onReleaseNotesOpenChange={setReleaseNotesOpen}
-            />
-            <Button
-              size="xs"
-              variant="default"
-              leftSection={<IconRefresh size={16} stroke={1.5} />}
-              onClick={handleCheckForUpdate}
-              loading={checkingForUpdate}
-              data-testid="check-for-update-button"
-            >
-              Check for updates
-            </Button>
-          </Group>
+          <Button
+            size="xs"
+            variant="default"
+            leftSection={<IconRefresh size={16} stroke={1.5} />}
+            onClick={handleCheckForUpdate}
+            loading={checkingForUpdate}
+            data-testid="check-for-update-button"
+          >
+            Check for updates
+          </Button>
         </Group>
 
         <Divider />

@@ -3,6 +3,7 @@
 import { markAsUpdated, startUpdate } from "@/server/actions/app";
 import { NextVersion } from "@/types";
 import {
+  Anchor,
   Button,
   Code,
   Flex,
@@ -15,7 +16,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useRef, useState } from "react";
 
-interface SettingsProps {
+interface UpdatePromptProps {
   nextVersion: NextVersion | null;
   releaseNotesOpen: boolean;
   onReleaseNotesOpenChange: (open: boolean) => void;
@@ -39,7 +40,7 @@ export function UpdatePrompt({
   nextVersion,
   releaseNotesOpen,
   onReleaseNotesOpenChange,
-}: SettingsProps) {
+}: UpdatePromptProps) {
   const [updatingModalOpened, updatingModalHandler] = useDisclosure(false);
   const [phase, setPhase] = useState<Phase>("downloading");
   const [downloadProgress, setDownloadProgress] =
@@ -120,13 +121,16 @@ export function UpdatePrompt({
   return (
     <>
       {!nextVersion.updateStartedAt && (
-        <Button
-          size="xs"
-          variant="outline"
+        <Anchor
+          component="button"
+          type="button"
+          size="sm"
+          fw={500}
           onClick={() => onReleaseNotesOpenChange(true)}
+          data-testid="update-available-link"
         >
           Update...
-        </Button>
+        </Anchor>
       )}
 
       <Modal

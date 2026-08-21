@@ -225,9 +225,7 @@ pi forgets its saved networks and reboots back into the setup flow above.
 
 Your moonclock will check if there is a new version available nightly.
 
-When a new version is available, you will see a banner like the one below in your moonclock app. Just click the update buttons and you'll be all set in a few seconds!
-
-<img src="images/update-prompt.png" width="400" />
+When a new version is available, an "Update..." link appears beneath the panel in your moonclock app. Click it to see what's new and start the update — you'll be all set in a few seconds!
 
 ### Release channels
 
