@@ -316,11 +316,17 @@ export async function createCanvas(dimensions: Dimensions) {
     // marquee) replaces it, so there's nothing to tear down here.
     engine.render(createStartupRing());
 
-    // The loader is on the panel now — register fonts for the text scenes that
-    // follow (marquee, wifi prompts) and bring up the web server + mDNS, all
-    // while the animation is already visible rather than ahead of it.
-    registerFonts();
-    void startWebServer();
+    // Let the ring actually reach the panel before doing anything that blocks
+    // the event loop. registerFonts() is a ~150ms synchronous font/fontconfig
+    // load and startWebServer() imports express + bonjour — neither is needed
+    // until well after boot (the marquee at +5s, the API/mDNS later), yet run
+    // synchronously here they sit between "render the ring" and "first pixel"
+    // and measurably delay it. Defer both past the first frame; 500ms clears
+    // the render→first-pixel gap comfortably.
+    setTimeout(() => {
+      registerFonts();
+      void startWebServer();
+    }, 500);
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 

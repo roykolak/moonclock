@@ -19,6 +19,15 @@ Group=root
 # ("Cannot load default config file"); point it at the system one.
 Environment=FONTCONFIG_PATH=/etc/fonts
 Environment=NODE_ENV=production
+# Cache V8's compiled bytecode for the ~1.6 MB hardware bundle across boots.
+# Compiling the bundle at process start is the single biggest chunk of the time
+# to get the loader on the panel (see hardware/bootClock.ts); NODE_COMPILE_CACHE
+# (Node 22.8+) writes the compiled output here on the first boot so every later
+# boot skips most of the parse/compile. CacheDirectory= creates and persists
+# /var/cache/moonclock (root-owned, survives reboots) for it. Harmlessly ignored
+# by Node < 22.8.
+CacheDirectory=moonclock
+Environment=NODE_COMPILE_CACHE=/var/cache/moonclock
 Type=simple
 Restart=always
 RestartSec=5
