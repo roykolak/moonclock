@@ -247,6 +247,21 @@
       .done strong {
         color: var(--text);
       }
+      /* The address the clock is reachable at. This page is the last thing
+         someone looks at before they go find their Moonclock, so the name gets
+         hero treatment here — the panel no longer spells out an address. */
+      .done .addr {
+        display: block;
+        background: var(--field);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        color: var(--gold);
+        font-family: "Tiny5", monospace;
+        font-size: 19px;
+        padding: 13px 10px;
+        margin: 14px 0 12px;
+        word-break: break-all;
+      }
     </style>
   </head>
   <body>
@@ -426,7 +441,9 @@
           ssid.replace(/[<>&]/g, "") +
           "</strong>.</p>" +
           "<p>This setup network will disappear in a moment — that means it worked. " +
-          "Reconnect your phone to your normal WiFi to find your Moonclock.</p>" +
+          "Reconnect your phone to your normal WiFi, then open:</p>" +
+          '<span class="addr">moonclock.local</span>' +
+          "<p>The panel shows a green check once it's connected.</p>" +
           "</div>";
       }
 

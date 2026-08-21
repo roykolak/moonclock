@@ -21,10 +21,19 @@ import { getIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
 import { getScene } from "@/helpers/getScene";
 import { forgetWifiNetworks, isProvisioning } from "./wifi";
-import { createHoldToResetScene, createSetupNeededScene } from "./wifi/scenes";
-import { createStartupRing } from "@/scenes/startup";
+import {
+  createHoldToResetScene,
+  createNoNetworkScene,
+  createSetupNeededScene,
+} from "./wifi/scenes";
+import { createStartupConnected, createStartupRing } from "@/scenes/startup";
 
 const execAsync = promisify(exec);
+
+// Minimum time the startup ring stays up before the connected check replaces
+// it, and how long that check holds before the user's scene takes over.
+const MIN_RING_MS = 1200;
+const CONNECTED_HOLD_MS = 1500;
 
 // The button's GPIO pin is fixed, not configurable: its pull-up is enabled by
 // `gpio=25=ip,pu` in bootstrap.sh's boot config, and that pin has to match what
@@ -72,7 +81,7 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
 // Font registration is deferred: the startup loader is pure color and needs no
 // fonts, so paying skia-canvas's font/fontconfig cost on its first frame just
 // delays the loader. registerFonts() runs once, lazily, before the first scene
-// that actually draws text (the IP marquee and the wifi/setup prompts).
+// that actually draws text (the wifi/setup prompts and the no-network state).
 let fontsRegistered = false;
 function registerFonts() {
   if (fontsRegistered) return;
@@ -207,20 +216,29 @@ export async function createCanvas(dimensions: Dimensions) {
       console.log(`[HARDWARE] Server running on port ${port}`);
 
       const bonjour = new Bonjour();
-      // A per-device instance name (mDNS hostnames are unique on the link) keeps
-      // multiple clocks from colliding on the same network — a duplicate name is
-      // rejected with "Service name is already in use". Handle the error so a
-      // collision (e.g. a stale record after a hard restart) stays non-fatal
-      // rather than throwing from bonjour's internals.
+      // Advertise the WEB APP (port 80), not this control server on 3001 — the
+      // app is what a person opens, and _http._tcp is the type network browsers
+      // and "find devices on my network" tooling actually look for. The old
+      // _moonclock._tcp record on 3001 advertised the wrong port under a type
+      // nothing queries for.
+      //
+      // The instance name is the hostname, which avahi already guarantees unique
+      // on the link, so multiple clocks can't collide here — and it matches the
+      // <hostname>.local address the panel now points people at. A duplicate is
+      // still rejected with "Service name is already in use", so handle the
+      // error to keep a collision (e.g. a stale record after a hard restart)
+      // non-fatal rather than throwing from bonjour's internals.
       const service = bonjour.publish({
-        name: `moonclock-${os.hostname()}`,
-        type: "moonclock",
-        port,
+        name: os.hostname(),
+        type: "http",
+        port: 80,
       });
       service.on("error", (error) => {
         console.error("[HARDWARE] mDNS publish error:", error);
       });
-      console.log(`[HARDWARE] Advertising as _moonclock._tcp via mDNS`);
+      console.log(
+        `[HARDWARE] Advertising http://${os.hostname()}.local as _http._tcp via mDNS`,
+      );
     });
   }
 
@@ -312,14 +330,15 @@ export async function createCanvas(dimensions: Dimensions) {
     console.log("[HARDWARE] Running boot message");
 
     // Startup animation while we wait for the network to come up. The display
-    // engine drives its own loop; rendering the next scene (setup prompt or IP
-    // marquee) replaces it, so there's nothing to tear down here.
+    // engine drives its own loop; rendering the next scene (setup prompt or the
+    // connected check) replaces it, so there's nothing to tear down here.
     engine.render(createStartupRing());
+    const ringStartedAt = Date.now();
 
     // Let the ring actually reach the panel before doing anything that blocks
     // the event loop. registerFonts() is a ~150ms synchronous font/fontconfig
     // load and startWebServer() imports express + bonjour — neither is needed
-    // until well after boot (the marquee at +5s, the API/mDNS later), yet run
+    // until well after boot (the no-network fallback, the API/mDNS), yet run
     // synchronously here they sit between "render the ring" and "first pixel"
     // and measurably delay it. Defer both past the first frame; 500ms clears
     // the render→first-pixel gap comfortably.
@@ -328,9 +347,7 @@ export async function createCanvas(dimensions: Dimensions) {
       void startWebServer();
     }, 500);
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    // Resolve the network state before showing the IP marquee. While the
+    // Resolve the network state before reporting it. While the
     // wifi-connect setup portal is up, the device is offline and its own hotspot
     // hands out a gateway IP (e.g. 192.168.42.1) — so provisioning must take
     // precedence and we must NOT accept an address until it ends. Otherwise we
@@ -356,7 +373,7 @@ export async function createCanvas(dimensions: Dimensions) {
       if (ipAddress) {
         // Setup just finished: wifi-connect tears down its hotspot, so give
         // NetworkManager a moment to bring up the real connection before we
-        // read the address to scroll.
+        // take its address as the real one.
         if (showingSetupPrompt) {
           await new Promise((resolve) => setTimeout(resolve, 3000));
           ipAddress = getIpAddress();
@@ -371,37 +388,35 @@ export async function createCanvas(dimensions: Dimensions) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
-    const ipText = ipAddress || "Not connected :(";
-    const ipSpeed = 20; // px/sec, was the marquee macro's fps (1px/frame @ 20fps)
+    if (ipAddress) {
+      // The panel no longer reports the address, only that there is one: a
+      // DHCP-assigned IP is a 12-character value that changes, and a 32x32 grid
+      // can't hand one over without a marquee you have to sit and watch. The
+      // address is now a constant — http://moonclock.local, published over mDNS
+      // from the hostname install.sh sets — so it lives in the README and on the
+      // setup page, and boot just confirms the clock is reachable.
+      console.log(
+        `[HARDWARE] Connected — http://${os.hostname()}.local (${ipAddress})`,
+      );
 
-    engine.render({
-      framesPerSecond: 20,
-      async init({ ctx, createCanvas }) {
-        ctx.font = "15px Arial";
-        const width = Math.ceil(ctx.measureText(ipText).width);
+      // A clock that was already on WiFi can reach this within a few hundred ms
+      // of the ring appearing, which reads as a glitch rather than an animation.
+      // Hold the loader long enough for it to register as one.
+      const ringShownFor = Date.now() - ringStartedAt;
+      if (ringShownFor < MIN_RING_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_RING_MS - ringShownFor),
+        );
+      }
 
-        const canvas = await createCanvas({ width, height: 19 });
-        const ipCtx = canvas.getContext("2d") as CanvasRenderingContext2D;
-        ipCtx.textBaseline = "top";
-        ipCtx.font = "15px Arial";
-        ipCtx.fillStyle = "#FFFFFF";
-        ipCtx.fillText(ipText, 0, 0);
-
-        return { canvas, width };
-      },
-      draw({ ctx, dimensions, elapsed, state }) {
-        ctx.textBaseline = "top";
-        ctx.font = "8px Tiny5";
-        ctx.fillStyle = "#AAA";
-        ctx.fillText("Starting", 0, 1);
-
-        const cycle = dimensions.width + state.width;
-        const x = dimensions.width - (((elapsed / 1000) * ipSpeed) % cycle);
-        ctx.drawImage(state.canvas as unknown as CanvasImageSource, x, 12);
-      },
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+      // Hand the ring's age over so its rotation carries through the handoff.
+      engine.render(createStartupConnected(Date.now() - ringStartedAt));
+      await new Promise((resolve) => setTimeout(resolve, CONNECTED_HOLD_MS));
+    } else {
+      console.log("[HARDWARE] No network after boot — showing offline state");
+      engine.render(createNoNetworkScene());
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
   } else {
     console.log("[HARDWARE] Skipping boot message");
     // No loader to front-load behind here, but keep the web server startup in

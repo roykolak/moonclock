@@ -67,6 +67,12 @@ apt-get install -y jq
 # a default font config instead of erroring at startup.
 apt-get install -y fontconfig
 
+# avahi publishes <hostname>.local, which is how the app is reached once it's up
+# (http://moonclock.local — install.sh sets that hostname). Already on a stock
+# Raspberry Pi OS image; installed here so the address doesn't quietly depend on
+# an image that happens to include it.
+apt-get install -y avahi-daemon
+
 echo " -> Setting up WiFi provisioning (NetworkManager + wifi-connect)"
 
 # NetworkManager manages WiFi on Raspberry Pi OS Bookworm (already present on a

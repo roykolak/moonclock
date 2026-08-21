@@ -85,3 +85,25 @@ export function createHoldToResetScene(durationMs: number): Scene {
     },
   };
 }
+
+// Shown when boot gives up waiting for an address: the setup portal isn't
+// running (so createSetupNeededScene would be a lie) and no IP ever arrived —
+// the device is on, but joined nothing. Static text rather than the marquee the
+// IP used to get: there's nothing here to scroll, and a held frame can be read
+// whenever someone happens to look up.
+export function createNoNetworkScene(): Scene {
+  return {
+    draw({ ctx, dimensions }) {
+      const { width, height } = dimensions;
+
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.textBaseline = "top";
+      ctx.font = "8px Tiny5";
+      ctx.fillStyle = "#F87171";
+      ctx.fillText("No", 0, 5);
+      ctx.fillText("network", 0, 14);
+    },
+  };
+}
