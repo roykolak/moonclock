@@ -23,6 +23,11 @@ export const defaultData: DataTypes = {
     gpioSlowdown: 4,
     pwmBits: 11,
     hardwareMapping: "adafruit-hat",
+    // Neutral (library-default) values. These are the ghosting knobs — tune
+    // them per panel with hardware/test-matrix.ts rather than guessing here.
+    pwmDitherBits: 0,
+    limitRefreshRateHz: 0,
+    panelType: "",
     updateChannel: "stable",
   },
   scheduledPreset: {

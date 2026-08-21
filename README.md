@@ -100,7 +100,8 @@ only the fields you pass are changed:
 ```
 curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- \
   --brightness=50 --hardware-mapping=adafruit-hat-pwm --pwm-bits=11 \
-  --gpio-slowdown=4 --pwm-lsb-nanoseconds=130
+  --gpio-slowdown=4 --pwm-lsb-nanoseconds=130 --pwm-dither-bits=0 \
+  --limit-refresh-hz=0
 ```
 
 - `--brightness=N` — panel brightness, 0-100
@@ -108,10 +109,52 @@ curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.s
 - `--pwm-bits=N` — PWM bits, 1-11
 - `--gpio-slowdown=N` — GPIO slowdown, 0-4
 - `--pwm-lsb-nanoseconds=N` — PWM LSB nanoseconds
+- `--pwm-dither-bits=N` — time-dither the lowest bits, 0-2
+- `--limit-refresh-hz=N` — cap the refresh rate in Hz, 0 for no limit
+- `--panel-type=NAME` — empty for a standard HUB75 panel, or `FM6126A` / `FM6127`
 
 Re-running with these flags overwrites those fields even if you've since tuned
 them on the Settings page. The flags require a release that includes them, so
 they're a no-op against older releases.
+
+### Ghosting and smearing
+
+If lit pixels leave a faint copy elsewhere in their column, or smear sideways,
+the fix is in the panel timing rather than the scene. The number that matters is
+the shortest time a row is lit for:
+
+```
+min OE pulse = pwm-lsb-nanoseconds × 2 ^ (11 − pwm-bits)
+```
+
+The library stores color as 11 bitplanes and lights plane `b` for
+`pwm-lsb-nanoseconds × 2^b`, skipping the lowest `11 − pwm-bits` of them. At the
+defaults (`--pwm-bits=11 --pwm-lsb-nanoseconds=130`) that shortest pulse is
+130ns. Column data is clocked in while the previous plane is still lit, so once
+the pulse gets close to the time it takes to shift 32 columns in, the panel
+spends much of its lit time showing half-shifted data — which is the smear.
+
+Raising `--pwm-lsb-nanoseconds` lengthens every plane proportionally and costs
+refresh rate. Lowering `--pwm-bits` costs color depth but almost no refresh rate
+(11 → 8 drops only 0.34% of the frame while making the shortest pulse 8×
+longer), so it's usually the cheaper lever. A high `--gpio-slowdown` widens the
+smear window directly, so try lowering it before anything else — back off again
+if pixels start coming out corrupted.
+
+`hardware/test-matrix.ts` ships as `dist/hardware/test-matrix.cjs` and draws the
+worst-case patterns for this while printing the resulting pulse width and
+refresh rate, so you can compare settings without reinstalling:
+
+```
+cd /usr/local/bin/moonclock/current/dist/hardware
+sudo node test-matrix.cjs --pwm-bits=9 --pwm-lsb-nanoseconds=300 --slowdown=2
+```
+
+One caveat worth knowing: the `adafruit-hat` mapping puts Output Enable on GPIO
+4, which the library cannot pulse with the hardware PWM peripheral — it falls
+back to a busy-wait timer whose jitter causes ghosting on its own. Bridging GPIO
+4 and GPIO 18 on the HAT and switching to `adafruit-hat-pwm` is the single
+largest improvement available, and no timing value fully substitutes for it.
 
 Your moonclock will automatically start after any pi restarts.
 
