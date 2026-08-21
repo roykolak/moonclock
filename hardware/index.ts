@@ -7,8 +7,10 @@ import { Preset } from "@/types";
 import { Canvas, FontLibrary } from "skia-canvas";
 import { getEndDate } from "@/helpers/getEndDate";
 
-import express from "express";
-import Bonjour from "bonjour-service";
+// express and bonjour-service are loaded lazily (see startWebServer) so their
+// module init stays off the boot loader's critical path. Only the Response type
+// is needed at module scope, and `import type` is erased at compile time.
+import type { Response as ExpressResponse } from "express";
 import { exec } from "child_process";
 import { promisify } from "util";
 import os from "os";
@@ -36,7 +38,7 @@ const virtualPanel: { [k: string]: string } = {};
 const dirtyPixels = new Set<string>();
 
 // Open Server-Sent Events connections mirroring the live panel.
-const sseClients = new Set<express.Response>();
+const sseClients = new Set<ExpressResponse>();
 
 let brightness: number | null = null;
 
@@ -64,11 +66,20 @@ function RGBAToHexA(rgba: Uint8ClampedArray, forceRemoveAlpha = false) {
     .join("");
 }
 
-export async function createCanvas(dimensions: Dimensions) {
-  const { width, height } = dimensions;
-
+// Font registration is deferred: the startup loader is pure color and needs no
+// fonts, so paying skia-canvas's font/fontconfig cost on its first frame just
+// delays the loader. registerFonts() runs once, lazily, before the first scene
+// that actually draws text (the IP marquee and the wifi/setup prompts).
+let fontsRegistered = false;
+function registerFonts() {
+  if (fontsRegistered) return;
   FontLibrary.use("Tiny5", "./public/fonts/Tiny5-Regular.ttf");
   FontLibrary.use("Silkscreen", "./public/fonts/Silkscreen-Regular.ttf");
+  fontsRegistered = true;
+}
+
+export async function createCanvas(dimensions: Dimensions) {
+  const { width, height } = dimensions;
 
   const canvas = new Canvas(width, height);
 
@@ -88,106 +99,115 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   });
 
-  const app = express();
-  const port = 3001;
+  // The web server (SSE panel mirror + control API) and mDNS advertising are
+  // brought up only after the loader is already on the panel — see the
+  // startWebServer() calls below. express and bonjour-service are imported here,
+  // lazily, so their module init never sits in front of the first frame.
+  async function startWebServer() {
+    const { default: express } = await import("express");
+    const { default: Bonjour } = await import("bonjour-service");
 
-  app.use((req: any, res: any, next) => {
-    res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
-    res.header("Access-Control-Allow-Methods", "GET");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-    );
+    const app = express();
+    const port = 3001;
 
-    // Handle preflight requests
-    if (req.method === "OPTIONS") {
-      return res.sendStatus(204);
-    }
+    app.use((req: any, res: any, next) => {
+      res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
+      res.header("Access-Control-Allow-Methods", "GET");
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+      );
 
-    next();
-  });
+      // Handle preflight requests
+      if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+      }
 
-  app.use(express.json());
-
-  app.get("/api/reload", (req, res) => {
-    runConditionalRenderUpdate();
-    res.send(true);
-  });
-
-  // Live pixel mirror over Server-Sent Events. Sends the full panel once on
-  // connect, then only changed pixels (see the flush interval below), so a
-  // static scene streams nothing until it actually changes.
-  app.get("/api/panel/stream", (req, res) => {
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
+      next();
     });
 
-    res.write(`event: snapshot\ndata: ${JSON.stringify(virtualPanel)}\n\n`);
+    app.use(express.json());
 
-    sseClients.add(res);
-
-    req.on("close", () => {
-      sseClients.delete(res);
+    app.get("/api/reload", (req, res) => {
+      runConditionalRenderUpdate();
+      res.send(true);
     });
-  });
 
-  app.post("/api/throttle", (req, res) => {
-    syncSpeed = req.body.value;
-    res.send(true);
-  });
+    // Live pixel mirror over Server-Sent Events. Sends the full panel once on
+    // connect, then only changed pixels (see the flush interval below), so a
+    // static scene streams nothing until it actually changes.
+    app.get("/api/panel/stream", (req, res) => {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
 
-  // Simulate a hardware button press from the UI. Drives the same cycling
-  // logic as the GPIO watcher, so it works in emulator mode too.
-  app.post("/api/button-press", async (req, res) => {
-    await handleButtonPress();
-    res.send(true);
-  });
+      res.write(`event: snapshot\ndata: ${JSON.stringify(virtualPanel)}\n\n`);
 
-  // Push accumulated pixel changes to every connected client, capped at ~16fps.
-  // One timer for all clients; nothing is written while the panel is idle.
-  setInterval(() => {
-    if (dirtyPixels.size === 0 || sseClients.size === 0) return;
+      sseClients.add(res);
 
-    const delta: { [k: string]: string } = {};
-    for (const key of dirtyPixels) {
-      delta[key] = virtualPanel[key];
-    }
-    dirtyPixels.clear();
-
-    const payload = `event: delta\ndata: ${JSON.stringify(delta)}\n\n`;
-    for (const client of sseClients) {
-      client.write(payload);
-    }
-  }, 60);
-
-  // Keep idle SSE connections alive through proxies.
-  setInterval(() => {
-    for (const client of sseClients) {
-      client.write(`: ping\n\n`);
-    }
-  }, 15000);
-
-  app.listen(port, () => {
-    console.log(`[HARDWARE] Server running on port ${port}`);
-
-    const bonjour = new Bonjour();
-    // A per-device instance name (mDNS hostnames are unique on the link) keeps
-    // multiple clocks from colliding on the same network — a duplicate name is
-    // rejected with "Service name is already in use". Handle the error so a
-    // collision (e.g. a stale record after a hard restart) stays non-fatal
-    // rather than throwing from bonjour's internals.
-    const service = bonjour.publish({
-      name: `moonclock-${os.hostname()}`,
-      type: "moonclock",
-      port,
+      req.on("close", () => {
+        sseClients.delete(res);
+      });
     });
-    service.on("error", (error) => {
-      console.error("[HARDWARE] mDNS publish error:", error);
+
+    app.post("/api/throttle", (req, res) => {
+      syncSpeed = req.body.value;
+      res.send(true);
     });
-    console.log(`[HARDWARE] Advertising as _moonclock._tcp via mDNS`);
-  });
+
+    // Simulate a hardware button press from the UI. Drives the same cycling
+    // logic as the GPIO watcher, so it works in emulator mode too.
+    app.post("/api/button-press", async (req, res) => {
+      await handleButtonPress();
+      res.send(true);
+    });
+
+    // Push accumulated pixel changes to every connected client, capped at ~16fps.
+    // One timer for all clients; nothing is written while the panel is idle.
+    setInterval(() => {
+      if (dirtyPixels.size === 0 || sseClients.size === 0) return;
+
+      const delta: { [k: string]: string } = {};
+      for (const key of dirtyPixels) {
+        delta[key] = virtualPanel[key];
+      }
+      dirtyPixels.clear();
+
+      const payload = `event: delta\ndata: ${JSON.stringify(delta)}\n\n`;
+      for (const client of sseClients) {
+        client.write(payload);
+      }
+    }, 60);
+
+    // Keep idle SSE connections alive through proxies.
+    setInterval(() => {
+      for (const client of sseClients) {
+        client.write(`: ping\n\n`);
+      }
+    }, 15000);
+
+    app.listen(port, () => {
+      console.log(`[HARDWARE] Server running on port ${port}`);
+
+      const bonjour = new Bonjour();
+      // A per-device instance name (mDNS hostnames are unique on the link) keeps
+      // multiple clocks from colliding on the same network — a duplicate name is
+      // rejected with "Service name is already in use". Handle the error so a
+      // collision (e.g. a stale record after a hard restart) stays non-fatal
+      // rather than throwing from bonjour's internals.
+      const service = bonjour.publish({
+        name: `moonclock-${os.hostname()}`,
+        type: "moonclock",
+        port,
+      });
+      service.on("error", (error) => {
+        console.error("[HARDWARE] mDNS publish error:", error);
+      });
+      console.log(`[HARDWARE] Advertising as _moonclock._tcp via mDNS`);
+    });
+  }
 
   const { panel } = await getData();
 
@@ -270,6 +290,12 @@ export async function createCanvas(dimensions: Dimensions) {
     // marquee) replaces it, so there's nothing to tear down here.
     engine.render(createStartupRing());
 
+    // The loader is on the panel now — register fonts for the text scenes that
+    // follow (marquee, wifi prompts) and bring up the web server + mDNS, all
+    // while the animation is already visible rather than ahead of it.
+    registerFonts();
+    void startWebServer();
+
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Resolve the network state before showing the IP marquee. While the
@@ -346,7 +372,14 @@ export async function createCanvas(dimensions: Dimensions) {
     await new Promise((resolve) => setTimeout(resolve, 10000));
   } else {
     console.log("[HARDWARE] Skipping boot message");
+    // No loader to front-load behind here, but keep the web server startup in
+    // the same place relative to rendering as the boot path.
+    void startWebServer();
   }
+
+  // Non-boot path skips the loader above, so make sure fonts are ready before
+  // the first user scene (which may draw text) renders. No-op if already done.
+  registerFonts();
 
   engine.render(null);
 

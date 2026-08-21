@@ -1,5 +1,16 @@
 [Unit]
 Description=Moonclock Hardware ({VERSION})
+# Start as early in boot as possible so the loader lands on the panel fast.
+# Opt out of the default (late) ordering that would hold this behind
+# basic.target, and re-add only what the matrix driver truly needs: the root
+# filesystem mounted and udev's device nodes present — both guaranteed by
+# sysinit.target. It deliberately does NOT wait for the network; the boot
+# animation plays while the network comes up. Keep the shutdown ordering that
+# DefaultDependencies=no would otherwise drop so the service still stops cleanly.
+DefaultDependencies=no
+After=sysinit.target
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 User=root
@@ -7,12 +18,17 @@ Group=root
 # skia-canvas's bundled fontconfig can't find a default config on its own
 # ("Cannot load default config file"); point it at the system one.
 Environment=FONTCONFIG_PATH=/etc/fonts
+Environment=NODE_ENV=production
 Type=simple
 Restart=always
 RestartSec=5
 TimeoutStopSec=600
 WorkingDirectory=/usr/local/bin/moonclock/current/dist/hardware
-ExecStart=sudo NODE_ENV=production node index.cjs
+# The service already runs as root, so there's no need to re-exec under `sudo`
+# (a fork + PAM before node even starts). Invoke node directly by absolute path
+# so the loader lands on the panel a beat sooner. `/usr/local/bin/node` is the
+# symlink install-dependencies.sh creates for the nvm-managed runtime.
+ExecStart=/usr/local/bin/node index.cjs
 
 [Install]
 WantedBy=default.target
