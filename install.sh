@@ -166,6 +166,54 @@ else
   fi
 fi
 
+log " -> Configuring mDNS hostname"
+
+# The address people actually use is http://moonclock.local. A 32x32 panel can't
+# hand over a DHCP-assigned IP without a marquee you have to sit and watch, so
+# the panel just confirms it's connected and the address is a constant instead.
+#
+# That name is published by avahi straight from the system hostname, so both are
+# set here rather than only in bootstrap.sh — same reasoning as the boot config
+# above: it's what lets already-installed clocks pick this up on update.
+DESIRED_HOSTNAME="moonclock"
+CURRENT_HOSTNAME="$(hostname)"
+
+# Present on a stock Raspberry Pi OS image; installed defensively for VMs and
+# any image that dropped it. Guarded so a normal update never touches apt.
+if ! dpkg -s avahi-daemon > /dev/null 2>&1; then
+  log "   -> Installing avahi-daemon"
+  sudo apt-get install -y avahi-daemon
+fi
+sudo systemctl enable --now avahi-daemon > /dev/null 2>&1
+
+if [ "$CURRENT_HOSTNAME" = "$DESIRED_HOSTNAME" ]; then
+  log "   -> Hostname already $DESIRED_HOSTNAME, skipping"
+elif [ "$CURRENT_HOSTNAME" != "raspberrypi" ]; then
+  # Anything other than the stock name was chosen deliberately — renaming it
+  # would break however its owner already reaches the box. avahi publishes
+  # whatever hostname it finds, so <name>.local works either way.
+  log "   -> Custom hostname '$CURRENT_HOSTNAME' — leaving it alone"
+  log "   -> Reach the app at http://$CURRENT_HOSTNAME.local"
+else
+  log "   -> Renaming $CURRENT_HOSTNAME -> $DESIRED_HOSTNAME"
+
+  # /etc/hosts first: between the rename and this line, anything resolving the
+  # old name (sudo most visibly) warns about an unresolvable host.
+  if grep -qE "^127\.0\.1\.1[[:space:]]" /etc/hosts; then
+    sudo sed -i "s/^127\.0\.1\.1[[:space:]].*/127.0.1.1\t$DESIRED_HOSTNAME/" /etc/hosts
+  else
+    echo -e "127.0.1.1\t$DESIRED_HOSTNAME" | sudo tee -a /etc/hosts > /dev/null
+  fi
+
+  sudo hostnamectl set-hostname "$DESIRED_HOSTNAME"
+
+  # avahi caches the hostname at startup, so it keeps publishing the old .local
+  # name until it's restarted.
+  sudo systemctl restart avahi-daemon > /dev/null 2>&1
+
+  log "   -> Reach the app at http://$DESIRED_HOSTNAME.local"
+fi
+
 log " -> Reloading systemd daemons"
 
 sudo systemctl daemon-reload

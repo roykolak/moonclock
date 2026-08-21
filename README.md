@@ -79,6 +79,7 @@ Specifically, it...
 - Disables onboard sound, which `hzeller/rpi-rgb-led-matrix` [requires](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound)
 - Configures GPIO 25 and its udev rule, for the optional external button
 - Installs `wifi-connect` and NetworkManager for the WiFi setup portal
+- Sets the hostname to `moonclock` so the app lives at `http://moonclock.local`
 - Downloads and installs the latest release
 - Reboots to apply the boot config
 
@@ -120,6 +121,39 @@ To start Moonclock immediate run...
 sudo mc start
 ```
 
+## Reaching the app
+
+```
+http://moonclock.local
+```
+
+That address is fixed — it doesn't change when your router hands the pi a
+different IP, so it's worth a sticker on the frame. It works over mDNS
+(Bonjour), which is built into macOS, iOS, Windows 10+, and Android 12+.
+
+The pi is renamed to `moonclock` on install, and `avahi` publishes
+`<hostname>.local` from there. If you'd already given yours a different
+hostname, install.sh leaves it alone and your address is `http://<that name>.local`
+instead. Two clocks on one network get `moonclock.local` and `moonclock-2.local`,
+since mDNS names have to be unique on a link.
+
+If `.local` doesn't resolve — some guest and corporate networks block mDNS — the
+IP still works. Find it from your router's client list, or over ssh:
+
+```
+hostname -I
+```
+
+The panel deliberately doesn't display the address. Reading a 12-digit IP off a
+32x32 grid means scrolling it, and a scrolling address is one you have to sit and
+watch, catch every octet of, and re-read whenever DHCP changes it. A fixed name
+you already know beats that, so boot just reports state instead:
+
+- **Rainbow ring** — starting up, waiting for the network
+- **Green check** — connected, app is up
+- **Amber WiFi glyph** — needs WiFi setup, see below
+- **Red "No network"** — gave up waiting; no setup portal and no address
+
 ## WiFi setup
 
 If the pi boots without a network connection, Moonclock guides you through joining
@@ -130,8 +164,9 @@ one — no keyboard, screen, or ssh required:
 2. On your phone, open WiFi settings and join the open **Moonclock** network. A
    setup page pops up automatically.
 3. Pick your home WiFi, enter its password, and submit.
-4. The pi connects, the setup hotspot disappears, and the panel scrolls the IP
-   address where you can reach the app.
+4. The pi connects, the setup hotspot disappears, and the panel shows a green
+   check. The setup page hands you the address on its way out:
+   `http://moonclock.local`.
 
 Under the hood this is [balena wifi-connect](https://github.com/balena-os/wifi-connect)
 running a captive portal — with our own Moonclock-branded setup page
