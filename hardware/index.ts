@@ -46,12 +46,15 @@ let syncSpeed = 0;
 const PANEL_WIDTH = 32;
 const PANEL_HEIGHT = 32;
 
-// How long to wait before re-arming sync() when there's no frame queued. The
-// matrix refreshes itself on its own realtime thread, so a sync() with nothing
-// to show is pure overhead — and on the `adafruit-hat` mapping the OE pulses
-// are timed in software, so main-thread CPU we burn here shows up on the panel
-// as ghosting and flicker. Only applied when the queue is empty; a queued frame
-// still goes out at `syncSpeed`.
+// How long to wait before re-arming sync() when there's no frame queued.
+// sync() blocks the event loop until the panel finishes a frame — SwapOnVSync
+// ends in an unbounded pthread_cond_wait — while the refresh thread keeps
+// redisplaying the current frame on its own regardless. So syncing an empty
+// queue buys nothing and parks the main thread for a frame period, delaying the
+// web server, the SSE flush and the button handler behind it. A clock sits in
+// that state nearly all the time: an `fps: 0` scene draws one frame and then
+// queues nothing until the scene changes. Only applied when the queue is empty;
+// a queued frame still goes out at `syncSpeed`.
 const IDLE_SYNC_MS = 16;
 
 const virtualPanel: { [k: string]: string } = {};
@@ -298,12 +301,6 @@ export async function createCanvas(dimensions: Dimensions) {
         dropPrivileges: RuntimeFlag.Off,
       },
     );
-    // Reused RGB frame buffer, in the row-major layout drawBuffer() expects.
-    // Pushing the whole frame in one call instead of per-pixel fgColor/setPixel
-    // takes the hardware client from ~3000 native calls a frame down to two,
-    // which keeps the main thread off the matrix's realtime refresh thread.
-    const frameBuffer = Buffer.alloc(PANEL_WIDTH * PANEL_HEIGHT * 3);
-
     matrix.afterSync(() => {
       const pixelUpdates = updateQueue.shift();
 
@@ -313,22 +310,15 @@ export async function createCanvas(dimensions: Dimensions) {
           bootMark("first pixel on panel");
         }
 
-        frameBuffer.fill(0);
+        // SetBrightness applies to pixels set after it, for every created
+        // FrameCanvas, so one call a frame is equivalent to the per-pixel call
+        // this replaces — and saves 1024 trips across the native boundary.
+        matrix.brightness(brightness || panel.brightness);
+
         for (const pixel of pixelUpdates) {
-          updateVirtualPanel(pixel);
-
-          if (!pixel.rgba) continue;
-          const offset = (pixel.y * PANEL_WIDTH + pixel.x) * 3;
-          frameBuffer[offset] = pixel.rgba[0];
-          frameBuffer[offset + 1] = pixel.rgba[1];
-          frameBuffer[offset + 2] = pixel.rgba[2];
+          const hexA = updateVirtualPanel(pixel);
+          matrix.fgColor(parseInt(hexA, 16)).setPixel(pixel.x, pixel.y);
         }
-
-        // SetBrightness applies to pixels set after it, so hoisting it out of
-        // the loop is equivalent to the per-pixel call it replaces.
-        matrix
-          .brightness(brightness || panel.brightness)
-          .drawBuffer(frameBuffer, PANEL_WIDTH, PANEL_HEIGHT);
       }
 
       setTimeout(
