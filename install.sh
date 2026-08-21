@@ -195,7 +195,10 @@ message="Starting Moonclock"
 log "$message"
 echo "$message" > $DATA_FOLDER/current_install_step.txt
 
-sleep 5
+# Give the UI (polls current_install_step.txt every 1s) a moment to catch the
+# "Starting Moonclock" step and begin its reload countdown before the symlink
+# swap + restart drops its connection.
+sleep 2
 
 log " -> Symlinking release to moonclock/current"
 
@@ -210,8 +213,11 @@ log " -> Pruning old releases (keeping $MOONCLOCK_VERSION${PREVIOUS_VERSION:+ + 
 for d in "$APP_FOLDER/releases"/*/; do
   v=$(basename "$d")
   if [ "$v" != "$MOONCLOCK_VERSION" ] && [ "$v" != "$PREVIOUS_VERSION" ]; then
-    log "   -> Removing $v"
-    sudo rm -rf "$d"
+    log "   -> Removing $v (in background)"
+    # Deleting a release's node_modules (thousands of tiny files) on the SD card
+    # takes ~30s and doesn't need to block the update. Hand it to a transient
+    # unit so the app can restart immediately; --collect reaps the unit after.
+    sudo systemd-run --no-block --collect rm -rf "$d"
   fi
 done
 
