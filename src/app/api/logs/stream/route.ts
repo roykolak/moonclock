@@ -26,9 +26,18 @@ export async function GET(req: Request) {
       let buffer = "";
       let closed = false;
 
+      // Close the stream when the app service is stopped or restarted. Next's
+      // production graceful shutdown runs server.close(), which waits for open
+      // connections to drain (it does not force-close them outside dev). This
+      // `journalctl -f` follow never ends on its own, so without this it holds
+      // the whole server open — ~12s per update while systemd waits to stop it.
+      const onShutdown = () => cleanup();
+
       const cleanup = () => {
         if (closed) return;
         closed = true;
+        process.removeListener("SIGTERM", onShutdown);
+        process.removeListener("SIGINT", onShutdown);
         try {
           proc.kill("SIGTERM");
         } catch {}
@@ -67,6 +76,8 @@ export async function GET(req: Request) {
       proc.on("close", () => cleanup());
 
       req.signal.addEventListener("abort", cleanup);
+      process.once("SIGTERM", onShutdown);
+      process.once("SIGINT", onShutdown);
     },
   });
 
