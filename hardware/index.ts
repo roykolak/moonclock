@@ -489,34 +489,11 @@ export async function createCanvas(dimensions: Dimensions) {
   }
 
   let currentPresetIndex = -1;
-  let activePreview: {
-    timeoutId: NodeJS.Timeout | null;
-    cancelled: boolean;
-    resolve: (() => void) | null;
-  } | null = null;
 
   // Cycles through presets (then a clear step), exactly as a hardware
   // button press would. Exposed so both the GPIO watcher and the
   // POST /api/button-press endpoint drive the identical code path.
   async function handleButtonPress() {
-    if (activePreview) {
-      activePreview.cancelled = true;
-      if (activePreview.timeoutId) clearTimeout(activePreview.timeoutId);
-      // Resolve the parked preview promise so the superseded handler
-      // unwinds (hits its `op.cancelled` guard) instead of hanging forever.
-      if (activePreview.resolve) activePreview.resolve();
-    }
-    const op: {
-      timeoutId: NodeJS.Timeout | null;
-      cancelled: boolean;
-      resolve: (() => void) | null;
-    } = {
-      timeoutId: null,
-      cancelled: false,
-      resolve: null,
-    };
-    activePreview = op;
-
     console.log("[HARDWARE] Button pressed! Cycling to next preset...");
 
     const { presets } = getData();
@@ -535,11 +512,11 @@ export async function createCanvas(dimensions: Dimensions) {
         scheduledPreset: null,
       });
 
-      // Preview screens are painted straight to the engine without updating
-      // `preset`, so checkForNewDisplayConfig's sceneMatch can wrongly think
-      // the default is already showing and skip the render — leaving a stale
-      // preview frozen on screen. Render the default directly so the clear
-      // is always visible.
+      // The hold-to-reset feedback scene is painted straight to the engine
+      // without updating `preset`, so checkForNewDisplayConfig's sceneMatch can
+      // wrongly think the default is already showing and skip the render —
+      // leaving a stale frame on screen. Render the default directly so the
+      // clear is always visible.
       const { panel: latestPanel } = getData();
       preset = latestPanel.defaultPreset;
       scene = getScene(preset.sceneId);
@@ -548,63 +525,21 @@ export async function createCanvas(dimensions: Dimensions) {
       updateQueue = [];
       engine.render(scene);
       return;
-    } else {
-      const nextPreset = presets[currentPresetIndex];
-
-      console.log(`[HARDWARE] Switching to preset: ${nextPreset.name}`);
-
-      const endDate = getEndDate(nextPreset);
-
-      if (endDate) {
-        const hours24 = endDate.getHours();
-        const hours12 = hours24 % 12 || 12;
-        const minutes = endDate.getMinutes().toString().padStart(2, "0");
-        const period = hours24 >= 12 ? "PM" : "AM";
-        const endTimeText = `${hours12}:${minutes} ${period}`;
-
-        const previewDurationMs = 3000;
-
-        engine.render({
-          framesPerSecond: 20,
-          draw({ ctx, dimensions, elapsed }) {
-            ctx.textBaseline = "top";
-            ctx.font = "8px Tiny5";
-
-            ctx.fillStyle = "#FFF";
-            ctx.fillText(nextPreset.name, 0, 1);
-
-            ctx.fillStyle = "#999";
-            ctx.fillText("Until..", 0, 9);
-            ctx.fillText(endTimeText, 0, 18);
-
-            const progress = Math.min(elapsed / previewDurationMs, 1);
-            const barWidth = Math.floor(progress * dimensions.width);
-            if (barWidth > 0) {
-              ctx.fillStyle = "#009900";
-              ctx.fillRect(0, dimensions.height - 2, barWidth, 1);
-            }
-          },
-        });
-
-        await new Promise<void>((resolve) => {
-          op.resolve = resolve;
-          op.timeoutId = setTimeout(resolve, previewDurationMs);
-        });
-
-        if (op.cancelled) {
-          console.log("[HARDWARE] Operation aborted by new button press");
-          return;
-        }
-      }
-
-      setData({
-        scheduledPreset: {
-          preset: nextPreset,
-          endTime: endDate ? endDate.toJSON() : null,
-          updatedAt: new Date().toJSON(),
-        },
-      });
     }
+
+    const nextPreset = presets[currentPresetIndex];
+
+    console.log(`[HARDWARE] Switching to preset: ${nextPreset.name}`);
+
+    const endDate = getEndDate(nextPreset);
+
+    setData({
+      scheduledPreset: {
+        preset: nextPreset,
+        endTime: endDate ? endDate.toJSON() : null,
+        updatedAt: new Date().toJSON(),
+      },
+    });
 
     await runConditionalRenderUpdate();
   }
