@@ -12,9 +12,11 @@ case "$1" in
         ;;
     restart)
         echo "Restarting Moonclock app & hardware client"
-        systemctl restart moonclock-app
-        systemctl restart moonclock-hardware
-        systemctl restart moonclock-update-checker.timer
+        # One call so systemd restarts these concurrently. Done in sequence, the
+        # panel stayed dark for however long the app took to drain its
+        # connections on SIGTERM — measured between 0s and 7s across updates —
+        # even though the hardware service has no dependency on the app at all.
+        systemctl restart moonclock-app moonclock-hardware moonclock-update-checker.timer
         ;;
     start)
         echo "Starting Moonclock app & hardware client"

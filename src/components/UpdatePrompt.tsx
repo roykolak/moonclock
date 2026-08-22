@@ -36,6 +36,10 @@ function formatMB(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+// How long to keep asking /api/version who is answering before reloading anyway.
+const VERSION_POLL_INTERVAL_MS = 500;
+const VERSION_POLL_TIMEOUT_MS = 90_000;
+
 export function UpdatePrompt({
   nextVersion,
   releaseNotesOpen,
@@ -49,10 +53,39 @@ export function UpdatePrompt({
   const installStartedRef = useRef(false);
 
   useEffect(() => {
-    if (!updatingModalOpened) return;
+    if (!updatingModalOpened || !nextVersion) return;
 
     let cancelled = false;
     installStartedRef.current = false;
+
+    // The process that answers a reload decides which version the page renders,
+    // and the outgoing app keeps serving until it has drained — measured between
+    // 0s and 7s across updates. Waiting a fixed delay here used to guess at that
+    // and lose: the page reloaded against the old process and showed the
+    // previous version until you refreshed again. Poll for the incoming release
+    // instead, and reload only once it is the one answering.
+    const reloadWhenNewVersionIsServing = async (expected: string) => {
+      const deadline = Date.now() + VERSION_POLL_TIMEOUT_MS;
+
+      while (!cancelled && Date.now() < deadline) {
+        try {
+          const response = await fetch("/api/version", { cache: "no-store" });
+          const { version } = await response.json();
+          if (version === expected) break;
+        } catch {
+          // Connection refused between the old process exiting and the new one
+          // binding port 80 — expected mid-restart, so keep waiting.
+        }
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, VERSION_POLL_INTERVAL_MS),
+        );
+      }
+
+      // Reload on timeout too: if the update stalled, dropping back into the app
+      // to see the real state beats a modal that spins forever.
+      if (!cancelled) window.location.reload();
+    };
 
     const beginInstall = async () => {
       if (installStartedRef.current) return;
@@ -69,7 +102,7 @@ export function UpdatePrompt({
         if (data.step.includes("Starting")) {
           markAsUpdated();
           clearInterval(loop);
-          setTimeout(() => window.location.reload(), 10000);
+          reloadWhenNewVersionIsServing(nextVersion.version);
         }
       }, 1000);
     };
