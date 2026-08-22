@@ -64,7 +64,13 @@ export default function Panel({
         </Group>
       </Card.Section>
       <Card.Section>
-        <div style={{ position: "relative" }}>
+        <div
+          style={{
+            position: "relative",
+            borderRadius: "var(--mantine-radius-md)",
+            overflow: "hidden",
+          }}
+        >
           <LivePanelPreview isDefaultPreset={!scheduledPreset?.preset} />
         </div>
       </Card.Section>
