@@ -19,13 +19,20 @@ PORTAL_SSID="Moonclock"
 UI_DIR="/usr/local/bin/moonclock/current/wifi-connect-ui"
 
 # Give NetworkManager a moment on a cold boot to bring up a known network before
-# we decide the device is offline.
-sleep 15
-
-if nmcli -t -f STATE general status | grep -q "^connected"; then
-  echo "[wifi-provision] Already connected; skipping setup portal."
-  exit 0
-fi
+# we decide the device is offline. Polled once a second rather than a flat
+# `sleep 15` up front: moonclock-app pulls this unit in on every restart
+# (Wants=/After=, and a oneshot without RemainAfterExit goes inactive again), so
+# the blind sleep charged its full 15s to every app restart and every update, not
+# just to a cold boot. A clock that is already online now exits on the first
+# check, while a genuinely offline one still waits the same 15s before opening
+# the portal.
+for _ in $(seq 15); do
+  if nmcli -t -f STATE general status | grep -q "^connected"; then
+    echo "[wifi-provision] Already connected; skipping setup portal."
+    exit 0
+  fi
+  sleep 1
+done
 
 if ! command -v wifi-connect >/dev/null 2>&1; then
   echo "[wifi-provision] wifi-connect is not installed; skipping setup portal." >&2

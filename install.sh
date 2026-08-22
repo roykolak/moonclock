@@ -78,17 +78,42 @@ echo "$message" > $DATA_FOLDER/current_install_step.txt
 
 log " -> Creating app folders"
 
-if [ ! -d "$APP_FOLDER" ]; then
-    sudo mkdir -p "$APP_FOLDER"
-    sudo mkdir -p "$APP_FOLDER/releases"
-    sudo mkdir -p "$APP_FOLDER/releases/$MOONCLOCK_VERSION"
+sudo mkdir -p "$APP_FOLDER/releases"
+
+log " -> Moving app to release folder"
+
+RELEASE_FOLDER="$APP_FOLDER/releases/$MOONCLOCK_VERSION"
+STAGING_FOLDER="$PWD"
+
+# Both callers run this script from a throwaway staging directory — the in-app
+# updater from moonclock/update, bootstrap.sh from a mktemp dir — so the release
+# is moved rather than copied. On the updater's path staging and releases/ share
+# a filesystem, which makes this an O(1) rename instead of writing all ~68 MB of
+# the release to the SD card a second time. That second copy returned fast (the
+# pages were only dirty, not flushed) but left the card in writeback for ~45s,
+# and every command after it stalled behind the queue — most visibly `usermod`
+# below, which fsyncs /etc/passwd and took 37s of an otherwise 78s update.
+if [ "$STAGING_FOLDER" = "$RELEASE_FOLDER" ]; then
+  log "   -> Already running from the release folder, skipping"
 else
-    log "   -> app folders exist, skipping"
+  if [ -e "$RELEASE_FOLDER" ]; then
+    # Reinstalling a version that's already unpacked (bootstrap.sh re-run to
+    # change panel flags, say). Swap it aside rather than deleting in place:
+    # `current` may still point here, and a rename keeps the old inode alive for
+    # anything already running out of it. The prune loop at the end of this
+    # script sweeps up the .old folder in the background.
+    log "   -> Release folder exists, replacing it"
+    sudo rm -rf "$RELEASE_FOLDER.old"
+    sudo mv "$RELEASE_FOLDER" "$RELEASE_FOLDER.old"
+  fi
+
+  sudo mv "$STAGING_FOLDER" "$RELEASE_FOLDER"
+
+  # The rename keeps our inode, so bash's open fd on this script and the
+  # process's cwd both follow it. But $PWD is now a path that no longer exists,
+  # so every relative path below (services/, dist/) needs re-anchoring.
+  cd "$RELEASE_FOLDER"
 fi
-
-log " -> Copying app to release folder"
-
-cp -r . "$APP_FOLDER/releases/$MOONCLOCK_VERSION"
 
 log " -> Copying services to /etc/systemd/system/"
 
@@ -174,8 +199,13 @@ else
     BOOT_CONFIG_CHANGED="1"
   fi
 
-  # GPIO access for the (root) hardware service.
-  sudo usermod -a -G gpio root
+  # GPIO access for the (root) hardware service. Guarded because usermod
+  # rewrites *and* fsyncs /etc/passwd, /etc/group, /etc/shadow and /etc/gshadow
+  # on every run, so on a busy SD card this no-op re-add has been measured at
+  # 37 seconds. After the first install there is nothing here to change.
+  if ! id -nG root | tr ' ' '\n' | grep -qx gpio; then
+    sudo usermod -a -G gpio root
+  fi
 
   GPIO_RULES="/etc/udev/rules.d/99-gpio.rules"
   if [ ! -f "$GPIO_RULES" ]; then
