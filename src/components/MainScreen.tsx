@@ -256,6 +256,19 @@ export default function MainScreen({
         onClose={logsHandlers.close}
         title="Logs"
         size="xl"
+        styles={{
+          // LogsViewer scrolls its own list, so the modal must not scroll too —
+          // otherwise a long log run leaves you with two nested scrollbars. Pin
+          // the modal to a definite height and let the body fill what's left of
+          // it without overflowing, which is what gives the viewer inside a real
+          // height to measure against.
+          content: {
+            height: "calc(100vh - 100px)",
+            display: "flex",
+            flexDirection: "column",
+          },
+          body: { flex: 1, minHeight: 0, overflow: "hidden" },
+        }}
       >
         <LogsViewer />
       </Modal>

@@ -121,7 +121,7 @@ export function LogsViewer() {
   };
 
   return (
-    <Stack h="calc(100vh - 100px)" gap="sm">
+    <Stack h="100%" gap="sm">
       {error && (
         <Alert color="red" icon={<IconAlertCircle size={16} />} variant="light">
           {error}
