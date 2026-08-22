@@ -108,9 +108,31 @@ function readDb(): DataTypes {
 }
 
 function writeDb(db: DataTypes) {
-  fs.writeFileSync(getDatabaseName(), JSON.stringify(db, null, 2), {
-    mode: 0o776,
-  });
+  const file = getDatabaseName();
+
+  // Write to a sibling temp file and rename over the target, rather than
+  // truncating the real file in place. rename(2) is atomic within a filesystem,
+  // so a reader either sees the whole old file or the whole new one — never a
+  // half-written database. That matters because the app is killed by signal on
+  // every update restart, and a plain writeFileSync interrupted partway would
+  // leave invalid JSON behind, costing the hand-tuned panel config that readDb
+  // then backs up and replaces with defaults.
+  const tmp = `${file}.${process.pid}.tmp`;
+
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
+    // Set the mode explicitly instead of relying on writeFileSync's `mode`,
+    // which is only honoured when the file is created and is masked by umask.
+    // The rename replaces the inode, so without this the 666 that install.sh
+    // grants database.json would be silently dropped on the first write.
+    fs.chmodSync(tmp, 0o666);
+    fs.renameSync(tmp, file);
+  } catch (e) {
+    try {
+      fs.unlinkSync(tmp);
+    } catch {}
+    throw e;
+  }
 }
 
 export function getData() {
