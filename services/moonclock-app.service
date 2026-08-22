@@ -9,12 +9,14 @@ Wants=moonclock-wifi-provision.service
 [Service]
 User=root
 Group=root
+Environment=PORT=80
+Environment=NEXT_MANUAL_SIG_HANDLE=1
 Type=simple
 Restart=always
 RestartSec=5
-TimeoutStopSec=30
+TimeoutStopSec=5
 WorkingDirectory=/usr/local/bin/moonclock/current/dist/app
-ExecStart=sudo PORT=80 node server.js
+ExecStart=/usr/local/bin/node server.js
 
 [Install]
 WantedBy=default.target
