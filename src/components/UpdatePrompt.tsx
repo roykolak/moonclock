@@ -36,9 +36,10 @@ function formatMB(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-// How long to keep asking /api/version who is answering before reloading anyway.
-const VERSION_POLL_INTERVAL_MS = 500;
-const VERSION_POLL_TIMEOUT_MS = 90_000;
+const UPDATE_POLL_INTERVAL_MS = 1000;
+// Generous: a first-time install can spend minutes in apt, even though an update
+// now finishes in about ten seconds.
+const UPDATE_POLL_TIMEOUT_MS = 10 * 60_000;
 
 export function UpdatePrompt({
   nextVersion,
@@ -58,53 +59,52 @@ export function UpdatePrompt({
     let cancelled = false;
     installStartedRef.current = false;
 
-    // The process that answers a reload decides which version the page renders,
-    // and the outgoing app keeps serving until it has drained — measured between
-    // 0s and 7s across updates. Waiting a fixed delay here used to guess at that
-    // and lose: the page reloaded against the old process and showed the
-    // previous version until you refreshed again. Poll for the incoming release
-    // instead, and reload only once it is the one answering.
-    const reloadWhenNewVersionIsServing = async (expected: string) => {
-      const deadline = Date.now() + VERSION_POLL_TIMEOUT_MS;
-
-      while (!cancelled && Date.now() < deadline) {
-        try {
-          const response = await fetch("/api/version", { cache: "no-store" });
-          const { version } = await response.json();
-          if (version === expected) break;
-        } catch {
-          // Connection refused between the old process exiting and the new one
-          // binding port 80 — expected mid-restart, so keep waiting.
-        }
-
-        await new Promise((resolve) =>
-          setTimeout(resolve, VERSION_POLL_INTERVAL_MS),
-        );
-      }
-
-      // Reload on timeout too: if the update stalled, dropping back into the app
-      // to see the real state beats a modal that spins forever.
-      if (!cancelled) window.location.reload();
-    };
-
+    // The version reported by /api/update-status is a complete account of where
+    // the update is, because each release bundles its own package.json: the old
+    // number means the install is still running, a failed request means the app
+    // is between processes, and the expected number means the new release is
+    // already the one answering — so it is also the only safe moment to reload,
+    // since whichever process answers decides the version the page renders.
+    //
+    // Watching that one value is why there is a single loop here. Earlier
+    // versions keyed off "Starting Moonclock" appearing in the install step,
+    // which install.sh blanks a moment later; missing that narrow window left
+    // the modal spinning forever. The step is now display only.
     const beginInstall = async () => {
       if (installStartedRef.current) return;
       installStartedRef.current = true;
       setPhase("installing");
       await startUpdate();
 
+      const deadline = Date.now() + UPDATE_POLL_TIMEOUT_MS;
+
       const loop = setInterval(async () => {
         if (cancelled) return clearInterval(loop);
-        const response = await fetch(`/api/current-install-step`);
-        const data = await response.json();
-        setCurrentInstallStep(data.step);
 
-        if (data.step.includes("Starting")) {
-          markAsUpdated();
+        const finish = async () => {
           clearInterval(loop);
-          reloadWhenNewVersionIsServing(nextVersion.version);
+          // Recorded before reloading so the modal does not reopen on the way
+          // back in. Awaited rather than raced against the reload.
+          await markAsUpdated().catch(() => {});
+          if (!cancelled) window.location.reload();
+        };
+
+        // Reload on timeout too: if the update stalled, dropping back into the
+        // app to see the real state beats a modal that spins forever.
+        if (Date.now() > deadline) return finish();
+
+        try {
+          const response = await fetch("/api/update-status", {
+            cache: "no-store",
+          });
+          const { version, step } = await response.json();
+          setCurrentInstallStep(step ?? "");
+          if (version === nextVersion.version) await finish();
+        } catch {
+          // Refused between the old process exiting and the new one binding
+          // port 80 — expected mid-restart, so just wait for the next tick.
         }
-      }, 1000);
+      }, UPDATE_POLL_INTERVAL_MS);
     };
 
     const beginDownload = async () => {
