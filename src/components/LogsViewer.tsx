@@ -5,14 +5,13 @@ import {
   Badge,
   Box,
   Button,
-  Chip,
   Group,
   ScrollArea,
   Stack,
   Text,
 } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface LogEntry {
   id: number;
@@ -62,9 +61,6 @@ function formatTime(microseconds: number): string {
 export function LogsViewer() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [enabledGroups, setEnabledGroups] = useState<string[]>(
-    UNIT_GROUPS.map((g) => g.label),
-  );
   const [autoScroll, setAutoScroll] = useState(true);
 
   const idRef = useRef(0);
@@ -117,15 +113,6 @@ export function LogsViewer() {
     vp.scrollTop = vp.scrollHeight;
   }, [logs]);
 
-  const visibleLogs = useMemo(
-    () =>
-      logs.filter((l) => {
-        const group = GROUP_BY_UNIT.get(l.unit);
-        return group ? enabledGroups.includes(group.label) : true;
-      }),
-    [logs, enabledGroups],
-  );
-
   const handleScrollPositionChange = ({ y }: { x: number; y: number }) => {
     const vp = viewportRef.current;
     if (!vp) return;
@@ -135,26 +122,6 @@ export function LogsViewer() {
 
   return (
     <Stack h="calc(100vh - 100px)" gap="sm">
-      <Chip.Group
-        multiple
-        value={enabledGroups}
-        onChange={(v) => setEnabledGroups(v as string[])}
-      >
-        <Group gap="xs">
-          {UNIT_GROUPS.map((g) => (
-            <Chip
-              key={g.label}
-              value={g.label}
-              size="xs"
-              color={g.color}
-              variant="light"
-            >
-              {g.label}
-            </Chip>
-          ))}
-        </Group>
-      </Chip.Group>
-
       {error && (
         <Alert color="red" icon={<IconAlertCircle size={16} />} variant="light">
           {error}
@@ -177,12 +144,12 @@ export function LogsViewer() {
           type="auto"
         >
           <Box p="xs" style={{ fontFamily: "monospace", fontSize: 12 }}>
-            {visibleLogs.length === 0 ? (
+            {logs.length === 0 ? (
               <Text c="dimmed" size="sm">
                 Waiting for logs...
               </Text>
             ) : (
-              visibleLogs.map((entry) => {
+              logs.map((entry) => {
                 const group = GROUP_BY_UNIT.get(entry.unit);
                 return (
                   <Group
