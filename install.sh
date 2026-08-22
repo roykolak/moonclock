@@ -117,11 +117,28 @@ fi
 
 log " -> Copying services to /etc/systemd/system/"
 
-sudo cp services/moonclock-app.service /etc/systemd/system/
-sudo cp services/moonclock-hardware.service /etc/systemd/system/
-sudo cp services/moonclock-wifi-provision.service /etc/systemd/system/
-sudo cp services/moonclock-update-checker.service /etc/systemd/system/
-sudo cp services/moonclock-update-checker.timer /etc/systemd/system/
+# Tracked so the daemon-reload further down can be skipped when every unit is
+# already byte-identical. Note this rarely fires on a real update: four of the
+# five units carry {VERSION} in their Description, so they differ every release
+# by construction and the reload is genuinely needed.
+UNITS_CHANGED=""
+
+for unit in \
+  moonclock-app.service \
+  moonclock-hardware.service \
+  moonclock-wifi-provision.service \
+  moonclock-update-checker.service \
+  moonclock-update-checker.timer; do
+  if cmp -s "services/$unit" "/etc/systemd/system/$unit"; then
+    continue
+  fi
+  sudo cp "services/$unit" /etc/systemd/system/
+  UNITS_CHANGED="1"
+done
+
+if [ -z "$UNITS_CHANGED" ]; then
+  log "   -> Unit files unchanged, skipping"
+fi
 
 log " -> Installing polkit rule (lets the root service reboot + manage WiFi)"
 
@@ -267,9 +284,12 @@ else
   log "   -> Reach the app at http://$DESIRED_HOSTNAME.local"
 fi
 
-log " -> Reloading systemd daemons"
-
-sudo systemctl daemon-reload
+if [ -n "$UNITS_CHANGED" ]; then
+  log " -> Reloading systemd daemons"
+  sudo systemctl daemon-reload
+else
+  log " -> No unit files changed, skipping daemon-reload"
+fi
 
 log " -> Enabling services to start on restart"
 
@@ -295,11 +315,6 @@ sudo chmod 666 /var/cache/fontconfig
 message="Starting Moonclock"
 log "$message"
 echo "$message" > $DATA_FOLDER/current_install_step.txt
-
-# Give the UI (polls current_install_step.txt every 1s) a moment to catch the
-# "Starting Moonclock" step and begin its reload countdown before the symlink
-# swap + restart drops its connection.
-sleep 2
 
 log " -> Symlinking release to moonclock/current"
 
