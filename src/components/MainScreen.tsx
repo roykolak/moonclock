@@ -247,7 +247,10 @@ export default function MainScreen({
       >
         <Settings
           panel={panel}
-          onUpdateAvailable={() => setReleaseNotesOpen(true)}
+          onUpdateAvailable={() => {
+            settingsHandlers.close();
+            setReleaseNotesOpen(true);
+          }}
         />
       </Modal>
 
