@@ -15,19 +15,22 @@ const NEW_MOON_EPOCH_MS = Date.UTC(2000, 0, 6, 18, 14);
 const PHASE_STEPS = 720;
 const TERMINATOR_SOFTNESS = 1;
 
+const STAR_MARGIN = 3;
 const STARS = [
-  { x: 2, y: 4 },
-  { x: 29, y: 6 },
-  { x: 27, y: 28 },
-  { x: 4, y: 27 },
-  { x: 30, y: 17 },
-  { x: 8, y: 2 },
+  { x: 4, y: 7 },
+  { x: 27, y: 4 },
+  { x: 28, y: 10 },
+  { x: 3, y: 23 },
+  { x: 25, y: 27 },
+  { x: 9, y: 28 },
 ];
 const STAR_COLOR = "#E1E8F8";
 const STAR_REST_ALPHA = 0.22;
 const STAR_PULSE_MS = 2400;
 const STAR_STAGGER_MS = 3600;
 const TWINKLE_CYCLE_MS = 26_000;
+
+export { STARS, STAR_MARGIN };
 
 export function lunarPhase(atMs: number): number {
   const days = (atMs - NEW_MOON_EPOCH_MS) / MS_PER_DAY;

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { lunarPhase, phaseSprite } from "./index";
+import { STAR_MARGIN, STARS, lunarPhase, phaseSprite } from "./index";
 import {
   MOON_SHADOW_TONE,
   MOON_TERMINATOR_TONE,
@@ -112,6 +112,35 @@ describe("phaseSprite", () => {
       for (const key in pixels) {
         assert.ok(allowed.has(pixels[key]), `${key} -> ${pixels[key]}`);
       }
+    }
+  });
+});
+
+describe("star field", () => {
+  const PANEL = 32;
+
+  it("keeps every star inside the panel's safe area", () => {
+    for (const star of STARS) {
+      const edge = Math.min(
+        star.x,
+        PANEL - 1 - star.x,
+        star.y,
+        PANEL - 1 - star.y,
+      );
+      assert.ok(edge >= STAR_MARGIN, `(${star.x},${star.y}) is ${edge}px in`);
+    }
+  });
+
+  it("never places a star on the moon", () => {
+    const origin = Math.floor((PANEL - moonSprite.width) / 2);
+    const disc = new Set(
+      Object.keys(moonSprite.pixels).map((key) => {
+        const [x, y] = key.split(":").map(Number);
+        return `${x + origin}:${y + origin}`;
+      }),
+    );
+    for (const star of STARS) {
+      assert.ok(!disc.has(`${star.x}:${star.y}`), `(${star.x},${star.y})`);
     }
   });
 });
