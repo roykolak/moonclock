@@ -57,6 +57,17 @@ export default function Panel({
                 >
                   Reload Hardware
                 </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  color="red"
+                  data-testid="reboot-machine"
+                  onClick={async () => {
+                    showNotification({ message: "Rebooting machine" });
+                    await api.rebootMachine();
+                  }}
+                >
+                  Reboot Machine
+                </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           </Group>
