@@ -36,6 +36,7 @@ export interface DeviceApi {
   deletePreset(id: string): Promise<void>;
   updatePanel(panel: Panel): Promise<void>;
   reloadHardware(): Promise<void>;
+  rebootMachine(): Promise<void>;
   pressButton(): Promise<void>;
   checkForUpdate(): Promise<UpdateCheck>;
   startDownload(): Promise<void>;
@@ -87,6 +88,7 @@ function createDeviceApi(
     deletePreset: (id) => send(`/api/presets/${id}`, "DELETE"),
     updatePanel: (panel) => send("/api/panel", "PUT", panel),
     reloadHardware: () => send("/api/hardware/reload", "POST"),
+    rebootMachine: () => send("/api/reboot", "POST"),
     pressButton: async () => {
       await fetch(`${hardwareOrigin}/api/button-press`, { method: "POST" });
     },

@@ -25,4 +25,23 @@ test.describe("Test", () => {
     await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
     await expect(page.getByTestId("end-time")).toHaveCount(0);
   });
+
+  test("rebooting the machine from the panel menu", async ({ page }) => {
+    await page.goto("http://localhost:3000");
+
+    await page.route("**/api/reboot", (route) =>
+      route.fulfill({ json: { ok: true } }),
+    );
+
+    const rebootRequest = page.waitForRequest(
+      (request) =>
+        request.url().endsWith("/api/reboot") && request.method() === "POST",
+    );
+
+    await page.getByTestId("panel-menu").click();
+    await page.getByTestId("reboot-machine").click();
+
+    await rebootRequest;
+    await expect(page.getByText("Rebooting machine")).toBeVisible();
+  });
 });

@@ -6,6 +6,11 @@ export function reloadHardware() {
   exec("systemctl restart moonclock-hardware");
 }
 
+export function rebootMachine() {
+  log("Triggering machine reboot");
+  exec("reboot");
+}
+
 function log(message: string) {
   console.log(`[APP] ${message}`);
 }
