@@ -215,6 +215,11 @@ presets, its settings, its logs, its updates. Nothing is proxied: your browser
 talks straight to the clock you selected, at the address it advertised. Switching
 back to "this clock" leaves it exactly as you found it.
 
+Each clock names itself on first boot — two words, like "Quiet Shadow" or "Amber
+Tide" — so a second one arrives already distinguishable from the first instead of
+a second "My Moonclock". Rename it to wherever it lives in Settings; that name is
+what the switcher shows, and clocks you already own keep the name they have.
+
 Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
 record that "find devices on my network" tooling looks for. Both point at the app
 on port 80. The name in the switcher is the one you set in Settings, carried in

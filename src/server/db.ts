@@ -2,6 +2,7 @@ import fs from "fs";
 import { DataTypes, Preset } from "../types";
 import { SceneId } from "../scenes/types";
 import { databaseFile } from "./utils";
+import { randomPanelName } from "./panelName";
 import { randomUUID } from "crypto";
 
 const defaultPreset: Preset = {
@@ -17,7 +18,7 @@ const defaultPreset: Preset = {
 export const defaultData: DataTypes = {
   deviceId: randomUUID(),
   panel: {
-    name: "My Moonclock",
+    name: randomPanelName(),
     defaultPreset,
     brightness: 30,
     pwnLsbNanoseconds: 130,

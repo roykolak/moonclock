@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { unlinkSync } from "fs";
+import { seedDatabase, TEST_PANEL_NAME } from "./support/seedDatabase";
 
 const PEER_ORIGIN = "http://192.168.9.9";
 
@@ -65,9 +65,7 @@ async function stubNetwork(page: Page, devices: unknown[]) {
 
 test.describe("Administering another clock", () => {
   test.beforeEach(() => {
-    try {
-      unlinkSync("./database-test.json");
-    } catch {}
+    seedDatabase();
   });
 
   test("shows no switcher when this is the only clock on the network", async ({
@@ -77,7 +75,7 @@ test.describe("Administering another clock", () => {
 
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
     await expect(page.getByTestId("device-switcher")).toHaveCount(0);
   });
 
@@ -106,7 +104,7 @@ test.describe("Administering another clock", () => {
     await page.goto("http://localhost:3000");
 
     // The local clock's own name is the switcher once a peer shows up.
-    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
     await page.getByTestId("device-switcher").click();
     await page.getByRole("menuitem", { name: "Bedroom" }).click();
 
@@ -125,9 +123,9 @@ test.describe("Administering another clock", () => {
 
     // ...and switching back leaves this clock as it was.
     await page.getByTestId("device-switcher").click();
-    await page.getByRole("menuitem", { name: "My Moonclock" }).click();
+    await page.getByRole("menuitem", { name: TEST_PANEL_NAME }).click();
 
-    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
     await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
   });
 
@@ -145,6 +143,6 @@ test.describe("Administering another clock", () => {
 
     await page.getByRole("button", { name: "Back to this clock" }).click();
 
-    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
   });
 });

@@ -1,12 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { unlinkSync } from "fs";
+import { clearDatabase } from "./support/seedDatabase";
 
 test.describe("Test", () => {
   test.beforeEach(() => {
-    try {
-      unlinkSync("./database-test.json");
-      unlinkSync("./custom_scenes/automated-test-scene-123.json");
-    } catch {}
+    clearDatabase();
   });
 
   test("create, edit, and delete a 'for mode' preset", async ({ page }) => {

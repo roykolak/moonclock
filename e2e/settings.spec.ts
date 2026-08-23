@@ -1,19 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { readFileSync, unlinkSync, writeFileSync } from "fs";
-import { defaultData } from "../src/server/db";
+import { readFileSync } from "fs";
+import { seedDatabase, TEST_PANEL_NAME } from "./support/seedDatabase";
 
 test.describe("Updating panel settings", () => {
   test.beforeEach(() => {
-    try {
-      unlinkSync("./database-test.json");
-      unlinkSync("./custom_scenes/automated-test-scene-123.json");
-    } catch {}
+    seedDatabase();
   });
 
   test("updating settings", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByTestId("panel-name")).toHaveText("My Moonclock");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
 
     await page.getByTestId("open-settings").click();
 
@@ -47,21 +44,15 @@ test.describe("Updating panel settings", () => {
   // pre-existing Hardware Mapping one included), so this covers the wiring —
   // database to form to database — without depending on that interaction.
   test("panel timing settings survive a save", async ({ page }) => {
-    writeFileSync(
-      "./database-test.json",
-      JSON.stringify({
-        ...defaultData,
-        panel: {
-          ...defaultData.panel,
-          name: "My Moonclock",
-          pwmBits: 9,
-          pwnLsbNanoseconds: 300,
-          pwmDitherBits: 2,
-          limitRefreshRateHz: 120,
-          panelType: "FM6126A",
-        },
-      }),
-    );
+    seedDatabase({
+      panel: {
+        pwmBits: 9,
+        pwnLsbNanoseconds: 300,
+        pwmDitherBits: 2,
+        limitRefreshRateHz: 120,
+        panelType: "FM6126A",
+      },
+    });
 
     await page.goto("http://localhost:3000");
     await page.getByTestId("open-settings").click();
