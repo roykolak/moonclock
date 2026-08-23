@@ -19,6 +19,7 @@ import { promisify } from "util";
 import os from "os";
 import { getIpAddress } from "./getIpAddress";
 import { shouldRunBootCode } from "./shouldRunBootCode";
+import { isPostUpdateRestart } from "./isPostUpdateRestart";
 import { getScene } from "@/helpers/getScene";
 import { forgetWifiNetworks, isProvisioning } from "./wifi";
 import {
@@ -450,6 +451,17 @@ export async function createCanvas(dimensions: Dimensions) {
       engine.render(createNoNetworkScene());
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
+  } else if (isPostUpdateRestart()) {
+    console.log("[HARDWARE] Post-update restart — confirming on panel");
+
+    engine.render(createStartupConnected());
+
+    setTimeout(() => {
+      registerFonts();
+      void startWebServer();
+    }, 500);
+
+    await new Promise((resolve) => setTimeout(resolve, CONNECTED_HOLD_MS));
   } else {
     console.log("[HARDWARE] Skipping boot message");
     // No loader to front-load behind here, but keep the web server startup in
