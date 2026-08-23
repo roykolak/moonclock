@@ -303,10 +303,10 @@ log " -> Seeding database file"
 sudo touch $DATA_FOLDER/database.json
 sudo chmod 666 $DATA_FOLDER/database.json
 
-if [ ${#PANEL_ARGS[@]} -gt 0 ]; then
-  log " -> Applying LED panel configuration"
-  NODE_ENV=production node ./dist/hardware/configure-panel.cjs "${PANEL_ARGS[@]}"
-fi
+# Unconditional: this is what creates the database in a single process, before
+# the app and hardware services start and race to seed it themselves.
+log " -> Preparing the database"
+NODE_ENV=production node ./dist/hardware/configure-panel.cjs "${PANEL_ARGS[@]}"
 
 log " -> Loosen fontconfig cache permissions"
 

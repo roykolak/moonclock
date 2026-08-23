@@ -58,7 +58,7 @@ function formatTime(microseconds: number): string {
   return d.toLocaleTimeString([], { hour12: false });
 }
 
-export function LogsViewer() {
+export function LogsViewer({ streamUrl }: { streamUrl: string }) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -72,7 +72,7 @@ export function LogsViewer() {
   }, [autoScroll]);
 
   useEffect(() => {
-    const es = new EventSource("/api/logs/stream");
+    const es = new EventSource(streamUrl);
 
     es.onmessage = (e) => {
       try {
@@ -104,7 +104,7 @@ export function LogsViewer() {
     });
 
     return () => es.close();
-  }, []);
+  }, [streamUrl]);
 
   useEffect(() => {
     if (!autoScrollRef.current) return;

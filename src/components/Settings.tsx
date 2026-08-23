@@ -1,6 +1,6 @@
 "use client";
 
-import { updatePanel } from "@/server/actions/panel";
+import { DeviceApi } from "@/client/deviceApi";
 import { Panel } from "@/types";
 import {
   Accordion,
@@ -17,16 +17,23 @@ import {
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { IconRefresh } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import packageInfo from "../../package.json";
 
 interface SettingsProps {
   panel: Panel;
+  version: string;
+  api: DeviceApi;
+  onSaved: () => void;
   onUpdateAvailable: () => void;
 }
 
-export function Settings({ panel, onUpdateAvailable }: SettingsProps) {
+export function Settings({
+  panel,
+  version,
+  api,
+  onSaved,
+  onUpdateAvailable,
+}: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
@@ -37,16 +44,14 @@ export function Settings({ panel, onUpdateAvailable }: SettingsProps) {
     },
   });
 
-  const router = useRouter();
   const [checkingForUpdate, setCheckingForUpdate] = useState(false);
 
   const handleCheckForUpdate = async () => {
     setCheckingForUpdate(true);
     try {
-      const response = await fetch("/api/check-for-update", { method: "PUT" });
-      const data = await response.json();
+      const data = await api.checkForUpdate();
       if (data.available) {
-        router.refresh();
+        onSaved();
         onUpdateAvailable();
       } else if (data.message?.includes("Error")) {
         showNotification({ message: data.message, color: "red" });
@@ -62,8 +67,9 @@ export function Settings({ panel, onUpdateAvailable }: SettingsProps) {
 
   return (
     <form
-      onSubmit={form.onSubmit((values) => {
-        updatePanel(values);
+      onSubmit={form.onSubmit(async (values) => {
+        await api.updatePanel(values);
+        onSaved();
         showNotification({ message: "Successfully updated settings!" });
       })}
       data-testid="preset-form"
@@ -102,7 +108,7 @@ export function Settings({ panel, onUpdateAvailable }: SettingsProps) {
 
         <Group justify="space-between" align="center">
           <Text c="dimmed" size="sm">
-            v{packageInfo.version}
+            v{version}
           </Text>
           <Button
             size="xs"

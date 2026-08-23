@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import { hardwareUrl } from "./ports";
 
 export function reloadHardware() {
   log("Triggering hardware restart");
@@ -9,7 +10,17 @@ function log(message: string) {
   console.log(`[APP] ${message}`);
 }
 
+export async function refreshHardwareScene() {
+  try {
+    await fetch(hardwareUrl("/api/reload"));
+  } catch {
+    log("Hardware service unreachable; skipping scene refresh");
+  }
+}
+
 export function databaseFile() {
+  if (process.env.MOONCLOCK_DATABASE) return process.env.MOONCLOCK_DATABASE;
+
   return process.env.NODE_ENV === "production"
     ? "/var/lib/moonclock/database.json"
     : "./database.json";

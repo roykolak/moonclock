@@ -197,6 +197,75 @@ you already know beats that, so boot just reports state instead:
 - **Amber WiFi glyph** — needs WiFi setup, see below
 - **Red "No network"** — gave up waiting; no setup portal and no address
 
+## More than one clock
+
+Every clock finds the others on its network over mDNS, so you can run the whole
+house from whichever one you happened to open. When a second clock shows up, the
+panel name at the top of the app turns into a switcher:
+
+```
+Clocks on this network
+  ✓ Kitchen    this clock
+    Bedroom    192.168.1.42
+    Nursery    192.168.1.51
+```
+
+Pick one and the whole screen is now that clock — its live panel mirror, its
+presets, its settings, its logs, its updates. Nothing is proxied: your browser
+talks straight to the clock you selected, at the address it advertised. Switching
+back to "this clock" leaves it exactly as you found it.
+
+Each clock names itself on first boot — two words, like "Quiet Shadow" or "Amber
+Tide" — so a second one arrives already distinguishable from the first instead of
+a second "My Moonclock". Rename it to wherever it lives in Settings; that name is
+what the switcher shows, and clocks you already own keep the name they have.
+
+Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
+record that "find devices on my network" tooling looks for. Both point at the app
+on port 80. The name in the switcher is the one you set in Settings, carried in
+the record's TXT data along with a device id that stays put across renames and
+DHCP leases — so `moonclock-2.local` can still call itself "Bedroom".
+
+Some notes:
+
+- **Clocks running an older release won't appear.** They have no control API to
+  drive, so they're skipped rather than listed as something you can't use. Update
+  them from their own app once and they join the list.
+- **No accounts, no pairing.** Any clock on the network can administer any other,
+  the same way anyone on the network can already open the app. The control API
+  only accepts requests from private-network origins, so a page on the open web
+  can't reach in.
+- **A clock that goes away drops off the list** within a few seconds. If it
+  disappears while you're administering it, the app says so and offers you a way
+  back.
+
+### Running two clocks locally
+
+You don't need two pis to work on this. A second full instance runs from the same
+checkout on its own ports, its own database, and its own mDNS record:
+
+```
+npm run start:dev   # clock one — app on 3000, hardware on 3001
+npm run peer:dev    # clock two — app on 3010, hardware on 3011
+```
+
+Open http://localhost:3000 and the second clock is in the switcher. They discover
+each other over real mDNS, and driving one from the other writes to
+`database-peer.json`, not `database.json`.
+
+Four environment variables do the work, and each defaults to what an installed
+clock uses, so nothing about this leaks into a release:
+
+| Variable | Default | What it moves |
+| --- | --- | --- |
+| `MOONCLOCK_DATABASE` | `/var/lib/moonclock/database.json` | Which database the instance reads and writes |
+| `MOONCLOCK_APP_PORT` | `80` | The port advertised over mDNS as the app's |
+| `MOONCLOCK_HARDWARE_PORT` | `3001` | Where the control server binds, advertised in TXT so peers find it |
+| `MOONCLOCK_DIST_DIR` | `.next` | Next's build directory — two dev servers can't share one |
+
+The mDNS instance name picks up the app port when it isn't 80, so two instances
+on one host don't collide on a name.
+
 ## WiFi setup
 
 If the pi boots without a network connection, Moonclock guides you through joining

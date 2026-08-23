@@ -12,11 +12,13 @@ const SIZE = 32;
  *  loading needed. Repaints whenever the streamed coordinate map changes. Shows
  *  a blank panel until the stream connects. */
 export function LivePanelPreview({
+  streamUrl,
   isDefaultPreset = false,
 }: {
+  streamUrl: string;
   isDefaultPreset?: boolean;
 }) {
-  const { coordinates, connected } = usePanelStream();
+  const { coordinates, connected } = usePanelStream(streamUrl);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imageData, setImageData] = useState<string | null>(null);

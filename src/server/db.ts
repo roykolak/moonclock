@@ -2,6 +2,7 @@ import fs from "fs";
 import { DataTypes, Preset } from "../types";
 import { SceneId } from "../scenes/types";
 import { databaseFile } from "./utils";
+import { randomPanelName } from "./panelName";
 import { randomUUID } from "crypto";
 
 const defaultPreset: Preset = {
@@ -15,13 +16,14 @@ const defaultPreset: Preset = {
 };
 
 export const defaultData: DataTypes = {
+  deviceId: randomUUID(),
   panel: {
-    name: "My Moonclock",
+    name: randomPanelName(),
     defaultPreset,
     brightness: 30,
-    pwnLsbNanoseconds: 130,
-    gpioSlowdown: 4,
-    pwmBits: 11,
+    pwnLsbNanoseconds: 553,
+    gpioSlowdown: 2,
+    pwmBits: 9,
     hardwareMapping: "adafruit-hat",
     // Neutral (library-default) values. These are the ghosting knobs — tune
     // them per panel with hardware/test-matrix.ts rather than guessing here.
@@ -60,6 +62,8 @@ export const defaultData: DataTypes = {
 };
 
 function getDatabaseName() {
+  if (process.env.MOONCLOCK_DATABASE) return process.env.MOONCLOCK_DATABASE;
+
   return process.env["APP_ENV"] === "test"
     ? "./database-test.json"
     : databaseFile();
@@ -137,6 +141,15 @@ function writeDb(db: DataTypes) {
 
 export function getData() {
   return readDb();
+}
+
+export function prepareDatabase(): DataTypes {
+  const db = readDb();
+  if (db.deviceId) return db;
+
+  const prepared = { ...db, deviceId: randomUUID() };
+  writeDb(prepared);
+  return prepared;
 }
 
 export function setData(data: Partial<DataTypes>) {
