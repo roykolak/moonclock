@@ -1,7 +1,7 @@
 // Imported first, ahead of skia-canvas, so its module-eval timestamp predates
 // the ~29 MB skia.node dlopen and the first bootMark() can attribute that cost.
 import { bootMark } from "./bootClock";
-import { LedMatrix, GpioMapping, RuntimeFlag } from "rpi-led-matrix";
+import type { GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Pixel, Scene } from "../src/display-engine/types";
@@ -125,9 +125,9 @@ export async function createCanvas(dimensions: Dimensions) {
 
 (async () => {
   // First line of real work: everything imported above — including the ~29 MB
-  // skia.node and the other native addons — has finished dlopen'ing and
-  // evaluating by now. A large Δ here is the native-module load tax.
-  bootMark("imports loaded (skia + native addons dlopen'd)");
+  // skia.node — has finished dlopen'ing and evaluating by now. A large Δ here
+  // is the native-module load tax.
+  bootMark("imports loaded (skia dlopen'd)");
 
   const args = process.argv.slice(2);
   const params: any = { emulate: false };
@@ -271,6 +271,7 @@ export async function createCanvas(dimensions: Dimensions) {
 
   if (!params.emulate) {
     console.log("[HARDWARE] Initing LED Matrix...");
+    const { LedMatrix, RuntimeFlag } = await import("rpi-led-matrix");
     const matrix = new LedMatrix(
       {
         ...LedMatrix.defaultMatrixOptions(),
