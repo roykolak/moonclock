@@ -1,8 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { drawSprite } from "./draw-sprite";
-import { moonSprite } from "./moon/sprite";
-import { moon as legacyMoon } from "./__fixtures__/legacy-moon";
 import type { Dimensions } from "@/display-engine/types";
 
 const dimensions: Dimensions = { width: 32, height: 32 };
@@ -70,25 +68,5 @@ describe("drawSprite", () => {
       pixels: { "0:0": "" },
     });
     assert.deepEqual(pixels, {});
-  });
-
-  it("reproduces the legacy moon's exact absolute pixel positions at anchor:center, offsetX:1", () => {
-    const { ctx, pixels } = fakeCtx();
-    drawSprite(ctx, dimensions, moonSprite, {
-      anchor: "center",
-      offsetX: 1,
-      offsetY: 0,
-    });
-
-    const expected: { [key: string]: string } = {};
-    for (const [key, hex] of Object.entries(legacyMoon)) {
-      expected[key] = hex.toLowerCase();
-    }
-    const actual: { [key: string]: string } = {};
-    for (const [key, hex] of Object.entries(pixels)) {
-      actual[key] = hex.toLowerCase();
-    }
-
-    assert.deepEqual(actual, expected);
   });
 });

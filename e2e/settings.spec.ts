@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync, unlinkSync, writeFileSync } from "fs";
+import { defaultData } from "../src/server/db";
 
 test.describe("Updating panel settings", () => {
   test.beforeEach(() => {
@@ -49,9 +50,9 @@ test.describe("Updating panel settings", () => {
     writeFileSync(
       "./database-test.json",
       JSON.stringify({
-        ...JSON.parse(readFileSync("./database.json", "utf8")),
+        ...defaultData,
         panel: {
-          ...JSON.parse(readFileSync("./database.json", "utf8")).panel,
+          ...defaultData.panel,
           name: "My Moonclock",
           pwmBits: 9,
           pwnLsbNanoseconds: 300,
