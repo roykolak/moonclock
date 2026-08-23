@@ -110,6 +110,8 @@ export function createStartupRing(): Scene {
 // network now — the address people actually type is the fixed mDNS name
 // (http://moonclock.local), so the last boot frame only has to confirm state
 // rather than transmit a DHCP-assigned value through a 32x32 grid.
+//
+// Called standalone (no `phase`) it is just the check: see createStartupConnected.
 // ---------------------------------------------------------------------------
 
 const GREEN = "#22C55E";
@@ -130,8 +132,15 @@ const clamp01 = (n: number) => Math.min(Math.max(n, 0), 1);
  *  and the check's stroke from ending on an abrupt stop. */
 const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
 
-/** `phase` is the ring's age when this scene took over — see drawRing. */
-export function createStartupConnected(phase = 0): Scene {
+/** `phase` is the ring's age when this scene took over — see drawRing.
+ *
+ *  Omit it when no ring preceded this scene. A post-update restart confirms an
+ *  update that has already finished, so there is no work for a loader to stand
+ *  for: drawing the ring there would put a spinner on screen for ~200ms purely
+ *  to collapse it again — the same "reads as a glitch rather than an animation"
+ *  that MIN_RING_MS exists to prevent on the boot path. Without a phase the
+ *  check strokes in on its own, from the first frame. */
+export function createStartupConnected(phase?: number): Scene {
   const legs = CHECK.slice(1).map((point, i) =>
     Math.hypot(point.x - CHECK[i].x, point.y - CHECK[i].y),
   );
@@ -166,15 +175,18 @@ export function createStartupConnected(phase = 0): Scene {
     draw({ ctx, elapsed }) {
       clipBox(ctx);
 
-      const fade = easeOut(clamp01(elapsed / FADE_MS));
-      drawRing(
-        ctx,
-        phase + elapsed,
-        RING_ALPHA * (1 - fade),
-        1 - 0.55 * fade, // gather toward the center as they go
-      );
+      if (phase !== undefined) {
+        const fade = easeOut(clamp01(elapsed / FADE_MS));
+        drawRing(
+          ctx,
+          phase + elapsed,
+          RING_ALPHA * (1 - fade),
+          1 - 0.55 * fade, // gather toward the center as they go
+        );
+      }
 
-      const drawn = clamp01((elapsed - DRAW_DELAY_MS) / DRAW_MS);
+      const delay = phase === undefined ? 0 : DRAW_DELAY_MS;
+      const drawn = clamp01((elapsed - delay) / DRAW_MS);
       if (drawn > 0) strokeCheck(ctx, easeOut(drawn));
     },
   };
