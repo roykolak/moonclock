@@ -31,11 +31,13 @@ export interface Device {
   host: string;
   address: string | null;
   port: number;
+  hardwarePort: number;
 }
 
 export interface DeviceState {
   deviceId: string;
   version: string;
+  hardwarePort: number;
   panel: Panel;
   presets: Preset[];
   scheduledPreset: ScheduledPreset | null;

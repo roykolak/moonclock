@@ -11,7 +11,10 @@ interface MainScreenProps {
 }
 
 export default function MainScreen({ initialState }: MainScreenProps) {
-  const localApi = useMemo(() => localDeviceApi(), []);
+  const localApi = useMemo(
+    () => localDeviceApi(initialState.hardwarePort),
+    [initialState.hardwarePort],
+  );
   const peers = usePeers(localApi);
 
   const localDeviceId = initialState.deviceId;

@@ -29,6 +29,7 @@ import {
 } from "./wifi/scenes";
 import { createStartupConnected, createStartupRing } from "@/scenes/startup";
 import { collectDevices, DiscoveredService } from "./peers";
+import { appPort, hardwarePort } from "@/server/ports";
 import packageInfo from "../package.json";
 
 const execAsync = promisify(exec);
@@ -150,7 +151,7 @@ export async function createCanvas(dimensions: Dimensions) {
     const { default: Bonjour } = await import("bonjour-service");
 
     const app = express();
-    const port = 3001;
+    const port = hardwarePort();
 
     let peerBrowser: { services: DiscoveredService[] } | null = null;
 
@@ -160,7 +161,12 @@ export async function createCanvas(dimensions: Dimensions) {
         id: deviceId,
         name: currentPanel.name,
         version: packageInfo.version,
+        hardwarePort: String(port),
       };
+    }
+
+    function advertisedInstanceName() {
+      return appPort() === 80 ? os.hostname() : `${os.hostname()}-${appPort()}`;
     }
 
     app.use((req: any, res: any, next) => {
@@ -267,9 +273,9 @@ export async function createCanvas(dimensions: Dimensions) {
       // non-fatal rather than throwing from bonjour's internals.
       for (const type of ["http", "moonclock"]) {
         const service = bonjour.publish({
-          name: os.hostname(),
+          name: advertisedInstanceName(),
           type,
-          port: 80,
+          port: appPort(),
           txt: advertisedIdentity(),
         });
         service.on("error", (error) => {
@@ -280,7 +286,7 @@ export async function createCanvas(dimensions: Dimensions) {
       peerBrowser = bonjour.find({ type: "moonclock" });
 
       console.log(
-        `[HARDWARE] Advertising http://${os.hostname()}.local as _http._tcp and _moonclock._tcp via mDNS`,
+        `[HARDWARE] Advertising ${advertisedInstanceName()} on port ${appPort()} as _http._tcp and _moonclock._tcp via mDNS`,
       );
 
       const exitAfterUnpublishing = () => {

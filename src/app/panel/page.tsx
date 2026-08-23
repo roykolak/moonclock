@@ -1,6 +1,7 @@
 import MainScreen from "../../components/MainScreen";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
+import { hardwarePort } from "@/server/ports";
 import packageInfo from "../../../package.json";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function Page() {
       initialState={{
         deviceId,
         version: packageInfo.version,
+        hardwarePort: hardwarePort(),
         panel,
         presets,
         scheduledPreset,

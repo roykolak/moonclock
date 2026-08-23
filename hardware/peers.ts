@@ -10,6 +10,7 @@ export interface DiscoveredService {
 
 const IPV4 = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 const LINK_LOCAL_PREFIX = "169.254.";
+const DEFAULT_HARDWARE_PORT = 3001;
 
 function text(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -25,6 +26,11 @@ function routableIpv4(addresses: string[] = []) {
 
 function withoutTrailingDot(host: string) {
   return host.replace(/\.$/, "");
+}
+
+function portOrDefault(value: unknown, fallback: number) {
+  const parsed = Number(text(value));
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 export function toDevice(service: DiscoveredService): Device | null {
@@ -44,6 +50,10 @@ export function toDevice(service: DiscoveredService): Device | null {
     host,
     address: routableIpv4(service.addresses),
     port: service.port || 80,
+    hardwarePort: portOrDefault(
+      service.txt?.hardwarePort,
+      DEFAULT_HARDWARE_PORT,
+    ),
   };
 }
 

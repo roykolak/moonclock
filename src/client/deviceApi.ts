@@ -1,7 +1,5 @@
 import { Device, DeviceState, Panel, Preset, ScheduledPreset } from "@/types";
 
-const HARDWARE_PORT = 3001;
-
 export interface DownloadProgress {
   version: string;
   status: "downloading" | "complete" | "error";
@@ -102,11 +100,11 @@ function createDeviceApi(
   };
 }
 
-export function localDeviceApi(): DeviceApi {
+export function localDeviceApi(hardwarePort: number): DeviceApi {
   const hostname =
     typeof window === "undefined" ? "localhost" : window.location.hostname;
 
-  return createDeviceApi("", `http://${hostname}:${HARDWARE_PORT}`, true);
+  return createDeviceApi("", `http://${hostname}:${hardwarePort}`, true);
 }
 
 export function remoteDeviceApi(device: Device): DeviceApi {
@@ -115,7 +113,7 @@ export function remoteDeviceApi(device: Device): DeviceApi {
 
   return createDeviceApi(
     `http://${host}${appPort}`,
-    `http://${host}:${HARDWARE_PORT}`,
+    `http://${host}:${device.hardwarePort}`,
     false,
   );
 }

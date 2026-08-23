@@ -10,6 +10,7 @@ const peer = {
   host: "moonclock-2.local",
   address: "192.168.9.9",
   port: 80,
+  hardwarePort: 3001,
 };
 
 const peerPreset = {
@@ -33,6 +34,7 @@ function peerState(scheduledPreset: unknown) {
   return {
     deviceId: peer.id,
     version: peer.version,
+    hardwarePort: peer.hardwarePort,
     panel: {
       name: peer.name,
       brightness: 30,

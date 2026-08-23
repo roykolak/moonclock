@@ -239,6 +239,33 @@ Some notes:
   disappears while you're administering it, the app says so and offers you a way
   back.
 
+### Running two clocks locally
+
+You don't need two pis to work on this. A second full instance runs from the same
+checkout on its own ports, its own database, and its own mDNS record:
+
+```
+npm run start:dev   # clock one — app on 3000, hardware on 3001
+npm run peer:dev    # clock two — app on 3010, hardware on 3011
+```
+
+Open http://localhost:3000 and the second clock is in the switcher. They discover
+each other over real mDNS, and driving one from the other writes to
+`database-peer.json`, not `database.json`.
+
+Four environment variables do the work, and each defaults to what an installed
+clock uses, so nothing about this leaks into a release:
+
+| Variable | Default | What it moves |
+| --- | --- | --- |
+| `MOONCLOCK_DATABASE` | `/var/lib/moonclock/database.json` | Which database the instance reads and writes |
+| `MOONCLOCK_APP_PORT` | `80` | The port advertised over mDNS as the app's |
+| `MOONCLOCK_HARDWARE_PORT` | `3001` | Where the control server binds, advertised in TXT so peers find it |
+| `MOONCLOCK_DIST_DIR` | `.next` | Next's build directory — two dev servers can't share one |
+
+The mDNS instance name picks up the app port when it isn't 80, so two instances
+on one host don't collide on a name.
+
 ## WiFi setup
 
 If the pi boots without a network connection, Moonclock guides you through joining

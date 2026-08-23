@@ -8,7 +8,12 @@ function service(overrides = {}) {
     host: "moonclock-2.local",
     port: 80,
     addresses: ["192.168.1.42", "fe80::1"],
-    txt: { id: "peer-id", name: "Bedroom", version: "0.97.0" },
+    txt: {
+      id: "peer-id",
+      name: "Bedroom",
+      version: "0.97.0",
+      hardwarePort: "3001",
+    },
     ...overrides,
   };
 }
@@ -22,6 +27,7 @@ describe("toDevice", () => {
       host: "moonclock-2.local",
       address: "192.168.1.42",
       port: 80,
+      hardwarePort: 3001,
     });
   });
 
@@ -44,9 +50,30 @@ describe("toDevice", () => {
     );
   });
 
+  it("takes the control server's port from the record", () => {
+    assert.strictEqual(
+      toDevice(service({ txt: { id: "peer-id", hardwarePort: "3011" } }))
+        ?.hardwarePort,
+      3011,
+    );
+  });
+
+  it("assumes the installed port when the record doesn't say", () => {
+    assert.strictEqual(
+      toDevice(service({ txt: { id: "peer-id" } }))?.hardwarePort,
+      3001,
+    );
+    assert.strictEqual(
+      toDevice(service({ txt: { id: "peer-id", hardwarePort: "nonsense" } }))
+        ?.hardwarePort,
+      3001,
+    );
+  });
+
   it("skips link-local addresses, which no browser can reach", () => {
     assert.strictEqual(
-      toDevice(service({ addresses: ["169.254.7.7", "192.168.1.42"] }))?.address,
+      toDevice(service({ addresses: ["169.254.7.7", "192.168.1.42"] }))
+        ?.address,
       "192.168.1.42",
     );
     assert.strictEqual(
