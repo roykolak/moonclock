@@ -3,7 +3,7 @@ import assert from "node:assert";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { defaultData, ensureDeviceId, getData, setData } from "./db";
+import { defaultData, getData, prepareDatabase, setData } from "./db";
 
 let databaseFile: string;
 const previousDatabase = process.env.MOONCLOCK_DATABASE;
@@ -31,11 +31,11 @@ function writeLegacyDatabase() {
   fs.writeFileSync(databaseFile, JSON.stringify(withoutDeviceId));
 }
 
-describe("ensureDeviceId", () => {
+describe("prepareDatabase", () => {
   it("mints and persists an id for a database written before the field existed", () => {
     writeLegacyDatabase();
 
-    const deviceId = ensureDeviceId();
+    const { deviceId } = prepareDatabase();
 
     assert.ok(deviceId);
     assert.strictEqual(getData().deviceId, deviceId);
@@ -44,13 +44,13 @@ describe("ensureDeviceId", () => {
   it("is the same id every time it runs", () => {
     writeLegacyDatabase();
 
-    assert.strictEqual(ensureDeviceId(), ensureDeviceId());
+    assert.strictEqual(prepareDatabase().deviceId, prepareDatabase().deviceId);
   });
 
   it("keeps the id a seeded database already has", () => {
     const seeded = getData().deviceId;
 
-    assert.strictEqual(ensureDeviceId(), seeded);
+    assert.strictEqual(prepareDatabase().deviceId, seeded);
   });
 
   it("leaves hand-tuned panel fields alone while minting", () => {
@@ -68,7 +68,7 @@ describe("ensureDeviceId", () => {
       }),
     );
 
-    ensureDeviceId();
+    prepareDatabase();
 
     const { panel } = getData();
     assert.strictEqual(panel.hardwareMapping, "adafruit-hat-pwm");
@@ -76,7 +76,7 @@ describe("ensureDeviceId", () => {
   });
 
   it("settles the whole identity, so nothing is left for a later reader to mint", () => {
-    ensureDeviceId();
+    prepareDatabase();
 
     const first = getData();
     setData({});

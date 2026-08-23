@@ -19,7 +19,7 @@
 // databaseFile() in src/server/utils.ts), so run with NODE_ENV=production to
 // target /var/lib/moonclock/database.json.
 
-import { ensureDeviceId, getData, setData } from "@/server/db";
+import { prepareDatabase, setData } from "@/server/db";
 import type { Panel, PanelType } from "@/types";
 
 const HARDWARE_MAPPINGS = [
@@ -134,7 +134,8 @@ if (args["hardware-mapping"] !== undefined) {
   overrides.hardwareMapping = mapping;
 }
 
-console.log(`configure-panel: device id ${ensureDeviceId()}`);
+const { deviceId, panel } = prepareDatabase();
+console.log(`configure-panel: device id ${deviceId}`);
 
 if (Object.keys(overrides).length === 0) {
   console.log(
@@ -143,7 +144,6 @@ if (Object.keys(overrides).length === 0) {
   process.exit(0);
 }
 
-const { panel } = getData();
 setData({ panel: { ...panel, ...overrides } });
 
 const applied = Object.entries(overrides)

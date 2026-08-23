@@ -143,13 +143,13 @@ export function getData() {
   return readDb();
 }
 
-export function ensureDeviceId() {
+export function prepareDatabase(): DataTypes {
   const db = readDb();
-  if (db.deviceId) return db.deviceId;
+  if (db.deviceId) return db;
 
-  const deviceId = randomUUID();
-  writeDb({ ...db, deviceId });
-  return deviceId;
+  const prepared = { ...db, deviceId: randomUUID() };
+  writeDb(prepared);
+  return prepared;
 }
 
 export function setData(data: Partial<DataTypes>) {
