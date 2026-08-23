@@ -1,10 +1,14 @@
-// Applies LED panel settings to the database from the command line.
+// Prepares the database at install time: mints this clock's device id if it
+// doesn't have one yet, then applies any LED panel settings passed on the
+// command line.
 //
 // install.sh runs this (as `NODE_ENV=production node configure-panel.cjs ...`)
-// so the panel can be configured at install time instead of by hand on the
-// Settings page after first boot. Only the fields you pass are changed; every
-// other panel field and all presets are left alone. Passing no flags is a
-// no-op.
+// before starting the services, so the panel can be configured at install time
+// instead of by hand on the Settings page after first boot -- and so the whole
+// database is created by this one process rather than by whichever service
+// happens to read it first. Only the fields you pass are changed; every other
+// panel field and all presets are left alone. Passing no flags still settles
+// the identity, but leaves the panel untouched.
 //
 //   node configure-panel.cjs \
 //     --brightness=50 --hardware-mapping=adafruit-hat-pwm \
@@ -15,7 +19,7 @@
 // databaseFile() in src/server/utils.ts), so run with NODE_ENV=production to
 // target /var/lib/moonclock/database.json.
 
-import { getData, setData } from "@/server/db";
+import { ensureDeviceId, getData, setData } from "@/server/db";
 import type { Panel, PanelType } from "@/types";
 
 const HARDWARE_MAPPINGS = [
@@ -130,8 +134,12 @@ if (args["hardware-mapping"] !== undefined) {
   overrides.hardwareMapping = mapping;
 }
 
+console.log(`configure-panel: device id ${ensureDeviceId()}`);
+
 if (Object.keys(overrides).length === 0) {
-  console.log("configure-panel: no panel flags passed, nothing to do");
+  console.log(
+    "configure-panel: no panel flags passed, leaving the panel alone",
+  );
   process.exit(0);
 }
 

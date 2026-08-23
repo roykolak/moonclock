@@ -21,9 +21,9 @@ export const defaultData: DataTypes = {
     name: randomPanelName(),
     defaultPreset,
     brightness: 30,
-    pwnLsbNanoseconds: 130,
-    gpioSlowdown: 4,
-    pwmBits: 11,
+    pwnLsbNanoseconds: 553,
+    gpioSlowdown: 2,
+    pwmBits: 9,
     hardwareMapping: "adafruit-hat",
     // Neutral (library-default) values. These are the ghosting knobs — tune
     // them per panel with hardware/test-matrix.ts rather than guessing here.
@@ -62,6 +62,8 @@ export const defaultData: DataTypes = {
 };
 
 function getDatabaseName() {
+  if (process.env.MOONCLOCK_DATABASE) return process.env.MOONCLOCK_DATABASE;
+
   return process.env["APP_ENV"] === "test"
     ? "./database-test.json"
     : databaseFile();
@@ -87,7 +89,7 @@ function readDb(): DataTypes {
   }
 
   try {
-    return withDeviceId(JSON.parse(raw));
+    return JSON.parse(raw);
   } catch {
     // Don't silently overwrite a non-empty file that failed to parse —
     // it may hold hand-tuned Panel fields (pwmBits, gpioSlowdown,
@@ -107,14 +109,6 @@ function readDb(): DataTypes {
     writeDb(defaultData);
     return JSON.parse(JSON.stringify(defaultData));
   }
-}
-
-function withDeviceId(db: DataTypes): DataTypes {
-  if (db.deviceId) return db;
-
-  const seeded = { ...db, deviceId: randomUUID() };
-  writeDb(seeded);
-  return seeded;
 }
 
 function writeDb(db: DataTypes) {
@@ -147,6 +141,15 @@ function writeDb(db: DataTypes) {
 
 export function getData() {
   return readDb();
+}
+
+export function ensureDeviceId() {
+  const db = readDb();
+  if (db.deviceId) return db.deviceId;
+
+  const deviceId = randomUUID();
+  writeDb({ ...db, deviceId });
+  return deviceId;
 }
 
 export function setData(data: Partial<DataTypes>) {
