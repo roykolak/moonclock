@@ -1,87 +1,128 @@
 import { drawSprite } from "../draw-sprite";
-import { moonSprite } from "./sprite";
-import type { Scene } from "../types";
+import {
+  MOON_SHADOW_TONE,
+  MOON_TERMINATOR_TONE,
+  MoonTone,
+  moonSprite,
+} from "./sprite";
+import type { Scene, Sprite } from "../types";
 import { SceneId } from "../types";
 
-// Ported from the old macros/star-twinkle.ts (pixel-macro era). The moon
-// sprite and the star pulse are now drawn together in one function, so the
-// star positions below are guaranteed to stay lined up with the matching
-// grey star pixels baked into moonSprite — they can never drift apart the
-// way two independent layers could.
-const TWINKLE_STARS = [
-  { x: 5, y: 6 },
-  { x: 15, y: 9 },
-  { x: 30, y: 22 },
-  { x: 12, y: 29 },
+const MS_PER_DAY = 86_400_000;
+const SYNODIC_MONTH_DAYS = 29.530588853;
+const NEW_MOON_EPOCH_MS = Date.UTC(2000, 0, 6, 18, 14);
+
+const PHASE_STEPS = 720;
+const TERMINATOR_SOFTNESS = 1;
+
+const STARS = [
+  { x: 2, y: 4 },
+  { x: 29, y: 6 },
+  { x: 27, y: 28 },
+  { x: 4, y: 27 },
+  { x: 30, y: 17 },
+  { x: 8, y: 2 },
 ];
+const STAR_COLOR = "#E1E8F8";
+const STAR_REST_ALPHA = 0.22;
+const STAR_PULSE_MS = 2400;
+const STAR_STAGGER_MS = 3600;
+const TWINKLE_CYCLE_MS = 26_000;
 
-const PULSE_DURATION = 1; // seconds
-const DELAY_BETWEEN_PIXELS = 1; // seconds
-const SEQUENCE_DELAY = 5; // seconds
-const SEQUENCE_DURATION =
-  TWINKLE_STARS.length * DELAY_BETWEEN_PIXELS + PULSE_DURATION;
-const TOTAL_CYCLE_DURATION = SEQUENCE_DURATION + SEQUENCE_DELAY;
+export function lunarPhase(atMs: number): number {
+  const days = (atMs - NEW_MOON_EPOCH_MS) / MS_PER_DAY;
+  const age =
+    ((days % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS;
+  return age / SYNODIC_MONTH_DAYS;
+}
 
-const GLOW_COLOR = "#0f0ade";
+function currentPhaseStep(): number {
+  return Math.floor(lunarPhase(Date.now()) * PHASE_STEPS);
+}
 
-function shuffle<T>(unshuffled: T[]): T[] {
-  return unshuffled
-    .map((value) => ({ value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
+export function phaseSprite(phase: number): Sprite {
+  const radius = moonSprite.width / 2;
+  const waxing = phase <= 0.5;
+  const squash = Math.cos(2 * Math.PI * phase);
+  const pixels: { [key: string]: string } = {};
+
+  for (const key in moonSprite.pixels) {
+    const [x, y] = key.split(":").map(Number);
+    const dx = x + 0.5 - radius;
+    const dy = y + 0.5 - radius;
+    const halfChord = Math.sqrt(Math.max(0, radius * radius - dy * dy));
+    const terminatorX = squash * halfChord;
+    const face = moonSprite.pixels[key];
+
+    if (waxing ? dx < terminatorX : dx > terminatorX) {
+      pixels[key] = MOON_SHADOW_TONE[face];
+    } else if (
+      Math.abs(dx - terminatorX) < TERMINATOR_SOFTNESS &&
+      face !== MoonTone.Limb
+    ) {
+      pixels[key] = MOON_TERMINATOR_TONE;
+    } else {
+      pixels[key] = face;
+    }
+  }
+
+  return { width: moonSprite.width, height: moonSprite.height, pixels };
+}
+
+function paintPhase(ctx: CanvasRenderingContext2D, phase: number): void {
+  const box = { width: moonSprite.width, height: moonSprite.height };
+  ctx.clearRect(0, 0, box.width, box.height);
+  drawSprite(ctx, box, phaseSprite(phase), { anchor: "top-left" });
+}
+
+function drawStars(ctx: CanvasRenderingContext2D, elapsed: number): void {
+  const cycle =
+    ((elapsed % TWINKLE_CYCLE_MS) + TWINKLE_CYCLE_MS) % TWINKLE_CYCLE_MS;
+
+  ctx.fillStyle = STAR_COLOR;
+  for (let i = 0; i < STARS.length; i++) {
+    const pulse = cycle - i * STAR_STAGGER_MS;
+    const peak =
+      pulse >= 0 && pulse <= STAR_PULSE_MS
+        ? Math.sin((pulse / STAR_PULSE_MS) * Math.PI)
+        : 0;
+    ctx.globalAlpha = STAR_REST_ALPHA + (1 - STAR_REST_ALPHA) * peak;
+    ctx.fillRect(STARS[i].x, STARS[i].y, 1, 1);
+  }
+  ctx.globalAlpha = 1;
 }
 
 interface MoonState {
-  cycleIndex: number;
-  twinkleStars: { x: number; y: number }[];
+  face: HTMLCanvasElement;
+  faceCtx: CanvasRenderingContext2D;
+  phaseStep: number;
 }
 
 export const moonScene: Scene<MoonState> = {
   id: SceneId.Moon,
   label: "Moon",
-  framesPerSecond: 15,
-  async init() {
-    return { cycleIndex: -1, twinkleStars: shuffle(TWINKLE_STARS) };
+  framesPerSecond: 12,
+  async init({ createCanvas }) {
+    const face = await createCanvas({
+      width: moonSprite.width,
+      height: moonSprite.height,
+    });
+    const faceCtx = face.getContext("2d") as CanvasRenderingContext2D;
+    const phaseStep = currentPhaseStep();
+    paintPhase(faceCtx, phaseStep / PHASE_STEPS);
+    return { face, faceCtx, phaseStep };
   },
   draw({ ctx, dimensions, elapsed, state }) {
-    // anchor: "center" centers a 29x29 sprite at origin (1,1); +offsetX: 1
-    // lands it at (2,1), exactly the legacy scene data's minX/minY — this
-    // is pixel-identical to the original moon (see draw-sprite.test.ts).
-    drawSprite(ctx, dimensions, moonSprite, {
-      anchor: "center",
-      offsetX: 1,
-      offsetY: 0,
-    });
-
-    const elapsedSeconds = elapsed / 1000;
-    const cycleIndex = Math.floor(elapsedSeconds / TOTAL_CYCLE_DURATION);
-    if (cycleIndex !== state.cycleIndex) {
-      state.cycleIndex = cycleIndex;
-      state.twinkleStars = shuffle(TWINKLE_STARS);
+    const phaseStep = currentPhaseStep();
+    if (phaseStep !== state.phaseStep) {
+      state.phaseStep = phaseStep;
+      paintPhase(state.faceCtx, phaseStep / PHASE_STEPS);
     }
 
-    const sequenceTime = elapsedSeconds % TOTAL_CYCLE_DURATION;
-    if (sequenceTime > SEQUENCE_DURATION) return;
+    const ox = Math.floor((dimensions.width - moonSprite.width) / 2);
+    const oy = Math.floor((dimensions.height - moonSprite.height) / 2);
+    ctx.drawImage(state.face as unknown as CanvasImageSource, ox, oy);
 
-    for (let i = 0; i < TWINKLE_STARS.length; i++) {
-      const star = state.twinkleStars[i];
-      const pixelTime = sequenceTime - i * DELAY_BETWEEN_PIXELS;
-      if (pixelTime < 0 || pixelTime > PULSE_DURATION) continue;
-
-      const alpha = Math.sin((pixelTime / PULSE_DURATION) * Math.PI);
-
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(star.x, star.y, 1, 1);
-
-      ctx.globalAlpha = alpha / 2;
-      ctx.fillStyle = GLOW_COLOR;
-      ctx.fillRect(star.x, star.y - 1, 1, 1);
-      ctx.fillRect(star.x, star.y + 1, 1, 1);
-      ctx.fillRect(star.x - 1, star.y, 1, 1);
-      ctx.fillRect(star.x + 1, star.y, 1, 1);
-
-      ctx.globalAlpha = 1;
-    }
+    drawStars(ctx, elapsed);
   },
 };
