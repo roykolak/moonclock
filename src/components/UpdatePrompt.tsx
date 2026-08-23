@@ -1,6 +1,6 @@
 "use client";
 
-import { markAsUpdated, startUpdate } from "@/server/actions/app";
+import { DeviceApi, DownloadProgress } from "@/client/deviceApi";
 import { NextVersion } from "@/types";
 import {
   Anchor,
@@ -18,19 +18,13 @@ import { useEffect, useRef, useState } from "react";
 
 interface UpdatePromptProps {
   nextVersion: NextVersion | null;
+  api: DeviceApi;
+  onFinished: () => void;
   releaseNotesOpen: boolean;
   onReleaseNotesOpenChange: (open: boolean) => void;
 }
 
 type Phase = "downloading" | "installing";
-
-interface DownloadProgress {
-  version: string;
-  status: "downloading" | "complete" | "error";
-  bytesDownloaded: number;
-  totalBytes: number;
-  message?: string;
-}
 
 function formatMB(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -41,6 +35,8 @@ const UPDATE_POLL_TIMEOUT_MS = 10 * 60_000;
 
 export function UpdatePrompt({
   nextVersion,
+  api,
+  onFinished,
   releaseNotesOpen,
   onReleaseNotesOpenChange,
 }: UpdatePromptProps) {
@@ -61,7 +57,7 @@ export function UpdatePrompt({
       if (installStartedRef.current) return;
       installStartedRef.current = true;
       setPhase("installing");
-      await startUpdate();
+      await api.startUpdate();
 
       const deadline = Date.now() + UPDATE_POLL_TIMEOUT_MS;
 
@@ -70,17 +66,14 @@ export function UpdatePrompt({
 
         const finish = async () => {
           clearInterval(loop);
-          await markAsUpdated().catch(() => {});
-          if (!cancelled) window.location.reload();
+          await api.completeUpdate().catch(() => {});
+          if (!cancelled) onFinished();
         };
 
         if (Date.now() > deadline) return finish();
 
         try {
-          const response = await fetch("/api/update-status", {
-            cache: "no-store",
-          });
-          const { version, step } = await response.json();
+          const { version, step } = await api.getUpdateStatus();
           setCurrentInstallStep(step ?? "");
           if (version === nextVersion.version) await finish();
         } catch {}
@@ -94,12 +87,11 @@ export function UpdatePrompt({
       }
 
       setPhase("downloading");
-      await fetch(`/api/download-update`, { method: "POST" });
+      await api.startDownload();
 
       const loop = setInterval(async () => {
         if (cancelled) return clearInterval(loop);
-        const response = await fetch(`/api/current-download-progress`);
-        const data: DownloadProgress | null = await response.json();
+        const data = await api.getDownloadProgress();
         setDownloadProgress(data);
 
         if (data?.status === "complete") {

@@ -3,7 +3,7 @@
 import { ActionIcon, Card, Group, Menu, Text } from "@mantine/core";
 import { Panel as PanelType, ScheduledPreset } from "../types";
 import { LivePanelPreview } from "./LivePanelPreview";
-import { reloadHardwareScene } from "@/server/actions/hardware";
+import { DeviceApi } from "@/client/deviceApi";
 import { showNotification } from "@mantine/notifications";
 import { IconDots } from "@tabler/icons-react";
 import { ReactNode } from "react";
@@ -11,21 +11,27 @@ import { ReactNode } from "react";
 interface PanelProps {
   panel: PanelType;
   scheduledPreset: ScheduledPreset | null;
+  api: DeviceApi;
+  nameControl?: ReactNode;
   headerAction?: ReactNode;
 }
 
 export default function Panel({
   panel,
   scheduledPreset,
+  api,
+  nameControl,
   headerAction,
 }: PanelProps) {
   return (
     <Card padding="lg" radius="md" bg="transparent" style={{ width: "100%" }}>
       <Card.Section py="xs">
         <Group justify="space-between">
-          <Text size="xl" ff="Pixelify Sans" fw={600} data-testid="panel-name">
-            {panel.name}
-          </Text>
+          {nameControl ?? (
+            <Text size="xl" ff="Pixelify Sans" fw={600} data-testid="panel-name">
+              {panel.name}
+            </Text>
+          )}
           <Group gap="xs" align="center" wrap="nowrap">
             {headerAction}
             <Menu withinPortal position="bottom-end" shadow="sm">
@@ -40,20 +46,13 @@ export default function Panel({
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Item
-                  onClick={async () => {
-                    await fetch(
-                      `http://${window.location.hostname}:3001/api/button-press`,
-                      { method: "POST" },
-                    );
-                  }}
-                >
+                <Menu.Item onClick={() => api.pressButton()}>
                   Simulate Button Press
                 </Menu.Item>
                 <Menu.Item
                   onClick={async () => {
                     showNotification({ message: "Reloaded hardware" });
-                    await reloadHardwareScene();
+                    await api.reloadHardware();
                   }}
                 >
                   Reload Hardware
@@ -71,7 +70,10 @@ export default function Panel({
             overflow: "hidden",
           }}
         >
-          <LivePanelPreview isDefaultPreset={!scheduledPreset?.preset} />
+          <LivePanelPreview
+            streamUrl={api.panelStreamUrl}
+            isDefaultPreset={!scheduledPreset?.preset}
+          />
         </div>
       </Card.Section>
     </Card>

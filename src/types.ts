@@ -1,4 +1,5 @@
 export interface DataTypes {
+  deviceId: string;
   panel: Panel;
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
@@ -22,6 +23,24 @@ export interface NextVersion {
 }
 
 export type UpdateChannel = "stable" | "beta";
+
+export interface Device {
+  id: string;
+  name: string;
+  version: string;
+  host: string;
+  address: string | null;
+  port: number;
+}
+
+export interface DeviceState {
+  deviceId: string;
+  version: string;
+  panel: Panel;
+  presets: Preset[];
+  scheduledPreset: ScheduledPreset | null;
+  nextVersion: NextVersion | null;
+}
 
 // Chipsets needing a special init sequence. "" is the normal HUB75 panel;
 // the others garble output on a panel that doesn't have that chipset.

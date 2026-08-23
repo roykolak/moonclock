@@ -28,6 +28,8 @@ import {
   createSetupNeededScene,
 } from "./wifi/scenes";
 import { createStartupConnected, createStartupRing } from "@/scenes/startup";
+import { collectDevices, DiscoveredService } from "./peers";
+import packageInfo from "../package.json";
 
 const execAsync = promisify(exec);
 
@@ -150,9 +152,20 @@ export async function createCanvas(dimensions: Dimensions) {
     const app = express();
     const port = 3001;
 
+    let peerBrowser: { services: DiscoveredService[] } | null = null;
+
+    function advertisedIdentity() {
+      const { deviceId, panel: currentPanel } = getData();
+      return {
+        id: deviceId,
+        name: currentPanel.name,
+        version: packageInfo.version,
+      };
+    }
+
     app.use((req: any, res: any, next) => {
       res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
-      res.header("Access-Control-Allow-Methods", "GET");
+      res.header("Access-Control-Allow-Methods", "GET, POST");
       res.header(
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept, Authorization",
@@ -171,6 +184,14 @@ export async function createCanvas(dimensions: Dimensions) {
     app.get("/api/reload", (req, res) => {
       runConditionalRenderUpdate();
       res.send(true);
+    });
+
+    app.get("/api/peers", (req, res) => {
+      const { deviceId } = getData();
+      res.json({
+        deviceId,
+        devices: collectDevices(peerBrowser?.services ?? [], deviceId),
+      });
     });
 
     // Live pixel mirror over Server-Sent Events. Sends the full panel once on
@@ -232,11 +253,11 @@ export async function createCanvas(dimensions: Dimensions) {
       console.log(`[HARDWARE] Server running on port ${port}`);
 
       const bonjour = new Bonjour();
-      // Advertise the WEB APP (port 80), not this control server on 3001 — the
-      // app is what a person opens, and _http._tcp is the type network browsers
-      // and "find devices on my network" tooling actually look for. The old
-      // _moonclock._tcp record on 3001 advertised the wrong port under a type
-      // nothing queries for.
+
+      // Both records advertise the WEB APP (port 80), not this control server on
+      // 3001 — the app is what a person opens, and what another clock drives.
+      // _http._tcp is the type network browsers and "find devices on my network"
+      // tooling look for; _moonclock._tcp is the one clocks query for each other.
       //
       // The instance name is the hostname, which avahi already guarantees unique
       // on the link, so multiple clocks can't collide here — and it matches the
@@ -244,17 +265,31 @@ export async function createCanvas(dimensions: Dimensions) {
       // still rejected with "Service name is already in use", so handle the
       // error to keep a collision (e.g. a stale record after a hard restart)
       // non-fatal rather than throwing from bonjour's internals.
-      const service = bonjour.publish({
-        name: os.hostname(),
-        type: "http",
-        port: 80,
-      });
-      service.on("error", (error) => {
-        console.error("[HARDWARE] mDNS publish error:", error);
-      });
+      for (const type of ["http", "moonclock"]) {
+        const service = bonjour.publish({
+          name: os.hostname(),
+          type,
+          port: 80,
+          txt: advertisedIdentity(),
+        });
+        service.on("error", (error) => {
+          console.error(`[HARDWARE] mDNS publish error (${type}):`, error);
+        });
+      }
+
+      peerBrowser = bonjour.find({ type: "moonclock" });
+
       console.log(
-        `[HARDWARE] Advertising http://${os.hostname()}.local as _http._tcp via mDNS`,
+        `[HARDWARE] Advertising http://${os.hostname()}.local as _http._tcp and _moonclock._tcp via mDNS`,
       );
+
+      const exitAfterUnpublishing = () => {
+        const exit = () => process.exit(0);
+        setTimeout(exit, 500).unref();
+        bonjour.unpublishAll(exit);
+      };
+      process.once("SIGTERM", exitAfterUnpublishing);
+      process.once("SIGINT", exitAfterUnpublishing);
     });
   }
 

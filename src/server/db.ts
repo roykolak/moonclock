@@ -15,6 +15,7 @@ const defaultPreset: Preset = {
 };
 
 export const defaultData: DataTypes = {
+  deviceId: randomUUID(),
   panel: {
     name: "My Moonclock",
     defaultPreset,
@@ -85,7 +86,7 @@ function readDb(): DataTypes {
   }
 
   try {
-    return JSON.parse(raw);
+    return withDeviceId(JSON.parse(raw));
   } catch {
     // Don't silently overwrite a non-empty file that failed to parse —
     // it may hold hand-tuned Panel fields (pwmBits, gpioSlowdown,
@@ -105,6 +106,14 @@ function readDb(): DataTypes {
     writeDb(defaultData);
     return JSON.parse(JSON.stringify(defaultData));
   }
+}
+
+function withDeviceId(db: DataTypes): DataTypes {
+  if (db.deviceId) return db;
+
+  const seeded = { ...db, deviceId: randomUUID() };
+  writeDb(seeded);
+  return seeded;
 }
 
 function writeDb(db: DataTypes) {

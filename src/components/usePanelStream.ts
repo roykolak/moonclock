@@ -7,11 +7,14 @@ type Coordinates = { [key: string]: string };
 /** Subscribes to the hardware service's live pixel stream (SSE) and returns the
  *  current panel as a coordinate map (`"x:y" -> "#rrggbb"`).
  *
+ *  `streamUrl` points at the mirror of whichever clock is being viewed, so the
+ *  same hook renders a peer's panel as readily as this one's.
+ *
  *  The server sends one `snapshot` event on connect, then `delta` events
  *  carrying only the pixels that changed — so a static scene produces no
  *  traffic. Each event replaces the map with a new object reference, so
  *  consumers can key a repaint off `coordinates` identity. */
-export function usePanelStream(): {
+export function usePanelStream(streamUrl: string): {
   coordinates: Coordinates;
   connected: boolean;
 } {
@@ -23,9 +26,7 @@ export function usePanelStream(): {
   const coordinatesRef = useRef<Coordinates>({});
 
   useEffect(() => {
-    const source = new EventSource(
-      `http://${window.location.hostname}:3001/api/panel/stream`,
-    );
+    const source = new EventSource(streamUrl);
 
     source.addEventListener("open", () => setConnected(true));
 
@@ -46,7 +47,7 @@ export function usePanelStream(): {
     source.addEventListener("error", () => setConnected(false));
 
     return () => source.close();
-  }, []);
+  }, [streamUrl]);
 
   return { coordinates, connected };
 }

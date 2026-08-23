@@ -9,6 +9,14 @@ function log(message: string) {
   console.log(`[APP] ${message}`);
 }
 
+export async function refreshHardwareScene() {
+  try {
+    await fetch("http://localhost:3001/api/reload");
+  } catch {
+    log("Hardware service unreachable; skipping scene refresh");
+  }
+}
+
 export function databaseFile() {
   return process.env.NODE_ENV === "production"
     ? "/var/lib/moonclock/database.json"

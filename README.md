@@ -197,6 +197,43 @@ you already know beats that, so boot just reports state instead:
 - **Amber WiFi glyph** — needs WiFi setup, see below
 - **Red "No network"** — gave up waiting; no setup portal and no address
 
+## More than one clock
+
+Every clock finds the others on its network over mDNS, so you can run the whole
+house from whichever one you happened to open. When a second clock shows up, the
+panel name at the top of the app turns into a switcher:
+
+```
+Clocks on this network
+  ✓ Kitchen    this clock
+    Bedroom    192.168.1.42
+    Nursery    192.168.1.51
+```
+
+Pick one and the whole screen is now that clock — its live panel mirror, its
+presets, its settings, its logs, its updates. Nothing is proxied: your browser
+talks straight to the clock you selected, at the address it advertised. Switching
+back to "this clock" leaves it exactly as you found it.
+
+Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
+record that "find devices on my network" tooling looks for. Both point at the app
+on port 80. The name in the switcher is the one you set in Settings, carried in
+the record's TXT data along with a device id that stays put across renames and
+DHCP leases — so `moonclock-2.local` can still call itself "Bedroom".
+
+Some notes:
+
+- **Clocks running an older release won't appear.** They have no control API to
+  drive, so they're skipped rather than listed as something you can't use. Update
+  them from their own app once and they join the list.
+- **No accounts, no pairing.** Any clock on the network can administer any other,
+  the same way anyone on the network can already open the app. The control API
+  only accepts requests from private-network origins, so a page on the open web
+  can't reach in.
+- **A clock that goes away drops off the list** within a few seconds. If it
+  disappears while you're administering it, the app says so and offers you a way
+  back.
+
 ## WiFi setup
 
 If the pi boots without a network connection, Moonclock guides you through joining

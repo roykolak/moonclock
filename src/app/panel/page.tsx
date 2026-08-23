@@ -1,6 +1,7 @@
 import MainScreen from "../../components/MainScreen";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
+import packageInfo from "../../../package.json";
 
 export const dynamic = "force-dynamic";
 
@@ -10,27 +11,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { scheduledPreset, panel, presets, nextVersion } = getData();
-
-  let formattedEndTime = null;
-
-  if (scheduledPreset) {
-    formattedEndTime = scheduledPreset.endTime
-      ? new Date(scheduledPreset.endTime).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })
-      : "forever";
-  }
+  const { deviceId, panel, presets, scheduledPreset, nextVersion } = getData();
 
   return (
     <MainScreen
-      panel={panel}
-      scheduledPreset={scheduledPreset}
-      formattedEndTime={formattedEndTime}
-      presets={presets}
-      nextVersion={nextVersion}
+      initialState={{
+        deviceId,
+        version: packageInfo.version,
+        panel,
+        presets,
+        scheduledPreset,
+        nextVersion,
+      }}
     />
   );
 }
