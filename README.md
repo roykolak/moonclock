@@ -304,10 +304,7 @@ Switching back to Stable never downgrades — the moonclock keeps its current be
 
 ## Data Storage
 
-All data is stored in `/var/lib/moonclock`. This includes...
-
-- `database.json`
-- `custom_scenes/`
+All data is stored in `/var/lib/moonclock`. This includes `database.json`.
 
 This means that updating moonclock to the latest release will not effect the current of moonclock's data and configuration.
 
