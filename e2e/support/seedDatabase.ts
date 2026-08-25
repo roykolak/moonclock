@@ -24,12 +24,7 @@ export function seedDatabase({ panel, ...overrides }: SeedOverrides = {}) {
 }
 
 export function clearDatabase() {
-  for (const file of [
-    DATABASE_FILE,
-    "./custom_scenes/automated-test-scene-123.json",
-  ]) {
-    try {
-      unlinkSync(file);
-    } catch {}
-  }
+  try {
+    unlinkSync(DATABASE_FILE);
+  } catch {}
 }

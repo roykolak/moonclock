@@ -4,10 +4,10 @@ import type { Scene, Sprite } from "../types";
 import { SceneId } from "../types";
 
 // --- Breathing -------------------------------------------------------------
-// The loaf never translates — the "breath" is carried entirely by the face:
-// the mouth opens and the eyes stir. The full sprite is always drawn at its
-// grounded origin so nothing bounces up and down.
-const BREATH_PERIOD_MS = 4200;
+// The loaf never translates — the "breath" is carried entirely by the mouth,
+// which opens and closes. The full sprite is always drawn at its grounded
+// origin so nothing bounces up and down.
+const BREATH_PERIOD_MS = 6000;
 
 // --- Vertical placement ----------------------------------------------------
 // The 28x28 sprite box centers at panel origin (2,2), but its ink only spans
@@ -17,55 +17,11 @@ const BREATH_PERIOD_MS = 4200;
 const SPRITE_LIFT = 1;
 
 // --- Breath staging --------------------------------------------------------
-// The breath is a four-beat sequence, each beat keyed to a fraction of the
-// cycle. The mouth and eye windows OVERLAP in a staggered "canon" rather than
-// nesting, so the order over p:0→1 is:
-//   1. mouth opens
-//   2. eyes rise
-//   3. mouth closes   (a short beat after the eyes rise)
-//   4. eyes fall
-// then the face rests until the cycle loops.
-const MOUTH_OPEN = 0.12; // mouth opens
-const EYES_RISE = 0.4; //   eyes rise
-const MOUTH_CLOSE = 0.5; //  mouth closes (just after the eyes rise)
-const EYES_FALL = 0.78; //   eyes fall
-
-// --- Eyes ------------------------------------------------------------------
-// The two closed `‿‿` eyes (sprite-box coords). They are the innermost beat
-// of the breath (see EYES_ON): they lift LAST on the inhale and lower FIRST
-// on the exhale, a small secondary "stir" that peaks with the deepest breath.
-const EYE_KEYS = [
-  "8:16",
-  "11:16",
-  "9:17",
-  "10:17",
-  "16:16",
-  "19:16",
-  "17:17",
-  "18:17",
-];
-
-// A patch that both erases the planted eyes (backfilling face cream) and
-// repaints them one row higher, so drawing it over the grounded cat lifts the
-// eyes 1px with no doubled arc. The lifted eyes use a lighter warm brown than
-// the resting `#2b1d0f` line, so they soften as they rise — reading as a
-// gentle stir toward waking rather than the hard sleeping line.
-const EYE_UP_COLOR = "#6e5238";
-const FACE_FILL = bunnySprite.pixels["13:13"];
-const eyesUpPixels: Record<string, string> = {};
-for (const k of EYE_KEYS) {
-  const [x, y] = k.split(":").map(Number);
-  eyesUpPixels[`${x}:${y}`] = FACE_FILL; // erase the resting eye
-}
-for (const k of EYE_KEYS) {
-  const [x, y] = k.split(":").map(Number);
-  eyesUpPixels[`${x}:${y - 1}`] = EYE_UP_COLOR; // repaint one row up, lighter
-}
-const eyesUpSprite: Sprite = {
-  width: bunnySprite.width,
-  height: bunnySprite.height,
-  pixels: eyesUpPixels,
-};
+// The breath is a two-beat sequence keyed to fractions of the cycle: the mouth
+// opens at MOUTH_OPEN and closes at MOUTH_CLOSE, then the face rests until the
+// cycle loops.
+const MOUTH_OPEN = 0.12;
+const MOUTH_CLOSE = 0.5;
 
 // --- Inhale mouth ----------------------------------------------------------
 // While the crown is lifted (the inhale), the resting `‿` smile grows two
@@ -74,7 +30,7 @@ const eyesUpSprite: Sprite = {
 // adds the extra depth below the mouth. The added pixels use a lighter tan
 // than the #6e5238 mouth so they read as the softer inner-mouth opening
 // rather than another line of the smile.
-const INHALE_COLOR = "#ffb066";
+const INHALE_COLOR = "#cc8d52";
 const inhaleSprite: Sprite = {
   width: bunnySprite.width,
   height: bunnySprite.height,
@@ -134,7 +90,6 @@ function drawZ(ctx: CanvasRenderingContext2D, z: Zed): void {
 
 interface BunnyState {
   full: HTMLCanvasElement;
-  eyes: HTMLCanvasElement;
   inhale: HTMLCanvasElement;
 }
 
@@ -161,12 +116,11 @@ export const bunnyScene: Scene<BunnyState> = {
   label: "Cat",
   framesPerSecond: 12,
   async init({ createCanvas }) {
-    // Pre-render each layer once: the whole cat, the raised-eye patch, and
-    // the inhale-mouth patch. Redrawing ~412 pixels every frame is wasteful.
+    // Pre-render each layer once: the whole cat and the inhale-mouth patch.
+    // Redrawing ~412 pixels every frame is wasteful.
     const full = await prerender(createCanvas, bunnySprite);
-    const eyes = await prerender(createCanvas, eyesUpSprite);
     const inhale = await prerender(createCanvas, inhaleSprite);
-    return { full, eyes, inhale };
+    return { full, inhale };
   },
   draw({ ctx, dimensions, elapsed, state }) {
     const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
@@ -181,14 +135,10 @@ export const bunnyScene: Scene<BunnyState> = {
     // Layer A: the planted cat, always drawn first — it never translates.
     ctx.drawImage(state.full as unknown as CanvasImageSource, ox, oy);
 
-    // Four-beat breath (see the *_OPEN/*_RISE/*_CLOSE/*_FALL thresholds): the
-    // mouth opens, the eyes rise, the mouth closes just after, then the eyes
-    // fall. The mouth and eye windows overlap, so the beats stagger.
+    // Two-beat breath (see MOUTH_OPEN/MOUTH_CLOSE): the mouth opens, then
+    // closes, and the face rests for the remainder of the cycle.
     if (cyclePos >= MOUTH_OPEN && cyclePos < MOUTH_CLOSE) {
       ctx.drawImage(state.inhale as unknown as CanvasImageSource, ox, oy);
-    }
-    if (cyclePos >= EYES_RISE && cyclePos < EYES_FALL) {
-      ctx.drawImage(state.eyes as unknown as CanvasImageSource, ox, oy);
     }
 
     for (const z of zList(elapsed)) drawZ(ctx, z);

@@ -43,7 +43,6 @@ next-env.d.ts
 database.json
 database-test.json
 database-peer.json
-custom_scenes/automated-test-scene-123.json
 
 node_modules
 moonclock
