@@ -270,6 +270,7 @@ export default function DeviceScreen({
             panel={panel}
             scheduledPreset={scheduledPreset}
             api={api}
+            onRefresh={refresh}
             nameControl={nameControl}
             headerAction={presetControl}
           />
