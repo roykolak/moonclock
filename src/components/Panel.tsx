@@ -12,6 +12,7 @@ interface PanelProps {
   panel: PanelType;
   scheduledPreset: ScheduledPreset | null;
   api: DeviceApi;
+  onRefresh?: () => Promise<void>;
   nameControl?: ReactNode;
   headerAction?: ReactNode;
 }
@@ -20,6 +21,7 @@ export default function Panel({
   panel,
   scheduledPreset,
   api,
+  onRefresh,
   nameControl,
   headerAction,
 }: PanelProps) {
@@ -46,7 +48,12 @@ export default function Panel({
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Item onClick={() => api.pressButton()}>
+                <Menu.Item
+                  onClick={async () => {
+                    await api.pressButton();
+                    await onRefresh?.();
+                  }}
+                >
                   Simulate Button Press
                 </Menu.Item>
                 <Menu.Item

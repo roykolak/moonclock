@@ -3,6 +3,7 @@
 import { bootMark } from "./bootClock";
 import type { GpioMapping } from "rpi-led-matrix";
 import { checkForNewDisplayConfig } from "./checkForNewDisplayConfig";
+import { nextPresetInCycle } from "./nextPresetInCycle";
 import { createDisplayEngine } from "../src/display-engine";
 import { Dimensions, Pixel, Scene } from "../src/display-engine/types";
 import { getData, setData } from "@/server/db";
@@ -542,24 +543,25 @@ export async function createCanvas(dimensions: Dimensions) {
     }
   }
 
-  let currentPresetIndex = -1;
-
   // Cycles through presets (then a clear step), exactly as a hardware
   // button press would. Exposed so both the GPIO watcher and the
   // POST /api/button-press endpoint drive the identical code path.
   async function handleButtonPress() {
     console.log("[HARDWARE] Button pressed! Cycling to next preset...");
 
-    const { presets } = getData();
+    const { presets, scheduledPreset } = getData();
 
     if (presets.length === 0) {
       console.log("[HARDWARE] No presets found");
       return;
     }
 
-    currentPresetIndex = (currentPresetIndex + 1) % (presets.length + 1);
+    const nextPreset = nextPresetInCycle(
+      presets,
+      scheduledPreset?.preset ?? null,
+    );
 
-    if (currentPresetIndex === presets.length) {
+    if (!nextPreset) {
       console.log("[HARDWARE] Clearing scheduled preset");
 
       setData({
@@ -580,8 +582,6 @@ export async function createCanvas(dimensions: Dimensions) {
       engine.render(scene);
       return;
     }
-
-    const nextPreset = presets[currentPresetIndex];
 
     console.log(`[HARDWARE] Switching to preset: ${nextPreset.name}`);
 
