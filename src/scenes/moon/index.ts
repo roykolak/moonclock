@@ -46,7 +46,7 @@ function currentPhaseStep(): number {
 export function phaseSprite(phase: number): Sprite {
   const radius = moonSprite.width / 2;
   const waxing = phase <= 0.5;
-  const squash = Math.cos(2 * Math.PI * phase);
+  const squash = (waxing ? 1 : -1) * Math.cos(2 * Math.PI * phase);
   const pixels: { [key: string]: string } = {};
 
   for (const key in moonSprite.pixels) {
