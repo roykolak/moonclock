@@ -14,6 +14,8 @@
 
 # oranges / browns
 #ff8c1a   # orange
+#e87b12   # tabby mid (cat mane)
+#c96409   # tabby deep (cat mane)
 #ffb066   # peach
 #81450e   # brown (cat) — notoriously muddy on LEDs
 #5a3208   # dark brown
@@ -46,5 +48,7 @@
 # neutrals — luminance ladder, worst case for LEDs
 #ffffff   # white
 #fff2d6   # warm white
+#f2dfbc   # cream shade (cat fur)
+#e0c79a   # cream deep (cat fur)
 #888888   # mid gray
 #333333   # dark gray
