@@ -7,6 +7,7 @@ import {
   Alert,
   Button,
   Divider,
+  Flex,
   Group,
   Modal,
   Select,
@@ -305,7 +306,12 @@ export function Settings({
             Danger Zone
           </Title>
 
-          <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Flex
+            direction={{ base: "column", sm: "row" }}
+            align={{ base: "stretch", sm: "flex-start" }}
+            justify="space-between"
+            gap="sm"
+          >
             <Text c="dimmed" size="xs">
               Erasing deletes this clock&apos;s database file — its name, every
               preset, what it&apos;s showing now, and all of your hardware
@@ -324,7 +330,7 @@ export function Settings({
             >
               Erase this clock
             </Button>
-          </Group>
+          </Flex>
         </Stack>
       </form>
 
