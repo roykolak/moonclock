@@ -646,11 +646,11 @@ export async function createCanvas(dimensions: Dimensions) {
     // Watch both edges so we can measure how long the button is held and tell
     // a short tap (cycle presets) apart from a long hold (reset WiFi).
     const button = new Gpio(BUTTON_GPIO_PIN, "in", "both", {
-      debounceTimeout: 50,
+      debounceTimeout: 20,
     });
 
-    const LONG_PRESS_MS = 5000;
-    const HOLD_FEEDBACK_DELAY_MS = 1500;
+    const LONG_PRESS_MS = 10000;
+    const HOLD_FEEDBACK_DELAY_MS = 5000;
 
     let longPressTimer: NodeJS.Timeout | null = null;
     let holdFeedbackTimer: NodeJS.Timeout | null = null;
