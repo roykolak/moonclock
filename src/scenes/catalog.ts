@@ -4,7 +4,7 @@
 
 import { blankScene } from "./blank";
 import { moonScene } from "./moon";
-import { bunnyScene } from "./bunny";
+import { catScene } from "./cat";
 import type { Scene } from "./types";
 
-export const scenes: Scene<any>[] = [blankScene, moonScene, bunnyScene];
+export const scenes: Scene<any>[] = [blankScene, moonScene, catScene];

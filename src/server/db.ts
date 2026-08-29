@@ -50,8 +50,8 @@ export const defaultData: DataTypes = {
     },
     {
       id: randomUUID(),
-      name: "Bunny",
-      sceneId: SceneId.Bunny,
+      name: "Cat",
+      sceneId: SceneId.Cat,
       mode: "for",
       untilDay: "0",
       untilHour: "0",

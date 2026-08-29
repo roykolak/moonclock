@@ -4,7 +4,7 @@ import { scenes } from "./catalog";
 
 // Snapshot of expected ids. A rename here orphans any persisted DB row
 // naming the old id — this failing loudly is the point.
-const EXPECTED_IDS = ["blank", "moon", "bunny"];
+const EXPECTED_IDS = ["blank", "moon", "cat"];
 
 describe("scene catalog", () => {
   it("has exactly the expected, stable set of ids", () => {

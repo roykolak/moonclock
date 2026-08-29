@@ -59,7 +59,7 @@ test.describe("Test", () => {
 
     await page.getByRole("option", { name: "1 hour 30 minutes" }).click();
 
-    await page.getByTestId("scene-option-bunny").click();
+    await page.getByTestId("scene-option-cat").click();
 
     await page.getByRole("button", { name: "Update Preset" }).click();
 
@@ -90,6 +90,6 @@ test.describe("Test", () => {
     await page.getByTestId("preset-dropdown").click();
 
     await expect(page.getByRole("menuitem", { name: "Moon" })).toHaveCount(1);
-    await expect(page.getByRole("menuitem", { name: "Bunny" })).toHaveCount(1);
+    await expect(page.getByRole("menuitem", { name: "Cat" })).toHaveCount(1);
   });
 });

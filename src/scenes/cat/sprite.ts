@@ -3,12 +3,9 @@
 // bottom (the ears run near the top; sleepy z's drift off-frame above).
 // Generated from the visual-iteration harness (procedural, symmetric about the
 // box's center axis), then frozen here as static data. Edit directly.
-//
-// Keeps the id/export name "bunny" — Preset.sceneId rows in the DB persist
-// that string, so renaming would orphan them (see catalog.test.ts).
 import { Sprite } from "../types";
 
-export const bunnySprite: Sprite = {
+export const catSprite: Sprite = {
   width: 28,
   height: 28,
   pixels: {

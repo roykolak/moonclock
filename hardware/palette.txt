@@ -9,13 +9,13 @@
 
 # reds
 #ff3030   # punchy red
-#ff8080   # soft red (bunny fur)
+#ff8080   # soft red (cat fur)
 #b01818   # deep red
 
 # oranges / browns
 #ff8c1a   # orange
 #ffb066   # peach
-#81450e   # brown (bunny) — notoriously muddy on LEDs
+#81450e   # brown (cat) — notoriously muddy on LEDs
 #5a3208   # dark brown
 
 # yellows

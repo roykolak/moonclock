@@ -18,19 +18,19 @@ function preset(overrides: Partial<Preset> = {}): Preset {
 }
 
 const moon = preset();
-const bunny = preset({ id: "bunny-id", name: "Bunny", sceneId: "bunny" });
-const presets = [moon, bunny];
+const cat = preset({ id: "cat-id", name: "Cat", sceneId: "cat" });
+const presets = [moon, cat];
 
 describe("nextPresetInCycle", () => {
   it("walks the presets in order and then clears", () => {
     assert.strictEqual(nextPresetInCycle(presets, null), moon);
-    assert.strictEqual(nextPresetInCycle(presets, moon), bunny);
-    assert.strictEqual(nextPresetInCycle(presets, bunny), null);
+    assert.strictEqual(nextPresetInCycle(presets, moon), cat);
+    assert.strictEqual(nextPresetInCycle(presets, cat), null);
   });
 
   it("advances from a preset the web UI selected, not from a press count", () => {
-    assert.strictEqual(nextPresetInCycle(presets, bunny), null);
-    assert.strictEqual(nextPresetInCycle(presets, moon), bunny);
+    assert.strictEqual(nextPresetInCycle(presets, cat), null);
+    assert.strictEqual(nextPresetInCycle(presets, moon), cat);
   });
 
   it("restarts the cycle when the active preset is no longer in the list", () => {
@@ -42,15 +42,15 @@ describe("nextPresetInCycle", () => {
   it("matches on id, so a rename keeps its place in the cycle", () => {
     const renamed = preset({ id: "moon-id", name: "Moonrise" });
 
-    assert.strictEqual(nextPresetInCycle(presets, renamed), bunny);
+    assert.strictEqual(nextPresetInCycle(presets, renamed), cat);
   });
 
   it("falls back to the name when either preset has no id", () => {
-    const withoutIds = [preset({ id: undefined }), bunny];
+    const withoutIds = [preset({ id: undefined }), cat];
 
     assert.strictEqual(
       nextPresetInCycle(withoutIds, preset({ id: undefined })),
-      bunny,
+      cat,
     );
   });
 
