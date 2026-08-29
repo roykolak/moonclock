@@ -287,8 +287,10 @@ coordinated with the panel by the `moonclock-wifi-provision` service. Once the p
 is connected, the web app starts as usual.
 
 **Changing networks later** (e.g. you moved): press and hold the external button
-for ~5 seconds. The panel shows a "Reset WiFi?" countdown; keep holding and the
-pi forgets its saved networks and reboots back into the setup flow above.
+for ~10 seconds. The panel shows a "Reset WiFi?" countdown after a second and a
+half; keep holding it to the end and the pi forgets its saved networks and
+reboots back into the setup flow above. Let go before the bar fills and nothing
+happens.
 
 ## Updating
 
