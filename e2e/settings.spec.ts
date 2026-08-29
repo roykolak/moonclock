@@ -83,6 +83,19 @@ test.describe("Updating panel settings", () => {
     });
   });
 
+  test("keeps the erase control behind a collapsed Danger Zone", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000");
+    await page.getByTestId("open-settings").click();
+
+    await expect(page.getByTestId("erase-clock-button")).toBeHidden();
+
+    await page.getByRole("button", { name: "Danger Zone" }).click();
+
+    await expect(page.getByTestId("erase-clock-button")).toBeVisible();
+  });
+
   test("erasing the clock starts it over on the factory defaults", async ({
     page,
   }) => {
@@ -90,6 +103,7 @@ test.describe("Updating panel settings", () => {
     await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
 
     await page.getByTestId("open-settings").click();
+    await page.getByRole("button", { name: "Danger Zone" }).click();
     await page.getByTestId("erase-clock-button").click();
     await page.getByTestId("confirm-erase-clock-button").click();
 
