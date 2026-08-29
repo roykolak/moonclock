@@ -3,7 +3,13 @@ import assert from "node:assert";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { defaultData, getData, prepareDatabase, setData } from "./db";
+import {
+  defaultData,
+  getData,
+  prepareDatabase,
+  resetDatabase,
+  setData,
+} from "./db";
 
 let databaseFile: string;
 const previousDatabase = process.env.MOONCLOCK_DATABASE;
@@ -89,5 +95,43 @@ describe("prepareDatabase", () => {
       first.presets.map((preset) => preset.id),
       second.presets.map((preset) => preset.id),
     );
+  });
+});
+
+describe("resetDatabase", () => {
+  it("throws away a customized database and seeds the factory one", () => {
+    setData({
+      panel: { ...getData().panel, name: "Tuned Moonclock", pwmBits: 7 },
+      presets: [],
+    });
+
+    const fresh = resetDatabase();
+
+    assert.notStrictEqual(fresh.panel.name, "Tuned Moonclock");
+    assert.strictEqual(fresh.panel.pwmBits, defaultData.panel.pwmBits);
+    assert.deepStrictEqual(
+      fresh.presets.map((preset) => preset.name),
+      defaultData.presets.map((preset) => preset.name),
+    );
+    assert.deepStrictEqual(getData(), fresh);
+  });
+
+  it("mints a new identity rather than carrying the old one over", () => {
+    const before = prepareDatabase().deviceId;
+
+    const after = resetDatabase().deviceId;
+
+    assert.ok(after);
+    assert.notStrictEqual(after, before);
+    assert.strictEqual(getData().deviceId, after);
+  });
+
+  it("seeds a database that is already missing", () => {
+    assert.ok(!fs.existsSync(databaseFile));
+
+    const fresh = resetDatabase();
+
+    assert.ok(fresh.deviceId);
+    assert.strictEqual(getData().deviceId, fresh.deviceId);
   });
 });
