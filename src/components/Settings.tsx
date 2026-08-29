@@ -302,35 +302,42 @@ export function Settings({
 
           <Divider mt="xl" />
 
-          <Title order={5} mt="md" c="red">
-            Danger Zone
-          </Title>
-
-          <Flex
-            direction={{ base: "column", sm: "row" }}
-            align={{ base: "stretch", sm: "flex-start" }}
-            justify="space-between"
-            gap="sm"
-          >
-            <Text c="dimmed" size="xs">
-              Erasing deletes this clock&apos;s database file — its name, every
-              preset, what it&apos;s showing now, and all of your hardware
-              tuning — and starts it over on the factory defaults. It can&apos;t
-              be undone.
-            </Text>
-            <Button
-              type="button"
-              color="red"
-              variant="outline"
-              size="xs"
-              style={{ flexShrink: 0 }}
-              leftSection={<IconTrash size={16} stroke={1.5} />}
-              onClick={resetConfirmHandlers.open}
-              data-testid="erase-clock-button"
-            >
-              Erase this clock
-            </Button>
-          </Flex>
+          <Accordion variant="separated">
+            <Accordion.Item key="danger" value="danger">
+              <Accordion.Control>
+                <Text size="sm" c="red">
+                  Danger Zone
+                </Text>
+              </Accordion.Control>
+              <Accordion.Panel>
+                <Flex
+                  direction={{ base: "column", sm: "row" }}
+                  align={{ base: "stretch", sm: "flex-start" }}
+                  justify="space-between"
+                  gap="sm"
+                >
+                  <Text c="dimmed" size="xs">
+                    Erasing deletes this clock&apos;s database file — its name,
+                    every preset, what it&apos;s showing now, and all of your
+                    hardware tuning — and starts it over on the factory
+                    defaults. It can&apos;t be undone.
+                  </Text>
+                  <Button
+                    type="button"
+                    color="red"
+                    variant="outline"
+                    size="xs"
+                    style={{ flexShrink: 0 }}
+                    leftSection={<IconTrash size={16} stroke={1.5} />}
+                    onClick={resetConfirmHandlers.open}
+                    data-testid="erase-clock-button"
+                  >
+                    Erase this clock
+                  </Button>
+                </Flex>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         </Stack>
       </form>
 
