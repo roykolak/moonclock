@@ -62,6 +62,8 @@ const PANEL_HEIGHT = 32;
 // a queued frame still goes out at `syncSpeed`.
 const IDLE_SYNC_MS = 16;
 
+const SSE_RETRY_MS = 500;
+
 const virtualPanel: { [k: string]: string } = {};
 
 // Pixels whose colour has changed since the last SSE delta flush. Only real
@@ -211,6 +213,7 @@ export async function createCanvas(dimensions: Dimensions) {
         Connection: "keep-alive",
       });
 
+      res.write(`retry: ${SSE_RETRY_MS}\n\n`);
       res.write(`event: snapshot\ndata: ${JSON.stringify(virtualPanel)}\n\n`);
 
       sseClients.add(res);
