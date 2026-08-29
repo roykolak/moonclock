@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "fs";
 import { clearDatabase } from "./support/seedDatabase";
 
 test.describe("Test", () => {
@@ -82,6 +83,28 @@ test.describe("Test", () => {
     await expect(
       page.getByRole("menuitem", { name: "Updated custom preset" }),
     ).toHaveCount(0);
+  });
+
+  test("renaming the active preset renames it in the dropdown", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000");
+
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("menuitem", { name: "Moon" }).click();
+    await expect(page.getByTestId("preset-dropdown")).toContainText("Moon");
+
+    await page.getByTestId("preset-dropdown").click();
+    await page.getByRole("button", { name: "Edit Moon" }).click();
+    await page.getByTestId("preset-name").fill("Moonrise");
+    await page.getByRole("button", { name: "Update Preset" }).click();
+
+    await expect(page.getByTestId("preset-dropdown")).toContainText("Moonrise");
+
+    const { scheduledPreset } = JSON.parse(
+      readFileSync("./database-test.json", "utf8"),
+    );
+    expect(scheduledPreset.preset.name).toBe("Moonrise");
   });
 
   test("presets appear in the dropdown menu", async ({ page }) => {

@@ -1,4 +1,5 @@
 import { getData, setData } from "@/server/db";
+import { refreshHardwareScene } from "@/server/utils";
 import { Preset } from "@/types";
 
 interface Context {
@@ -8,19 +9,35 @@ interface Context {
 export async function PUT(request: Request, { params }: Context) {
   const { id } = await params;
   const preset: Preset = await request.json();
-  const { presets } = getData();
+  const { presets, scheduledPreset } = getData();
 
-  if (!presets.some((existing) => existing.id === id)) {
+  const target = presets.find((existing) => existing.id === id);
+
+  if (!target) {
     return Response.json({ error: "No such preset" }, { status: 404 });
   }
 
+  const updated = { ...preset, id };
+
+  const active = scheduledPreset?.preset;
+  const scheduled =
+    active &&
+    (active.id != null ? active.id === id : active.name === target.name)
+      ? scheduledPreset
+      : null;
+
   setData({
     presets: presets.map((existing) =>
-      existing.id === id ? { ...preset, id } : existing,
+      existing.id === id ? updated : existing,
     ),
+    ...(scheduled
+      ? { scheduledPreset: { ...scheduled, preset: updated } }
+      : {}),
   });
 
-  return Response.json({ ...preset, id });
+  if (scheduled) await refreshHardwareScene();
+
+  return Response.json(updated);
 }
 
 export async function DELETE(_request: Request, { params }: Context) {
