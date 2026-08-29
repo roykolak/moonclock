@@ -1,5 +1,5 @@
 import { drawSprite } from "../draw-sprite";
-import { bunnySprite } from "./sprite";
+import { catSprite } from "./sprite";
 import type { Scene, Sprite } from "../types";
 import { SceneId } from "../types";
 
@@ -32,8 +32,8 @@ const MOUTH_CLOSE = 0.5;
 // rather than another line of the smile.
 const INHALE_COLOR = "#cc8d52";
 const inhaleSprite: Sprite = {
-  width: bunnySprite.width,
-  height: bunnySprite.height,
+  width: catSprite.width,
+  height: catSprite.height,
   pixels: {
     "13:21": INHALE_COLOR,
     "14:21": INHALE_COLOR,
@@ -88,7 +88,7 @@ function drawZ(ctx: CanvasRenderingContext2D, z: Zed): void {
   ctx.globalAlpha = 1;
 }
 
-interface BunnyState {
+interface CatState {
   full: HTMLCanvasElement;
   inhale: HTMLCanvasElement;
 }
@@ -111,21 +111,21 @@ async function prerender(
   return canvas;
 }
 
-export const bunnyScene: Scene<BunnyState> = {
-  id: SceneId.Bunny,
+export const catScene: Scene<CatState> = {
+  id: SceneId.Cat,
   label: "Cat",
   framesPerSecond: 12,
   async init({ createCanvas }) {
     // Pre-render each layer once: the whole cat and the inhale-mouth patch.
     // Redrawing ~412 pixels every frame is wasteful.
-    const full = await prerender(createCanvas, bunnySprite);
+    const full = await prerender(createCanvas, catSprite);
     const inhale = await prerender(createCanvas, inhaleSprite);
     return { full, inhale };
   },
   draw({ ctx, dimensions, elapsed, state }) {
-    const ox = Math.floor((dimensions.width - bunnySprite.width) / 2);
+    const ox = Math.floor((dimensions.width - catSprite.width) / 2);
     const oy =
-      Math.floor((dimensions.height - bunnySprite.height) / 2) - SPRITE_LIFT;
+      Math.floor((dimensions.height - catSprite.height) / 2) - SPRITE_LIFT;
 
     // Position within the breath cycle: 0 at rest, 0.5 at the deepest inhale.
     const cyclePos =

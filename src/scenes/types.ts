@@ -20,7 +20,7 @@ export interface Scene<S = unknown> extends RenderableScene<S> {
 export const SceneId = {
   Blank: "blank",
   Moon: "moon",
-  Bunny: "bunny",
+  Cat: "cat",
 } as const;
 export type SceneId = (typeof SceneId)[keyof typeof SceneId];
 
