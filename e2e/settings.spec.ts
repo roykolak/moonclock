@@ -82,4 +82,29 @@ test.describe("Updating panel settings", () => {
       panelType: "FM6126A",
     });
   });
+
+  test("erasing the clock starts it over on the factory defaults", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000");
+    await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
+
+    await page.getByTestId("open-settings").click();
+    await page.getByTestId("erase-clock-button").click();
+    await page.getByTestId("confirm-erase-clock-button").click();
+
+    await expect(page.getByTestId("panel-name")).not.toHaveText(
+      TEST_PANEL_NAME,
+    );
+
+    const { panel, presets, scheduledPreset } = JSON.parse(
+      readFileSync("./database-test.json", "utf8"),
+    );
+    expect(panel.name).not.toBe(TEST_PANEL_NAME);
+    expect(presets.map(({ name }: { name: string }) => name)).toEqual([
+      "Moon",
+      "Cat",
+    ]);
+    expect(scheduledPreset.preset).toBeNull();
+  });
 });

@@ -15,51 +15,55 @@ const defaultPreset: Preset = {
   forTime: "0:00",
 };
 
-export const defaultData: DataTypes = {
-  deviceId: randomUUID(),
-  panel: {
-    name: randomPanelName(),
-    defaultPreset,
-    brightness: 30,
-    pwnLsbNanoseconds: 553,
-    gpioSlowdown: 2,
-    pwmBits: 9,
-    hardwareMapping: "adafruit-hat",
-    // Neutral (library-default) values. These are the ghosting knobs — tune
-    // them per panel with hardware/test-matrix.ts rather than guessing here.
-    pwmDitherBits: 0,
-    limitRefreshRateHz: 0,
-    panelType: "",
-    updateChannel: "stable",
-  },
-  scheduledPreset: {
-    preset: null,
-    endTime: null,
-  },
-  nextVersion: null,
-  presets: [
-    {
-      id: randomUUID(),
-      name: "Moon",
-      sceneId: SceneId.Moon,
-      mode: "until",
-      untilDay: "1",
-      untilHour: "7",
-      untilMinute: "00",
-      forTime: "",
+function createDefaultData(): DataTypes {
+  return {
+    deviceId: randomUUID(),
+    panel: {
+      name: randomPanelName(),
+      defaultPreset,
+      brightness: 30,
+      pwnLsbNanoseconds: 553,
+      gpioSlowdown: 2,
+      pwmBits: 9,
+      hardwareMapping: "adafruit-hat",
+      // Neutral (library-default) values. These are the ghosting knobs — tune
+      // them per panel with hardware/test-matrix.ts rather than guessing here.
+      pwmDitherBits: 0,
+      limitRefreshRateHz: 0,
+      panelType: "",
+      updateChannel: "stable",
     },
-    {
-      id: randomUUID(),
-      name: "Cat",
-      sceneId: SceneId.Cat,
-      mode: "for",
-      untilDay: "0",
-      untilHour: "0",
-      untilMinute: "0",
-      forTime: "2:00",
+    scheduledPreset: {
+      preset: null,
+      endTime: null,
     },
-  ],
-};
+    nextVersion: null,
+    presets: [
+      {
+        id: randomUUID(),
+        name: "Moon",
+        sceneId: SceneId.Moon,
+        mode: "until",
+        untilDay: "1",
+        untilHour: "7",
+        untilMinute: "00",
+        forTime: "",
+      },
+      {
+        id: randomUUID(),
+        name: "Cat",
+        sceneId: SceneId.Cat,
+        mode: "for",
+        untilDay: "0",
+        untilHour: "0",
+        untilMinute: "0",
+        forTime: "2:00",
+      },
+    ],
+  };
+}
+
+export const defaultData: DataTypes = createDefaultData();
 
 function getDatabaseName() {
   if (process.env.MOONCLOCK_DATABASE) return process.env.MOONCLOCK_DATABASE;
@@ -155,4 +159,19 @@ export function prepareDatabase(): DataTypes {
 export function setData(data: Partial<DataTypes>) {
   const db = readDb();
   writeDb({ ...db, ...data });
+}
+
+export function resetDatabase(): DataTypes {
+  const file = getDatabaseName();
+
+  try {
+    fs.unlinkSync(file);
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
+
+  const fresh = createDefaultData();
+  writeDb(fresh);
+
+  return fresh;
 }
