@@ -650,7 +650,7 @@ export async function createCanvas(dimensions: Dimensions) {
     });
 
     const LONG_PRESS_MS = 10000;
-    const HOLD_FEEDBACK_DELAY_MS = 1500;
+    const HOLD_FEEDBACK_DELAY_MS = 3000;
 
     let longPressTimer: NodeJS.Timeout | null = null;
     let holdFeedbackTimer: NodeJS.Timeout | null = null;
