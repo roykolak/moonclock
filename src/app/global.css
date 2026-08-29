@@ -5,3 +5,16 @@
   font-style: normal;
   font-display: swap;
 }
+
+html {
+  touch-action: manipulation;
+}
+
+@media (pointer: coarse) {
+  .mantine-Input-input,
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
