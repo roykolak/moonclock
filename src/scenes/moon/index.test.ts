@@ -94,6 +94,48 @@ describe("phaseSprite", () => {
     }
   });
 
+  it("waxes to full then wanes back to new", () => {
+    const STEPS = 24;
+    const lit = Array.from(
+      { length: STEPS },
+      (_, step) => tally(step / STEPS).lit,
+    );
+    for (let step = 1; step <= STEPS / 2; step++) {
+      assert.ok(
+        lit[step] > lit[step - 1],
+        `waxing stalled at ${step}/${STEPS}`,
+      );
+    }
+    for (let step = STEPS / 2 + 1; step < STEPS; step++) {
+      assert.ok(
+        lit[step] < lit[step - 1],
+        `waning stalled at ${step}/${STEPS}`,
+      );
+    }
+  });
+
+  it("shows the same sliver of light waxing and waning", () => {
+    for (const phase of [1 / 24, 3 / 24, 5 / 24, 7 / 24, 9 / 24, 11 / 24]) {
+      assert.equal(tally(1 - phase).lit, tally(phase).lit, `phase ${phase}`);
+    }
+  });
+
+  it("opens the crescent on the right waxing and on the left waning", () => {
+    const radius = moonSprite.width / 2;
+    const litSides = (phase: number) => {
+      const { pixels } = tally(phase);
+      const sides = new Set<string>();
+      for (const key in pixels) {
+        if (shadowTones.has(pixels[key])) continue;
+        const [x] = key.split(":").map(Number);
+        sides.add(x + 0.5 - radius > 0 ? "right" : "left");
+      }
+      return [...sides];
+    };
+    assert.deepEqual(litSides(1 / 24), ["right"]);
+    assert.deepEqual(litSides(23 / 24), ["left"]);
+  });
+
   it("mirrors first quarter at last quarter", () => {
     const first = tally(0.25);
     const last = tally(0.75);
