@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./global.css";
@@ -9,6 +10,13 @@ import {
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,10 +25,6 @@ export default function RootLayout({
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
-        />
         <link rel="icon" href="/app-icon.png" type="image/x-icon" />
         <link rel="apple-touch-icon" href="/app-icon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
