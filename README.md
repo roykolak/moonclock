@@ -16,16 +16,16 @@ I created this to help teach my toddler when bedtime and naptime are over, howev
 My daughter, every morning at 7am! 😮‍💨
 ```
 
-## The webapp and Panel
+## Panel Scenes
+
+👉 The animated scenes, rendered straight from the scene code. The moon tracks the **real lunar phase** — a full synodic month, normally 29.5 days, compressed into five seconds. The cat breathes and dozes at **real speed**:
 
 <p float="left">
-    <img src="images/panel-empty.png" width="200" />
-    <img src="images/panel-active.png" width="200" />
-    <img src="images/presets.png" width="200" />
-    <img src="images/composer.png" width="200" />
+    <img src="images/moon-phases.gif" width="384" />
+    <img src="images/cat-breathing.gif" width="384" />
 </p>
 
-👉 Unfortunately **a photo doesn't capture the colors** well in the panel, but here is a real moonclock in action!
+Unfortunately **a photo doesn't capture the colors** well in the panel, but here is a real moonclock in action!
 
 <p float="left">
     <img src="images/moon-real.png" width="400" />
@@ -256,12 +256,12 @@ each other over real mDNS, and driving one from the other writes to
 Four environment variables do the work, and each defaults to what an installed
 clock uses, so nothing about this leaks into a release:
 
-| Variable | Default | What it moves |
-| --- | --- | --- |
-| `MOONCLOCK_DATABASE` | `/var/lib/moonclock/database.json` | Which database the instance reads and writes |
-| `MOONCLOCK_APP_PORT` | `80` | The port advertised over mDNS as the app's |
-| `MOONCLOCK_HARDWARE_PORT` | `3001` | Where the control server binds, advertised in TXT so peers find it |
-| `MOONCLOCK_DIST_DIR` | `.next` | Next's build directory — two dev servers can't share one |
+| Variable                  | Default                            | What it moves                                                      |
+| ------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| `MOONCLOCK_DATABASE`      | `/var/lib/moonclock/database.json` | Which database the instance reads and writes                       |
+| `MOONCLOCK_APP_PORT`      | `80`                               | The port advertised over mDNS as the app's                         |
+| `MOONCLOCK_HARDWARE_PORT` | `3001`                             | Where the control server binds, advertised in TXT so peers find it |
+| `MOONCLOCK_DIST_DIR`      | `.next`                            | Next's build directory — two dev servers can't share one           |
 
 The mDNS instance name picks up the app port when it isn't 80, so two instances
 on one host don't collide on a name.
