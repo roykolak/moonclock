@@ -112,7 +112,7 @@ test.describe("Administering another clock", () => {
 
     // The whole screen is now the peer's: its name, and its presets.
     await expect(page.getByTestId("panel-name")).toHaveText("Bedroom");
-    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Default");
 
     await page.getByTestId("preset-dropdown").click();
     await page.getByRole("menuitem", { name: "Nightlight" }).click();
@@ -128,7 +128,7 @@ test.describe("Administering another clock", () => {
     await page.getByRole("menuitem", { name: TEST_PANEL_NAME }).click();
 
     await expect(page.getByTestId("panel-name")).toHaveText(TEST_PANEL_NAME);
-    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Default");
   });
 
   test("offers a way back when the peer stops answering", async ({ page }) => {

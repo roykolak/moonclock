@@ -187,7 +187,7 @@ export default function DeviceScreen({
           rightSection={<IconChevronDown size={16} />}
           data-testid="preset-dropdown"
         >
-          {activePreset?.name ?? "Blank"}
+          {activePreset?.name ?? panel.defaultPreset.name}
         </Button>
       </Menu.Target>
       <Menu.Dropdown>

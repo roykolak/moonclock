@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { clearDatabase } from "./support/seedDatabase";
+import { clearDatabase, seedDatabase } from "./support/seedDatabase";
 
 test.describe("Test", () => {
   test.beforeEach(() => {
@@ -9,7 +9,7 @@ test.describe("Test", () => {
   test("activating a preset and toggling it back off", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Default");
 
     // Activate the preset from the dropdown.
     await page.getByTestId("preset-dropdown").click();
@@ -22,8 +22,30 @@ test.describe("Test", () => {
     await page.getByTestId("preset-dropdown").click();
     await page.getByRole("menuitem", { name: "Moon" }).click();
 
-    await expect(page.getByTestId("preset-dropdown")).toHaveText("Blank");
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("Default");
     await expect(page.getByTestId("end-time")).toHaveCount(0);
+  });
+
+  test("names the default preset rather than the scene it runs", async ({
+    page,
+  }) => {
+    seedDatabase({
+      panel: {
+        defaultPreset: {
+          name: "All Off",
+          sceneId: "blank",
+          mode: "for",
+          untilDay: "0",
+          untilHour: "0",
+          untilMinute: "00",
+          forTime: "0:00",
+        },
+      },
+    });
+
+    await page.goto("http://localhost:3000");
+
+    await expect(page.getByTestId("preset-dropdown")).toHaveText("All Off");
   });
 
   test("rebooting the machine from the panel menu", async ({ page }) => {
