@@ -14,7 +14,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import {
   IconCheck,
@@ -40,6 +40,7 @@ import { getEndDate } from "@/helpers/getEndDate";
 import { useDeviceState } from "./useDeviceState";
 
 const PANEL_WIDTH = 560;
+const NARROW_VIEWPORT = "(max-width: 48em)";
 
 interface DeviceScreenProps {
   api: DeviceApi;
@@ -63,6 +64,8 @@ export default function DeviceScreen({
   onLocalNameChange,
 }: DeviceScreenProps) {
   const { state, refresh, unreachable } = useDeviceState(api, initialState);
+
+  const narrowViewport = useMediaQuery(NARROW_VIEWPORT);
 
   const [settingsOpen, settingsHandlers] = useDisclosure();
   const [logsOpen, logsHandlers] = useDisclosure();
@@ -367,6 +370,8 @@ export default function DeviceScreen({
         onClose={logsHandlers.close}
         title="Logs"
         size="xl"
+        fullScreen={narrowViewport}
+        padding={narrowViewport ? "xs" : "md"}
         styles={{
           // LogsViewer scrolls its own list, so the modal must not scroll too —
           // otherwise a long log run leaves you with two nested scrollbars. Pin
@@ -374,14 +379,17 @@ export default function DeviceScreen({
           // it without overflowing, which is what gives the viewer inside a real
           // height to measure against.
           content: {
-            height: "calc(100vh - 100px)",
+            height: narrowViewport ? "100dvh" : "calc(100dvh - 100px)",
             display: "flex",
             flexDirection: "column",
           },
           body: { flex: 1, minHeight: 0, overflow: "hidden" },
         }}
       >
-        <LogsViewer streamUrl={api.logsStreamUrl} />
+        <LogsViewer
+          streamUrl={api.logsStreamUrl}
+          narrowViewport={narrowViewport}
+        />
       </Modal>
 
       <Modal.Root
