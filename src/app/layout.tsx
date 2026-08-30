@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <link rel="icon" href="/app-icon.png" type="image/x-icon" />
+        <link rel="icon" href="/app-icon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/app-icon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#333333" />
