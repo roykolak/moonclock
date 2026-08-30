@@ -70,13 +70,14 @@ test.describe("Test", () => {
       page.getByRole("menuitem", { name: "Updated custom preset" }),
     ).toBeVisible();
 
-    // Delete Preset via the dropdown's edit button
+    // Delete Preset via the edit modal's header trash + confirm
 
     await page
       .getByRole("button", { name: "Edit Updated custom preset" })
       .click();
 
-    await page.getByRole("button", { name: "Delete Preset" }).click();
+    await page.getByTestId("delete-preset").click();
+    await page.getByTestId("confirm-delete-preset").click();
 
     // Preset is gone from the dropdown menu
     await page.getByTestId("preset-dropdown").click();
