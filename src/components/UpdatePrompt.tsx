@@ -164,6 +164,7 @@ export function UpdatePrompt({
         onClose={updatingModalHandler.close}
         withCloseButton={false}
         closeOnClickOutside={false}
+        centered
       >
         <Flex
           justify="center"
