@@ -33,8 +33,8 @@ The animated scenes, rendered straight from the scene code.
 The virtual panel mirrors the hardware pixel for pixel over SSE, so the app always shows exactly what's on the wall. A preset pairs a scene with an expiration — the moon below runs until 7:00 AM tomorrow:
 
 <p float="left">
-    <img src="images/webapp-moon-active.png" width="384" />
-    <img src="images/webapp-preset-editor.png" width="384" />
+    <img src="images/webapp-moon-active.png" width="280" />
+    <img src="images/webapp-preset-editor.png" width="280" />
 </p>
 
 ## Technology
