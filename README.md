@@ -18,18 +18,23 @@ My daughter, every morning at 7am! 😮‍💨
 
 ## Panel Scenes
 
-👉 The animated scenes, rendered straight from the scene code. The moon tracks the **real lunar phase** — a full synodic month, normally 29.5 days, compressed into five seconds. The cat breathes and dozes at **real speed**:
+The animated scenes, rendered straight from the scene code.
+
+- Moon tracks the real lunar phase for the current date
+- Cat that breathes and dozes
 
 <p float="left">
-    <img src="images/moon-phases.gif" width="384" />
-    <img src="images/cat-breathing.gif" width="384" />
+    <img src="images/moon-phases.gif" width="200" />
+    <img src="images/cat-breathing.gif" width="200" />
 </p>
 
-Unfortunately **a photo doesn't capture the colors** well in the panel, but here is a real moonclock in action!
+## The Webapp
+
+The virtual panel mirrors the hardware pixel for pixel over SSE, so the app always shows exactly what's on the wall. A preset pairs a scene with an expiration — the moon below runs until 7:00 AM tomorrow:
 
 <p float="left">
-    <img src="images/moon-real.png" width="400" />
-    <img src="images/bunny-real.png" width="400" />
+    <img src="images/webapp-moon-active.png" width="384" />
+    <img src="images/webapp-preset-editor.png" width="384" />
 </p>
 
 ## Technology
@@ -50,23 +55,18 @@ There are three processes (via systemd) that are run together:
 
 You'll need the following supplies:
 
-1. A 32x32 LED panel, like this [one](https://www.adafruit.com/product/607)
-1. A raspberry PI 3 or 4
-1. [Female jumper wires](https://www.adafruit.com/product/266)
-1. A usb cable that you can cut to power the LED panel
-1. A usb cable to power the raspberry pi
-1. Optional - For Button: [16mm push button](https://www.adafruit.com/product/1504)
-1. Optional - For Button: [Button quick connect wire pairs](https://www.adafruit.com/product/1152)
-1. Optional - For Presentation: [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) to soften the LED Panel
-1. Optional - For Presentation: 8.5" x 8.5" frame to house the Panel
-
-Wire the panel according to the wiring chart [here](https://github.com/hzeller/rpi-rgb-led-matrix/blob/master/wiring.md).
-
-👉 Remember, you are wiring a 32x32 panel, double check your work!
+1. [32x32 LED panel](https://www.adafruit.com/product/607)
+1. [Raspberry PI 3 or 4](https://www.adafruit.com/product/4292)
+1. [Adafruit RGB Matrix Bonnet](https://www.adafruit.com/product/3211)
+1. [5v power supply](https://www.adafruit.com/product/1466)
+1. [16mm push button](https://www.adafruit.com/product/1504)
+1. [Button quick connect wire pairs](https://www.adafruit.com/product/1152)
+1. [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) (to soften the LED Panel)
+1. For Presentation: 8.5" x 8.5" frame to house the Panel
 
 ## Installation
 
-Install the latest raspbian (not desktop verion!) on your pi. Joining it to WiFi up front is optional — you can also let Moonclock walk you through it after it's running (see [WiFi setup](#wifi-setup)). Then ssh into the machine and run...
+Install the latest raspbian (not desktop verion!) on your pi. Then ssh into the machine and run...
 
 ```
 curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash
@@ -74,130 +74,15 @@ curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.s
 
 That's the whole thing. It prepares the machine, downloads the latest release, installs it, and reboots.
 
-Specifically, it...
-
-- Disables onboard sound, which `hzeller/rpi-rgb-led-matrix` [requires](https://github.com/hzeller/rpi-rgb-led-matrix?tab=readme-ov-file#bad-interaction-with-sound)
-- Configures GPIO 25 and its udev rule, for the optional external button
-- Installs `wifi-connect` and NetworkManager for the WiFi setup portal
-- Sets the hostname to `moonclock` so the app lives at `http://moonclock.local`
-- Downloads and installs the latest release
-- Reboots to apply the boot config
-
-It's safe to re-run — every step checks before it changes anything.
-
-It installs the latest stable release. To run beta builds, switch the "Release channel" setting to Beta once you're up.
-
-Pass `--no-reboot` if you'd rather reboot yourself:
-
-```
-curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- --no-reboot
-```
-
-You can configure the LED panel up front instead of editing it on the Settings
-page after first boot. Any of these flags are forwarded to the installer, and
-only the fields you pass are changed:
-
-```
-curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash -s -- \
-  --brightness=50 --hardware-mapping=adafruit-hat-pwm --pwm-bits=11 \
-  --gpio-slowdown=4 --pwm-lsb-nanoseconds=130 --pwm-dither-bits=0 \
-  --limit-refresh-hz=0
-```
-
-- `--brightness=N` — panel brightness, 0-100
-- `--hardware-mapping=NAME` — `regular`, `adafruit-hat`, `adafruit-hat-pwm`, or `regular-pi1`
-- `--pwm-bits=N` — PWM bits, 1-11
-- `--gpio-slowdown=N` — GPIO slowdown, 0-4
-- `--pwm-lsb-nanoseconds=N` — PWM LSB nanoseconds
-- `--pwm-dither-bits=N` — time-dither the lowest bits, 0-2
-- `--limit-refresh-hz=N` — cap the refresh rate in Hz, 0 for no limit
-- `--panel-type=NAME` — empty for a standard HUB75 panel, or `FM6126A` / `FM6127`
-
-Re-running with these flags overwrites those fields even if you've since tuned
-them on the Settings page. The flags require a release that includes them, so
-they're a no-op against older releases.
-
-### Ghosting and smearing
-
-If lit pixels leave a faint copy elsewhere in their column, or smear sideways,
-the fix is in the panel timing rather than the scene. The number that matters is
-the shortest time a row is lit for:
-
-```
-min OE pulse = pwm-lsb-nanoseconds × 2 ^ (11 − pwm-bits)
-```
-
-The library stores color as 11 bitplanes and lights plane `b` for
-`pwm-lsb-nanoseconds × 2^b`, skipping the lowest `11 − pwm-bits` of them. At the
-defaults (`--pwm-bits=11 --pwm-lsb-nanoseconds=130`) that shortest pulse is
-130ns. Column data is clocked in while the previous plane is still lit, so once
-the pulse gets close to the time it takes to shift 32 columns in, the panel
-spends much of its lit time showing half-shifted data — which is the smear.
-
-Raising `--pwm-lsb-nanoseconds` lengthens every plane proportionally and costs
-refresh rate. Lowering `--pwm-bits` costs color depth but almost no refresh rate
-(11 → 8 drops only 0.34% of the frame while making the shortest pulse 8×
-longer), so it's usually the cheaper lever. A high `--gpio-slowdown` widens the
-smear window directly, so try lowering it before anything else — back off again
-if pixels start coming out corrupted.
-
-`hardware/test-matrix.ts` ships as `dist/hardware/test-matrix.cjs` and draws the
-worst-case patterns for this while printing the resulting pulse width and
-refresh rate, so you can compare settings without reinstalling:
-
-```
-cd /usr/local/bin/moonclock/current/dist/hardware
-sudo node test-matrix.cjs --pwm-bits=9 --pwm-lsb-nanoseconds=300 --slowdown=2
-```
-
-One caveat worth knowing: the `adafruit-hat` mapping puts Output Enable on GPIO
-4, which the library cannot pulse with the hardware PWM peripheral — it falls
-back to a busy-wait timer whose jitter causes ghosting on its own. Bridging GPIO
-4 and GPIO 18 on the HAT and switching to `adafruit-hat-pwm` is the single
-largest improvement available, and no timing value fully substitutes for it.
-
-Your moonclock will automatically start after any pi restarts.
-
-To start Moonclock immediate run...
-
-```
-sudo mc start
-```
-
-## Reaching the app
+You be able to reach the app by visiting...
 
 ```
 http://moonclock.local
 ```
 
-That address is fixed — it doesn't change when your router hands the pi a
-different IP, so it's worth a sticker on the frame. It works over mDNS
-(Bonjour), which is built into macOS, iOS, Windows 10+, and Android 12+.
+_It works over mDNS (Bonjour), which is built into macOS, iOS, Windows 10+, and Android 12+._
 
-The pi is renamed to `moonclock` on install, and `avahi` publishes
-`<hostname>.local` from there. If you'd already given yours a different
-hostname, install.sh leaves it alone and your address is `http://<that name>.local`
-instead. Two clocks on one network get `moonclock.local` and `moonclock-2.local`,
-since mDNS names have to be unique on a link.
-
-If `.local` doesn't resolve — some guest and corporate networks block mDNS — the
-IP still works. Find it from your router's client list, or over ssh:
-
-```
-hostname -I
-```
-
-The panel deliberately doesn't display the address. Reading a 12-digit IP off a
-32x32 grid means scrolling it, and a scrolling address is one you have to sit and
-watch, catch every octet of, and re-read whenever DHCP changes it. A fixed name
-you already know beats that, so boot just reports state instead:
-
-- **Rainbow ring** — starting up, waiting for the network
-- **Green check** — connected, app is up
-- **Amber WiFi glyph** — needs WiFi setup, see below
-- **Red "No network"** — gave up waiting; no setup portal and no address
-
-## More than one clock
+## More than one clock...
 
 Every clock finds the others on its network over mDNS, so you can run the whole
 house from whichever one you happened to open. When a second clock shows up, the
@@ -210,99 +95,27 @@ Clocks on this network
     Nursery    192.168.1.51
 ```
 
-Pick one and the whole screen is now that clock — its live panel mirror, its
-presets, its settings, its logs, its updates. Nothing is proxied: your browser
-talks straight to the clock you selected, at the address it advertised. Switching
-back to "this clock" leaves it exactly as you found it.
-
-Each clock names itself on first boot — two words, like "Quiet Shadow" or "Amber
-Tide" — so a second one arrives already distinguishable from the first instead of
-a second "My Moonclock". Rename it to wherever it lives in Settings; that name is
-what the switcher shows, and clocks you already own keep the name they have.
-
-Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
+_Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
 record that "find devices on my network" tooling looks for. Both point at the app
 on port 80. The name in the switcher is the one you set in Settings, carried in
 the record's TXT data along with a device id that stays put across renames and
-DHCP leases — so `moonclock-2.local` can still call itself "Bedroom".
-
-Some notes:
-
-- **Clocks running an older release won't appear.** They have no control API to
-  drive, so they're skipped rather than listed as something you can't use. Update
-  them from their own app once and they join the list.
-- **No accounts, no pairing.** Any clock on the network can administer any other,
-  the same way anyone on the network can already open the app. The control API
-  only accepts requests from private-network origins, so a page on the open web
-  can't reach in.
-- **A clock that goes away drops off the list** within a few seconds. If it
-  disappears while you're administering it, the app says so and offers you a way
-  back.
-
-### Running two clocks locally
-
-You don't need two pis to work on this. A second full instance runs from the same
-checkout on its own ports, its own database, and its own mDNS record:
-
-```
-npm run start:dev   # clock one — app on 3000, hardware on 3001
-npm run peer:dev    # clock two — app on 3010, hardware on 3011
-```
-
-Open http://localhost:3000 and the second clock is in the switcher. They discover
-each other over real mDNS, and driving one from the other writes to
-`database-peer.json`, not `database.json`.
-
-Four environment variables do the work, and each defaults to what an installed
-clock uses, so nothing about this leaks into a release:
-
-| Variable                  | Default                            | What it moves                                                      |
-| ------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
-| `MOONCLOCK_DATABASE`      | `/var/lib/moonclock/database.json` | Which database the instance reads and writes                       |
-| `MOONCLOCK_APP_PORT`      | `80`                               | The port advertised over mDNS as the app's                         |
-| `MOONCLOCK_HARDWARE_PORT` | `3001`                             | Where the control server binds, advertised in TXT so peers find it |
-| `MOONCLOCK_DIST_DIR`      | `.next`                            | Next's build directory — two dev servers can't share one           |
-
-The mDNS instance name picks up the app port when it isn't 80, so two instances
-on one host don't collide on a name.
+DHCP leases — so `moonclock-2.local` can still call itself "Bedroom"._
 
 ## WiFi setup
 
-If the pi boots without a network connection, Moonclock guides you through joining
-one — no keyboard, screen, or ssh required:
+If the pi boots without a network connection, Moonclock guides you through joining one by display this...
 
-1. The LED panel shows a pulsing amber **WiFi "searching" animation** — its
-   signal for "I need to be set up."
-2. On your phone, open WiFi settings and join the open **Moonclock** network. A
-   setup page pops up automatically.
-3. Pick your home WiFi, enter its password, and submit.
-4. The pi connects, the setup hotspot disappears, and the panel shows a green
-   check. The setup page hands you the address on its way out:
-   `http://moonclock.local`.
+<img src="images/wifi-setup.gif" width="100" />
 
-Under the hood this is [balena wifi-connect](https://github.com/balena-os/wifi-connect)
-running a captive portal — with our own Moonclock-branded setup page
-(`wifi-connect-ui/`, shipped in the release) in place of its stock UI —
-coordinated with the panel by the `moonclock-wifi-provision` service. Once the pi
-is connected, the web app starts as usual.
+When you see this displayed, follow the steps below....
 
-**Changing networks later** (e.g. you moved): press and hold the external button
-for ~10 seconds. Five seconds in, the panel shows a "Reset WiFi?" countdown that
-fills over the remaining five; hold it to the end and the pi forgets its saved
-networks and reboots back into the setup flow above. Let go before the bar fills
-and nothing happens.
+1. On your phone, open WiFi settings and join the open **Moonclock** network.
+1. A setup page pops up automatically.
+1. Pick your home WiFi, enter its password, and submit.
+1. The pi will connect and you'll all set!
 
-## Updating
-
-Your moonclock will check if there is a new version available nightly.
-
-When a new version is available, an "Update..." link appears beneath the panel in your moonclock app. Click it to see what's new and start the update — you'll be all set in a few seconds!
-
-### Release channels
-
-By default your moonclock only receives stable releases. If you want to try prerelease builds, switch the "Release channel" setting to Beta on the Settings page.
-
-Switching back to Stable never downgrades — the moonclock keeps its current beta build until a newer stable release ships, then updates to that.
+_To change the network later, press and hold the external button
+for 5 seconds. The panel shows a "Reset WiFi?" countdown that will clear the network and return to the start above._
 
 ## Data Storage
 
@@ -339,6 +152,14 @@ sudo npm install
 sudo npm run start:dev
 ```
 
+To test an additional moonclock run...
+
+```
+npm run peer:dev    # clock two — app on 3010, hardware on 3011
+```
+
+They discover each other over real mDNS, and driving one from the other writes to `database-peer.json`, not `database.json`.
+
 ## Build a release
 
 ```
@@ -347,7 +168,7 @@ npm run build
 
 ## Publishing a release
 
-`npm run release <channel>` bumps the version, builds the tarball, pushes the commit and tag, and creates the GitHub release with auto-generated notes. A channel (`prod` or `beta`) is required — running it without one prints usage and publishes nothing.
+`npm run release <channel>` bumps the version, builds the tarball, pushes the commit and tag, and creates the GitHub release with auto-generated notes.
 
 ```
 npm run release prod          # stable, patch bump
@@ -355,8 +176,6 @@ npm run release prod minor
 npm run release prod major
 npm run release prod 0.87.5   # specific version
 ```
-
-Requires a clean working tree on `main` and an authenticated `gh` CLI (`gh auth status`). If the build or push fails, the local commit and tag are rolled back automatically. If the GitHub release step fails after the push, the script prints the commands needed to clean up the remote tag.
 
 ### Beta releases
 
@@ -370,7 +189,7 @@ npm run release beta patch    # 0.91.0 -> 0.91.1-beta.0
 
 Starting from a stable version begins a new beta line (minor bump by default); running it again on a beta version increments `-beta.N`.
 
-To promote a beta line to stable, run `npm run release prod` — on `0.92.0-beta.3` it publishes `0.92.0`. The script prints a promotion notice when this happens.
+To promote a beta line to stable, run `npm run release prod` — on `0.92.0-beta.3` it publishes `0.92.0`.
 
 ## Developing on a pi
 

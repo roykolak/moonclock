@@ -1,20 +1,30 @@
 import { Scene } from "../../src/display-engine/types";
 
 // Shown on the panel while the device is offline and the wifi-connect setup
-// portal is up. Slowly crossfades between a WiFi glyph and an exclamation mark
-// (~4s round trip) so it reads as "your wifi needs attention" — a call to set
-// it up, not a "connecting" progress animation. Amber throughout. Both glyphs
-// stay inside a centered 24x24 box, leaving >=4px of blank padding on every
-// edge. No text or QR, since neither reads well on a 32x32 matrix; the
-// discoverable "Moonclock" hotspot carries the rest.
+// portal is up. Alternates between a WiFi glyph and an exclamation mark (~8s
+// round trip), each fading fully out before the other fades in, so it reads as
+// "your wifi needs attention" — a call to set it up, not a "connecting"
+// progress animation. The two share one dot, drawn at the same point in both
+// glyphs, so the swap pivots on it. Amber throughout. Both glyphs stay inside a
+// centered 24x24 box, leaving >=4px of blank padding on every edge. No text or
+// QR, since neither reads well on a 32x32 matrix; the discoverable "Moonclock"
+// hotspot carries the rest.
 export function createSetupNeededScene(): Scene {
   const bright = "#FACC0D"; // amber — "attention"
 
   const cx = 16;
   const cy = 22;
+  const dotRadius = 1.8;
   const radii = [4, 8, 12]; // outer arc + lineWidth keeps x within cols 4..27
   const startAngle = (222 * Math.PI) / 180; // top-opening fan...
   const endAngle = (318 * Math.PI) / 180; // ...centered on straight up (270deg)
+
+  function drawDot(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = bright;
+    ctx.beginPath();
+    ctx.arc(cx, cy, dotRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   function drawFan(ctx: CanvasRenderingContext2D, alpha: number) {
     ctx.lineCap = "round";
@@ -26,20 +36,15 @@ export function createSetupNeededScene(): Scene {
       ctx.arc(cx, cy, r, startAngle, endAngle);
       ctx.stroke();
     }
-    ctx.fillStyle = bright;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 1.6, 0, Math.PI * 2);
-    ctx.fill();
+    drawDot(ctx);
     ctx.globalAlpha = 1;
   }
 
   function drawBang(ctx: CanvasRenderingContext2D, alpha: number) {
     ctx.globalAlpha = alpha;
     ctx.fillStyle = bright;
-    ctx.fillRect(cx - 1, 7, 3, 13); // stem
-    ctx.beginPath();
-    ctx.arc(cx + 0.5, 24, 1.8, 0, Math.PI * 2); // dot
-    ctx.fill();
+    ctx.fillRect(cx - 1, 7, 2, 11); // stem, 2px wide to center on cx
+    drawDot(ctx);
     ctx.globalAlpha = 1;
   }
 
@@ -51,11 +56,12 @@ export function createSetupNeededScene(): Scene {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, width, height);
 
-      // 0 = full WiFi glyph, 1 = full exclamation; sinusoid gives a slow, held
-      // crossfade in each direction (~4s round trip).
-      const toBang = (Math.sin((elapsed / 2000) * Math.PI) + 1) / 2;
-      drawFan(ctx, 0.85 * (1 - toBang));
-      drawBang(ctx, 0.95 * toBang);
+      // 0 = full WiFi glyph, 1 = full exclamation, starting on the WiFi glyph
+      // and easing back and forth over ~8s. Each glyph owns half the sweep, so
+      // the fan is gone by the midpoint and the bang has yet to appear.
+      const toBang = (1 - Math.cos((elapsed / 4000) * Math.PI)) / 2;
+      drawFan(ctx, 0.85 * Math.max(0, 1 - 2 * toBang));
+      drawBang(ctx, 0.95 * Math.max(0, 2 * toBang - 1));
     },
   };
 }
