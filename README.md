@@ -64,29 +64,20 @@ You'll need the following supplies:
 1. [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) (to soften the LED Panel)
 1. For Presentation: 8.5" x 8.5" frame to house the Panel
 
-## Wiring it up
+## Building your Moonclock
 
-The bonnet ships as a kit, so there's soldering to do before any of this runs.
+- Highly recommend soldering a jumper between `GPIO4` and `GPIO18`.
+  - This will improve image stability!
+  - After soldering be sure to switch the "Hardware Mapping" to **Adafruit HAT (PWM)**
+- Wire up the button
+  - Run the quick-connect wires from the 16mm push button to
+    **physical pin 22** (BCM 25) and the ground at **physical pin 20**.
+  - It's a plain
+    switch, so either leg can take either wire, and it needs no resistor.
+- Place 3 sheets of translucent plastic in the frame
+  - This will soften the LEDs and bring out the colors more.
 
-**The header.** Solder the 2x20 socket header to the bonnet, then seat the bonnet
-over the pi's GPIO pins.
-
-**The PWM jumper.** Bridge the `GPIO4` and `GPIO18` pads on the bonnet with a
-blob of solder, and install with `--hardware-mapping=adafruit-hat-pwm`. This one
-is worth the trouble. Left unjumpered, the panel's Output Enable line sits on
-GPIO 4, which the matrix library can only pulse with a busy-wait timer — and that
-timer's jitter is what you see as ghosting. Moved to GPIO 18 it pulses in
-hardware and the ghosting goes.
-
-**The button.** Run the quick-connect wires from the 16mm push button to
-**physical pin 22** (BCM 25) and the ground at **physical pin 20**. It's a plain
-switch, so either leg can take either wire, and it needs no resistor — the
-installer adds `gpio=25=ip,pu` to the boot config, which idles the pin high on
-the pi's internal pull-up and reads it low when the button closes it to ground.
-The pin is fixed in the firmware rather than configurable, so it does have to be
-that one.
-
-### What the button does
+### What does the button do?
 
 **A tap** moves to the next preset, in the order they're listed in the app. Past
 the last one it clears back to the panel's default scene — so tapping through the
