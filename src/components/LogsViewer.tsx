@@ -58,7 +58,13 @@ function formatTime(microseconds: number): string {
   return d.toLocaleTimeString([], { hour12: false });
 }
 
-export function LogsViewer({ streamUrl }: { streamUrl: string }) {
+export function LogsViewer({
+  streamUrl,
+  narrowViewport,
+}: {
+  streamUrl: string;
+  narrowViewport?: boolean;
+}) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -155,9 +161,13 @@ export function LogsViewer({ streamUrl }: { streamUrl: string }) {
                   <Group
                     key={entry.id}
                     gap="xs"
-                    wrap="nowrap"
+                    wrap={narrowViewport ? "wrap" : "nowrap"}
                     align="flex-start"
-                    style={{ lineHeight: 1.4 }}
+                    style={{
+                      lineHeight: 1.4,
+                      rowGap: 0,
+                      marginBottom: narrowViewport ? 8 : 0,
+                    }}
                   >
                     <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
                       {formatTime(entry.timestamp)}
@@ -166,7 +176,10 @@ export function LogsViewer({ streamUrl }: { streamUrl: string }) {
                       size="xs"
                       color={group?.color || "gray"}
                       variant="light"
-                      style={{ flexShrink: 0, minWidth: 60 }}
+                      style={{
+                        flexShrink: 0,
+                        minWidth: narrowViewport ? undefined : 60,
+                      }}
                     >
                       {group?.label || entry.unit}
                     </Badge>
@@ -174,6 +187,7 @@ export function LogsViewer({ streamUrl }: { streamUrl: string }) {
                       size="xs"
                       c={priorityColor(entry.priority)}
                       style={{
+                        flex: narrowViewport ? "1 1 100%" : "0 1 auto",
                         whiteSpace: "pre-wrap",
                         wordBreak: "break-word",
                       }}
@@ -189,12 +203,15 @@ export function LogsViewer({ streamUrl }: { streamUrl: string }) {
 
         {!autoScroll && (
           <Button
-            size="xs"
+            size={narrowViewport ? "sm" : "xs"}
+            radius={narrowViewport ? "xl" : undefined}
             variant="filled"
             style={{
               position: "absolute",
               bottom: 8,
-              right: 16,
+              right: narrowViewport ? undefined : 16,
+              left: narrowViewport ? "50%" : undefined,
+              transform: narrowViewport ? "translateX(-50%)" : undefined,
               boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
             }}
             onClick={() => {
