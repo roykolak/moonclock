@@ -64,6 +64,30 @@ You'll need the following supplies:
 1. [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) (to soften the LED Panel)
 1. For Presentation: 8.5" x 8.5" frame to house the Panel
 
+## Building your Moonclock
+
+- Highly recommend soldering a jumper between `GPIO4` and `GPIO18`.
+  - This will improve image stability!
+  - After soldering be sure to switch the "Hardware Mapping" to **Adafruit HAT (PWM)**
+- Wire up the button
+  - Run the quick-connect wires from the 16mm push button to
+    **physical pin 22** (BCM 25) and the ground at **physical pin 20**.
+  - It's a plain
+    switch, so either leg can take either wire, and it needs no resistor.
+- Place 3 sheets of translucent plastic in the frame
+  - This will soften the LEDs and bring out the colors more.
+
+### What does the button do?
+
+**A tap** moves to the next preset, in the order they're listed in the app. Past
+the last one it clears back to the panel's default scene — so tapping through the
+whole list and once more turns the display off.
+
+**A long hold** resets the WiFi. Five seconds in, the panel raises a red
+"Reset WiFi?" prompt with a bar counting down the remaining five. Hold the full
+ten and it forgets the saved networks and drops back into setup mode. Let go
+before that and nothing happens.
+
 ## Installation
 
 Install the latest raspbian (not desktop verion!) on your pi. Then ssh into the machine and run...
@@ -114,8 +138,10 @@ When you see this displayed, follow the steps below....
 1. Pick your home WiFi, enter its password, and submit.
 1. The pi will connect and you'll all set!
 
-_To change the network later, press and hold the external button
-for 5 seconds. The panel shows a "Reset WiFi?" countdown that will clear the network and return to the start above._
+_To change the network later, press and hold the external button for ten
+seconds. The "Reset WiFi?" countdown appears five seconds in and counts down the
+five that are left; hold through it and the clock clears the network and returns
+to the start above._
 
 ## Data Storage
 

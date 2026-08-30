@@ -10,6 +10,7 @@ import {
   Loader,
   Menu,
   Modal,
+  Popover,
   Text,
   Tooltip,
 } from "@mantine/core";
@@ -24,6 +25,7 @@ import {
   IconPlus,
   IconSettings,
   IconTerminal2,
+  IconTrash,
 } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Device, DeviceState, Preset } from "../types";
@@ -68,6 +70,7 @@ export default function DeviceScreen({
   const [editPresetOpen, editPresetHandlers] = useDisclosure();
 
   const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [presetMenuOpen, setPresetMenuOpen] = useState(false);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
 
@@ -167,7 +170,20 @@ export default function DeviceScreen({
   const openEditPreset = (preset: Preset) => {
     setPresetMenuOpen(false);
     setEditingPreset(preset);
+    setDeleteConfirmOpen(false);
     editPresetHandlers.open();
+  };
+
+  const closeEditPreset = () => {
+    setDeleteConfirmOpen(false);
+    editPresetHandlers.close();
+  };
+
+  const deleteEditingPreset = async () => {
+    if (!editingPreset?.id) return;
+    closeEditPreset();
+    await api.deletePreset(editingPreset.id);
+    await refresh();
   };
 
   const presetControl = (
@@ -368,40 +384,81 @@ export default function DeviceScreen({
         <LogsViewer streamUrl={api.logsStreamUrl} />
       </Modal>
 
-      <Modal
+      <Modal.Root
         opened={editPresetOpen}
-        onClose={editPresetHandlers.close}
-        title="Edit Preset"
+        onClose={closeEditPreset}
         size="lg"
       >
-        {editingPreset && (
-          <>
-            <PresetForm
-              preset={editingPreset}
-              action={async (preset) => {
-                editPresetHandlers.close();
-                await api.updatePreset({ ...preset, id: editingPreset.id });
-                await refresh();
-              }}
-              submitLabel="Update Preset"
-            />
-            <Button
-              color="red"
-              variant="outline"
-              fullWidth
-              mt="xl"
-              onClick={async () => {
-                if (!editingPreset.id) return;
-                editPresetHandlers.close();
-                await api.deletePreset(editingPreset.id);
-                await refresh();
-              }}
-            >
-              Delete Preset
-            </Button>
-          </>
-        )}
-      </Modal>
+        <Modal.Overlay />
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>Edit Preset</Modal.Title>
+            <Group gap={4} wrap="nowrap">
+              {editingPreset?.id && (
+                <Popover
+                  opened={deleteConfirmOpen}
+                  onChange={setDeleteConfirmOpen}
+                  position="bottom-end"
+                  width={260}
+                  shadow="md"
+                  withArrow
+                  withinPortal
+                >
+                  <Popover.Target>
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      c="red.5"
+                      radius="xl"
+                      aria-label="Delete preset"
+                      data-testid="delete-preset"
+                      onClick={() => setDeleteConfirmOpen((open) => !open)}
+                    >
+                      <IconTrash size={18} stroke={1.5} />
+                    </ActionIcon>
+                  </Popover.Target>
+                  <Popover.Dropdown>
+                    <Text size="sm">
+                      Delete {editingPreset.name}? This can&apos;t be undone.
+                    </Text>
+                    <Group justify="flex-end" gap="xs" mt="sm">
+                      <Button
+                        size="xs"
+                        variant="default"
+                        onClick={() => setDeleteConfirmOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="xs"
+                        color="red"
+                        onClick={deleteEditingPreset}
+                        data-testid="confirm-delete-preset"
+                      >
+                        Delete
+                      </Button>
+                    </Group>
+                  </Popover.Dropdown>
+                </Popover>
+              )}
+              <Modal.CloseButton />
+            </Group>
+          </Modal.Header>
+          <Modal.Body>
+            {editingPreset && (
+              <PresetForm
+                preset={editingPreset}
+                action={async (preset) => {
+                  closeEditPreset();
+                  await api.updatePreset({ ...preset, id: editingPreset.id });
+                  await refresh();
+                }}
+                submitLabel="Update Preset"
+              />
+            )}
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
 
       <Modal
         opened={createPresetOpen}
