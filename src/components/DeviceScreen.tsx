@@ -107,7 +107,7 @@ export default function DeviceScreen({
 
   if (!state) {
     return (
-      <Center mih="100vh" p="xl">
+      <Center mih="100dvh" p="xl">
         {unreachable ? (
           <Alert
             title="Can't reach that clock"
@@ -250,7 +250,7 @@ export default function DeviceScreen({
   return (
     <Box
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
