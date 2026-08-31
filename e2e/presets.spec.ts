@@ -108,6 +108,36 @@ test.describe("Test", () => {
     expect(scheduledPreset.preset.name).toBe("Moonrise");
   });
 
+  test("shows the preset settling and holds the menu until it lands", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:3000");
+
+    let scheduleRequests = 0;
+    await page.route("**/api/scheduled-preset", async (route) => {
+      scheduleRequests++;
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+
+    await page.getByTestId("preset-dropdown").click();
+
+    const cat = page.getByRole("menuitem", { name: "Cat" });
+    await cat.click();
+
+    await expect(page.getByTestId("pending-preset")).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Moon" })).toBeDisabled();
+    await expect(
+      page.getByRole("menuitem", { name: "Create new preset" }),
+    ).toBeDisabled();
+
+    await cat.click({ force: true });
+
+    await expect(page.getByTestId("preset-dropdown")).toContainText("Cat");
+    await expect(page.getByTestId("pending-preset")).toHaveCount(0);
+    expect(scheduleRequests).toBe(1);
+  });
+
   test("presets appear in the dropdown menu", async ({ page }) => {
     await page.goto("http://localhost:3000");
 

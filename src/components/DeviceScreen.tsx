@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+import { showNotification } from "@mantine/notifications";
 import { useEffect, useState } from "react";
 import {
   IconCheck,
@@ -75,6 +76,7 @@ export default function DeviceScreen({
   const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [presetMenuOpen, setPresetMenuOpen] = useState(false);
+  const [pendingPreset, setPendingPreset] = useState<Preset | null>(null);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
 
   const scheduledPreset = state?.scheduledPreset ?? null;
@@ -147,11 +149,12 @@ export default function DeviceScreen({
       />
     ) : undefined;
 
-  const isActivePreset = (preset: Preset) =>
-    activePreset != null &&
-    (activePreset.id != null && preset.id != null
-      ? activePreset.id === preset.id
-      : activePreset.name === preset.name);
+  const samePreset = (a: Preset | null, b: Preset | null) =>
+    a != null &&
+    b != null &&
+    (a.id != null && b.id != null ? a.id === b.id : a.name === b.name);
+
+  const isActivePreset = (preset: Preset) => samePreset(activePreset, preset);
 
   const applyScheduledPreset = async (
     preset: Preset | null,
@@ -162,12 +165,32 @@ export default function DeviceScreen({
   };
 
   // Selecting the already-active preset unselects it, so the dropdown toggles.
-  const togglePreset = (preset: Preset) => {
-    if (isActivePreset(preset)) {
-      applyScheduledPreset(null, null);
-      return;
+  const togglePreset = async (preset: Preset) => {
+    if (pendingPreset) return;
+
+    const clearing = isActivePreset(preset);
+    setPendingPreset(preset);
+
+    try {
+      if (clearing) {
+        await applyScheduledPreset(null, null);
+      } else {
+        await applyScheduledPreset(
+          preset,
+          getEndDate(preset)?.toJSON() || null,
+        );
+      }
+    } catch {
+      showNotification({
+        message: clearing
+          ? `Couldn't turn off ${preset.name}`
+          : `Couldn't switch to ${preset.name}`,
+        color: "red",
+      });
+    } finally {
+      setPendingPreset(null);
+      setPresetMenuOpen(false);
     }
-    applyScheduledPreset(preset, getEndDate(preset)?.toJSON() || null);
   };
 
   const openEditPreset = (preset: Preset) => {
@@ -193,6 +216,7 @@ export default function DeviceScreen({
     <Menu
       opened={presetMenuOpen}
       onChange={setPresetMenuOpen}
+      closeOnItemClick={false}
       withinPortal
       position="bottom-end"
       shadow="sm"
@@ -213,14 +237,21 @@ export default function DeviceScreen({
         <Menu.Label>Apply a preset</Menu.Label>
         {presets.map((preset, i) => {
           const active = isActivePreset(preset);
+          const pending = samePreset(pendingPreset, preset);
           return (
             <Group key={`preset-${i}`} wrap="nowrap" gap={0} pr={4}>
               <Menu.Item
                 onClick={() => togglePreset(preset)}
+                disabled={pendingPreset != null && !pending}
                 style={{ flex: 1 }}
                 fw={active ? 600 : undefined}
+                data-testid={pending ? "pending-preset" : undefined}
                 leftSection={
-                  <IconCheck size={16} style={{ opacity: active ? 1 : 0 }} />
+                  pending ? (
+                    <Loader size={16} />
+                  ) : (
+                    <IconCheck size={16} style={{ opacity: active ? 1 : 0 }} />
+                  )
                 }
               >
                 {preset.name}
@@ -228,6 +259,7 @@ export default function DeviceScreen({
               <ActionIcon
                 variant="subtle"
                 color="gray"
+                disabled={pendingPreset != null}
                 aria-label={`Edit ${preset.name}`}
                 onClick={() => openEditPreset(preset)}
               >
@@ -239,7 +271,11 @@ export default function DeviceScreen({
         <Menu.Divider />
         <Menu.Item
           leftSection={<IconPlus size={16} />}
-          onClick={createPresetHandlers.open}
+          disabled={pendingPreset != null}
+          onClick={() => {
+            setPresetMenuOpen(false);
+            createPresetHandlers.open();
+          }}
         >
           Create new preset
         </Menu.Item>
