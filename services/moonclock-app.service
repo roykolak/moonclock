@@ -14,6 +14,8 @@ Environment=NEXT_MANUAL_SIG_HANDLE=1
 Type=simple
 Restart=always
 RestartSec=5
+RestartSteps=5
+RestartMaxDelaySec=300
 TimeoutStopSec=5
 WorkingDirectory=/usr/local/bin/moonclock/current/dist/app
 ExecStart=/usr/local/bin/node server.js

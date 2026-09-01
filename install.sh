@@ -236,6 +236,54 @@ else
   fi
 fi
 
+log " -> Configuring log persistence"
+
+JOURNAL_CONF="/etc/systemd/journald.conf.d/10-moonclock.conf"
+JOURNAL_CONF_STAGED="$(mktemp)"
+cat > "$JOURNAL_CONF_STAGED" <<'EOF'
+[Journal]
+Storage=persistent
+SystemMaxUse=64M
+SystemMaxFileSize=8M
+MaxRetentionSec=1month
+EOF
+
+if cmp -s "$JOURNAL_CONF_STAGED" "$JOURNAL_CONF"; then
+  log "   -> Journal settings unchanged, skipping"
+else
+  sudo mkdir -p /etc/systemd/journald.conf.d /var/log/journal
+  sudo install -m 0644 "$JOURNAL_CONF_STAGED" "$JOURNAL_CONF"
+  sudo systemd-tmpfiles --create --prefix /var/log/journal > /dev/null 2>&1
+  log "   -> Logs persist across reboots (capped at 64M) from the next restart"
+fi
+rm -f "$JOURNAL_CONF_STAGED"
+
+log " -> Configuring WiFi power management"
+
+WIFI_POWERSAVE_CONF="/etc/NetworkManager/conf.d/10-moonclock-wifi-powersave.conf"
+WIFI_POWERSAVE_STAGED="$(mktemp)"
+cat > "$WIFI_POWERSAVE_STAGED" <<'EOF'
+[connection]
+wifi.powersave=2
+EOF
+
+if cmp -s "$WIFI_POWERSAVE_STAGED" "$WIFI_POWERSAVE_CONF"; then
+  log "   -> WiFi power save already disabled, skipping"
+else
+  sudo mkdir -p /etc/NetworkManager/conf.d
+  sudo install -m 0644 "$WIFI_POWERSAVE_STAGED" "$WIFI_POWERSAVE_CONF"
+  log "   -> WiFi power save off — applies on the next reconnect"
+fi
+rm -f "$WIFI_POWERSAVE_STAGED"
+
+NM_PROFILE_DIR="/etc/NetworkManager/system-connections"
+if [ -d "$NM_PROFILE_DIR" ]; then
+  while IFS= read -r -d '' profile; do
+    sudo rm -f "$profile"
+    log "   -> Removed empty WiFi profile $(basename "$profile")"
+  done < <(sudo find "$NM_PROFILE_DIR" -maxdepth 1 -type f -name '*.nmconnection' -empty -print0)
+fi
+
 log " -> Configuring mDNS hostname"
 
 # The address people actually use is http://moonclock.local. A 32x32 panel can't
