@@ -238,7 +238,7 @@ fi
 
 log " -> Configuring log persistence"
 
-JOURNAL_CONF="/etc/systemd/journald.conf.d/10-moonclock.conf"
+JOURNAL_CONF="/etc/systemd/journald.conf.d/99-moonclock.conf"
 JOURNAL_CONF_STAGED="$(mktemp)"
 cat > "$JOURNAL_CONF_STAGED" <<'EOF'
 [Journal]

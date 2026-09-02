@@ -387,7 +387,7 @@ export default function DeviceScreen({
         opened={settingsOpen}
         onClose={settingsHandlers.close}
         title="Settings"
-        size="lg"
+        size="md"
       >
         <Settings
           panel={panel}
@@ -431,7 +431,7 @@ export default function DeviceScreen({
       <Modal.Root
         opened={editPresetOpen}
         onClose={closeEditPreset}
-        size="lg"
+        size="md"
       >
         <Modal.Overlay />
         <Modal.Content>
@@ -508,7 +508,7 @@ export default function DeviceScreen({
         opened={createPresetOpen}
         onClose={createPresetHandlers.close}
         title="Create New Preset"
-        size="lg"
+        size="md"
       >
         <PresetForm
           preset={null}
