@@ -43,7 +43,9 @@ The webapp is a Nextjs app that uses React Server Components and Server Actions.
 
 The panel communication happens via the incredible [hzeller/rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix) library and uses [alexeden/rpi-led-matrix](https://github.com/alexeden/rpi-led-matrix) which provides typescript bindings to hzeller's project.
 
-The panel rendering is powered by [node-canvas](node-canvas). This allows for text, shapes, and more to easily be rendered on the panel. Additionally panel scenes can be rendered on the server or in the browser.
+The panel rendering is powered by [skia-canvas](skia-canvas). This allows for text, shapes, and more to easily be rendered on the panel.
+
+The virtual panel in the webapp gets the hardware state via Server Send Events.
 
 There are three processes (via systemd) that are run together:
 
