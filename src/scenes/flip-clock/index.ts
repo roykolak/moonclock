@@ -150,16 +150,16 @@ export function timeDigits(now: Date): string[] {
   return [hours[0], hours[1], minutes[0], minutes[1]];
 }
 
-interface DigitalClockState {
+interface FlipClockState {
   chrome: HTMLCanvasElement;
   shown: string[];
   previous: (string | null)[];
   flippedAt: number[];
 }
 
-export const digitalClockScene: Scene<DigitalClockState> = {
-  id: SceneId.DigitalClock,
-  label: "Digital clock",
+export const flipClockScene: Scene<FlipClockState> = {
+  id: SceneId.FlipClock,
+  label: "Flip Clock",
   framesPerSecond: 12,
   async init({ createCanvas, dimensions }) {
     const chrome = await createCanvas(dimensions);

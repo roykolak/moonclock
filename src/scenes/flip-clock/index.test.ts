@@ -21,7 +21,7 @@ import { DIGIT_GLYPHS, DIGIT_HEIGHT, DIGIT_WIDTH } from "./font";
 const PANEL = 32;
 const MARGIN = 3;
 
-describe("digital clock font", () => {
+describe("flip clock font", () => {
   it("has a glyph for every digit", () => {
     for (let n = 0; n <= 9; n++) {
       assert.ok(DIGIT_GLYPHS[String(n)], `missing ${n}`);
@@ -51,7 +51,7 @@ describe("digital clock font", () => {
   });
 });
 
-describe("digital clock layout", () => {
+describe("flip clock layout", () => {
   it("keeps the whole scene inside the panel's safe area", () => {
     const left = CASE_LEFT;
     const right = PANEL - 1 - CASE_RIGHT;

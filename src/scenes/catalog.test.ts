@@ -5,7 +5,7 @@ import { SceneId } from "./types";
 
 // Snapshot of expected ids. A rename here orphans any persisted DB row
 // naming the old id — this failing loudly is the point.
-const EXPECTED_IDS = ["blank", "moon", "cat", "digital-clock"];
+const EXPECTED_IDS = ["blank", "moon", "cat", "flip-clock"];
 
 describe("scene catalog", () => {
   it("has exactly the expected, stable set of ids", () => {
