@@ -5,6 +5,12 @@
 import { blankScene } from "./blank";
 import { moonScene } from "./moon";
 import { catScene } from "./cat";
+import { digitalClockScene } from "./digital-clock";
 import type { Scene } from "./types";
 
-export const scenes: Scene<any>[] = [blankScene, moonScene, catScene];
+export const scenes: Scene<any>[] = [
+  blankScene,
+  moonScene,
+  catScene,
+  digitalClockScene,
+];
