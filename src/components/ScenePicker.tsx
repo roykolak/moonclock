@@ -2,7 +2,7 @@
 
 import { Card, SimpleGrid, Text, UnstyledButton } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import { scenes } from "@/scenes/catalog";
+import { selectableScenes } from "@/scenes/catalog";
 import { Preset } from "@/types";
 import { PresetPreview } from "./PresetPreview";
 
@@ -11,7 +11,7 @@ export function ScenePicker({ form }: { form: UseFormReturnType<Preset> }) {
 
   return (
     <SimpleGrid cols={3} data-testid="scene-picker" role="radiogroup">
-      {scenes.map((scene) => (
+      {selectableScenes.map((scene) => (
         <UnstyledButton
           key={scene.id}
           role="radio"

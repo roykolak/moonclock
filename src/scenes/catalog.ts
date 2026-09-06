@@ -5,6 +5,17 @@
 import { blankScene } from "./blank";
 import { moonScene } from "./moon";
 import { catScene } from "./cat";
+import { flipClockScene } from "./flip-clock";
 import type { Scene } from "./types";
+import { SceneId } from "./types";
 
-export const scenes: Scene<any>[] = [blankScene, moonScene, catScene];
+export const scenes: Scene<any>[] = [
+  blankScene,
+  moonScene,
+  catScene,
+  flipClockScene,
+];
+
+export const selectableScenes: Scene<any>[] = scenes.filter(
+  (scene) => scene.id !== SceneId.Blank,
+);

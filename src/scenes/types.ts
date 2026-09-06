@@ -21,6 +21,7 @@ export const SceneId = {
   Blank: "blank",
   Moon: "moon",
   Cat: "cat",
+  FlipClock: "flip-clock",
 } as const;
 export type SceneId = (typeof SceneId)[keyof typeof SceneId];
 
