@@ -7,6 +7,7 @@ import { moonScene } from "./moon";
 import { catScene } from "./cat";
 import { digitalClockScene } from "./digital-clock";
 import type { Scene } from "./types";
+import { SceneId } from "./types";
 
 export const scenes: Scene<any>[] = [
   blankScene,
@@ -14,3 +15,7 @@ export const scenes: Scene<any>[] = [
   catScene,
   digitalClockScene,
 ];
+
+export const selectableScenes: Scene<any>[] = scenes.filter(
+  (scene) => scene.id !== SceneId.Blank,
+);
