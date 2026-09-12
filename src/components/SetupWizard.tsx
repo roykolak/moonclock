@@ -204,12 +204,9 @@ export function SetupWizard({
         <Alert
           variant="light"
           color="blue"
-          p="xs"
-          icon={<IconInfoCircle size={18} stroke={1.5} />}
+          icon={<IconInfoCircle size={20} stroke={1.5} />}
         >
-          <Text size="xs">
-            Tune your display, try to minimize greenish ghosting.
-          </Text>
+          <Text size="sm">Try to minimize greenish ghosting.</Text>
         </Alert>
 
         <Button
