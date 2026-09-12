@@ -455,6 +455,19 @@ export default function DeviceScreen({
         fullScreen={narrowViewport}
         closeOnClickOutside={false}
         data-testid="setup-modal"
+        styles={{
+          content: {
+            maxHeight: narrowViewport ? undefined : "calc(100dvh - 80px)",
+            display: "flex",
+            flexDirection: "column",
+          },
+          body: {
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          },
+        }}
       >
         <SetupWizard
           panel={panel}

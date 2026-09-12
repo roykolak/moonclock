@@ -118,111 +118,141 @@ export function SetupWizard({
 
   if (step === "jumper") {
     return (
-      <Stack data-testid="setup-jumper-step">
-        <Title order={4}>Did you solder the jumper wire?</Title>
-
-        <Radio.Group
-          value={soldered}
-          onChange={setSoldered}
-          data-testid="soldered-choice"
+      <Stack
+        gap={0}
+        style={{ flex: 1, minHeight: 0 }}
+        data-testid="setup-jumper-step"
+      >
+        <Stack
+          gap="md"
+          pb="md"
+          style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
         >
-          <Stack gap="xs">
-            <Radio.Card p="md" radius="md" value="yes">
-              <Group wrap="nowrap" align="flex-start">
-                <Radio.Indicator />
-                <Box>
-                  <Text size="sm" fw={500}>
-                    Yes — GPIO 4 and 18 are bridged (recommended)
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    Uses the Adafruit HAT (PWM) mapping, with hardware-pulsed
-                    Output Enable.
-                  </Text>
-                </Box>
-              </Group>
-            </Radio.Card>
-            <Radio.Card p="md" radius="md" value="no">
-              <Group wrap="nowrap" align="flex-start">
-                <Radio.Indicator />
-                <Box>
-                  <Text size="sm" fw={500}>
-                    No — the HAT is untouched
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    Uses the plain Adafruit HAT mapping. It works, with more
-                    ghosting to tune out.
-                  </Text>
-                </Box>
-              </Group>
-            </Radio.Card>
-          </Stack>
-        </Radio.Group>
+          <Title order={4}>Did you solder the jumper wire?</Title>
 
-        <Button
-          fullWidth
-          mt="sm"
-          data-testid="setup-continue"
-          onClick={async () => {
-            await savePanel({
-              hardwareMapping:
-                soldered === "yes" ? SOLDERED_MAPPING : UNSOLDERED_MAPPING,
-            });
-            setStep("tuning");
-          }}
+          <Radio.Group
+            value={soldered}
+            onChange={setSoldered}
+            data-testid="soldered-choice"
+          >
+            <Stack gap="xs">
+              <Radio.Card p="md" radius="md" value="yes">
+                <Group wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <Box>
+                    <Text size="sm" fw={500}>
+                      Yes — GPIO 4 and 18 are bridged (recommended)
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Uses the Adafruit HAT (PWM) mapping, with hardware-pulsed
+                      Output Enable.
+                    </Text>
+                  </Box>
+                </Group>
+              </Radio.Card>
+              <Radio.Card p="md" radius="md" value="no">
+                <Group wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <Box>
+                    <Text size="sm" fw={500}>
+                      No — the HAT is untouched
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Uses the plain Adafruit HAT mapping. It works, with more
+                      ghosting to tune out.
+                    </Text>
+                  </Box>
+                </Group>
+              </Radio.Card>
+            </Stack>
+          </Radio.Group>
+        </Stack>
+
+        <Box
+          pt="md"
+          style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
         >
-          Continue
-        </Button>
+          <Button
+            fullWidth
+            data-testid="setup-continue"
+            onClick={async () => {
+              await savePanel({
+                hardwareMapping:
+                  soldered === "yes" ? SOLDERED_MAPPING : UNSOLDERED_MAPPING,
+              });
+              setStep("tuning");
+            }}
+          >
+            Continue
+          </Button>
+        </Box>
       </Stack>
     );
   }
 
   return (
-    <Stack data-testid="setup-tuning-step">
-      <Alert
-        variant="light"
-        color="blue"
-        icon={<IconInfoCircle size={20} stroke={1.5} />}
+    <Stack
+      gap={0}
+      style={{ flex: 1, minHeight: 0 }}
+      data-testid="setup-tuning-step"
+    >
+      <Stack
+        gap="sm"
+        pb="md"
+        style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
       >
-        <Text size="sm">
-          Tune your display, try to minimize greenish ghosting.
-        </Text>
-      </Alert>
+        <Alert
+          variant="light"
+          color="blue"
+          p="xs"
+          icon={<IconInfoCircle size={18} stroke={1.5} />}
+        >
+          <Text size="xs">
+            Tune your display, try to minimize greenish ghosting.
+          </Text>
+        </Alert>
 
-      <Button
-        variant="default"
-        leftSection={<IconWand size={16} stroke={1.5} />}
-        data-testid="use-recommended-settings"
-        onClick={() => savePanel(recommendedTuning)}
-      >
-        Use recommended settings
-      </Button>
+        <Button
+          variant="default"
+          size="xs"
+          leftSection={<IconWand size={14} stroke={1.5} />}
+          data-testid="use-recommended-settings"
+          onClick={() => savePanel(recommendedTuning)}
+        >
+          Use recommended settings
+        </Button>
 
-      <Group gap="xs" h={20} justify="center">
-        {restarting && (
-          <>
-            <Loader size="xs" />
-            <Text size="xs" c="dimmed" data-testid="setup-restarting">
-              Restarting the display...
-            </Text>
-          </>
-        )}
-      </Group>
+        <Group gap="xs" h={18} justify="center">
+          {restarting && (
+            <>
+              <Loader size="xs" />
+              <Text size="xs" c="dimmed" data-testid="setup-restarting">
+                Restarting the display...
+              </Text>
+            </>
+          )}
+        </Group>
 
-      <Stack gap="lg">
-        {tuningSliders.map((spec) => (
-          <PanelSlider
-            key={spec.field}
-            spec={spec}
-            value={values[spec.field]}
-            onChange={(value) =>
-              setValues((current) => ({ ...current, [spec.field]: value }))
-            }
-            onChangeEnd={(value) => savePanel({ [spec.field]: value })}
-          />
-        ))}
+        <Stack gap="md">
+          {tuningSliders.map((spec) => (
+            <PanelSlider
+              key={spec.field}
+              spec={spec}
+              value={values[spec.field]}
+              onChange={(value) =>
+                setValues((current) => ({ ...current, [spec.field]: value }))
+              }
+              onChangeEnd={(value) => savePanel({ [spec.field]: value })}
+            />
+          ))}
+        </Stack>
       </Stack>
 
-      <Group justify="space-between" mt="sm">
+      <Group
+        justify="space-between"
+        pt="md"
+        style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
+      >
         <Button
           variant="subtle"
           color="gray"
