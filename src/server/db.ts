@@ -3,6 +3,7 @@ import { DataTypes, Preset } from "../types";
 import { SceneId } from "../scenes/types";
 import { databaseFile } from "./utils";
 import { randomPanelName } from "./panelName";
+import { recommendedPanelSettings } from "../helpers/recommendedPanelSettings";
 import { randomUUID } from "crypto";
 
 const defaultPreset: Preset = {
@@ -21,17 +22,13 @@ function createDefaultData(): DataTypes {
     panel: {
       name: randomPanelName(),
       defaultPreset,
-      brightness: 30,
-      pwnLsbNanoseconds: 553,
-      gpioSlowdown: 2,
-      pwmBits: 9,
+      ...recommendedPanelSettings,
       hardwareMapping: "adafruit-hat",
-      // Neutral (library-default) values. These are the ghosting knobs — tune
-      // them per panel with hardware/test-matrix.ts rather than guessing here.
-      pwmDitherBits: 0,
-      limitRefreshRateHz: 0,
       panelType: "",
       updateChannel: "stable",
+    },
+    setup: {
+      completedAt: null,
     },
     scheduledPreset: {
       preset: null,

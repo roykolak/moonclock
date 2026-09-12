@@ -12,7 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { deviceId, panel, presets, scheduledPreset, nextVersion } = getData();
+  const { deviceId, panel, setup, presets, scheduledPreset, nextVersion } =
+    getData();
 
   return (
     <MainScreen
@@ -21,6 +22,7 @@ export default async function Page() {
         version: packageInfo.version,
         hardwarePort: hardwarePort(),
         panel,
+        setup,
         presets,
         scheduledPreset,
         nextVersion,

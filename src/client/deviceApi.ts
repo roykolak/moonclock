@@ -1,4 +1,11 @@
-import { Device, DeviceState, Panel, Preset, ScheduledPreset } from "@/types";
+import {
+  Device,
+  DeviceState,
+  Panel,
+  Preset,
+  ScheduledPreset,
+  Setup,
+} from "@/types";
 
 export interface DownloadProgress {
   version: string;
@@ -35,6 +42,7 @@ export interface DeviceApi {
   updatePreset(preset: Preset): Promise<void>;
   deletePreset(id: string): Promise<void>;
   updatePanel(panel: Panel): Promise<void>;
+  updateSetup(setup: Partial<Setup>): Promise<void>;
   resetDatabase(): Promise<void>;
   reloadHardware(): Promise<void>;
   rebootMachine(): Promise<void>;
@@ -88,6 +96,7 @@ function createDeviceApi(
     updatePreset: (preset) => send(`/api/presets/${preset.id}`, "PUT", preset),
     deletePreset: (id) => send(`/api/presets/${id}`, "DELETE"),
     updatePanel: (panel) => send("/api/panel", "PUT", panel),
+    updateSetup: (setup) => send("/api/setup", "PUT", setup),
     resetDatabase: () => send("/api/db", "DELETE"),
     reloadHardware: () => send("/api/hardware/reload", "POST"),
     rebootMachine: () => send("/api/reboot", "POST"),
