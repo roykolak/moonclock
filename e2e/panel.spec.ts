@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { clearDatabase } from "./support/seedDatabase";
+import { seedDatabase } from "./support/seedDatabase";
 
 test.describe("Test", () => {
   test.beforeEach(() => {
-    clearDatabase();
+    seedDatabase();
   });
 
   test("activating a preset and toggling it back off", async ({ page }) => {

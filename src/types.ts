@@ -1,9 +1,15 @@
 export interface DataTypes {
   deviceId: string;
   panel: Panel;
+  setup?: Setup;
   scheduledPreset: ScheduledPreset | null;
   presets: Preset[];
   nextVersion: NextVersion | null;
+}
+
+export interface Setup {
+  completedAt: string | null;
+  testPatternUntil: string | null;
 }
 
 export interface ScheduledPreset {
@@ -39,6 +45,7 @@ export interface DeviceState {
   version: string;
   hardwarePort: number;
   panel: Panel;
+  setup?: Setup;
   presets: Preset[];
   scheduledPreset: ScheduledPreset | null;
   nextVersion: NextVersion | null;

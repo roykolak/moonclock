@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "fs";
-import { clearDatabase } from "./support/seedDatabase";
+import { seedDatabase } from "./support/seedDatabase";
 
 test.describe("Test", () => {
   test.beforeEach(() => {
-    clearDatabase();
+    seedDatabase();
   });
 
   test("create, edit, and delete a 'for mode' preset", async ({ page }) => {

@@ -27,6 +27,7 @@ import {
   IconSettings,
   IconTerminal2,
   IconTrash,
+  IconWand,
 } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Device, DeviceState, Preset } from "../types";
@@ -37,6 +38,7 @@ import { Settings } from "./Settings";
 import { LogsViewer } from "./LogsViewer";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { PresetForm } from "./PresetForm";
+import { SetupWizard } from "./SetupWizard";
 import { getEndDate } from "@/helpers/getEndDate";
 import { useDeviceState } from "./useDeviceState";
 
@@ -69,6 +71,8 @@ export default function DeviceScreen({
   const narrowViewport = useMediaQuery(NARROW_VIEWPORT);
 
   const [settingsOpen, settingsHandlers] = useDisclosure();
+  const [setupOpen, setupHandlers] = useDisclosure();
+  const [setupDismissed, setSetupDismissed] = useState(false);
   const [logsOpen, logsHandlers] = useDisclosure();
   const [createPresetOpen, createPresetHandlers] = useDisclosure();
   const [editPresetOpen, editPresetHandlers] = useDisclosure();
@@ -97,6 +101,25 @@ export default function DeviceScreen({
         : "forever",
     );
   }, [scheduledPreset]);
+
+  const setupNeeded = api.isLocal && state != null && !state.setup?.completedAt;
+
+  useEffect(() => {
+    if (setupNeeded && !setupDismissed) setupHandlers.open();
+  }, [setupNeeded, setupDismissed, setupHandlers]);
+
+  const closeSetup = async () => {
+    try {
+      await api.updateSetup({
+        completedAt: new Date().toJSON(),
+        testPatternUntil: null,
+      });
+    } finally {
+      setSetupDismissed(true);
+      setupHandlers.close();
+    }
+    await refresh();
+  };
 
   const currentName = state?.panel.name;
 
@@ -383,21 +406,61 @@ export default function DeviceScreen({
       </Box>
 
       {/* Modals */}
-      <Modal
+      <Modal.Root
         opened={settingsOpen}
         onClose={settingsHandlers.close}
-        title="Settings"
         size="md"
       >
-        <Settings
+        <Modal.Overlay />
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>Settings</Modal.Title>
+            <Group gap="xs" wrap="nowrap">
+              <Button
+                size="xs"
+                variant="subtle"
+                leftSection={<IconWand size={16} stroke={1.5} />}
+                data-testid="run-setup-button"
+                onClick={() => {
+                  settingsHandlers.close();
+                  setSetupDismissed(false);
+                  setupHandlers.open();
+                }}
+              >
+                Run setup again
+              </Button>
+              <Modal.CloseButton data-autofocus />
+            </Group>
+          </Modal.Header>
+          <Modal.Body>
+            <Settings
+              panel={panel}
+              version={version}
+              api={api}
+              onSaved={refresh}
+              onUpdateAvailable={() => {
+                settingsHandlers.close();
+                setReleaseNotesOpen(true);
+              }}
+            />
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
+
+      <Modal
+        opened={setupOpen}
+        onClose={closeSetup}
+        title="Set up your Moonclock"
+        size="lg"
+        fullScreen={narrowViewport}
+        closeOnClickOutside={false}
+        data-testid="setup-modal"
+      >
+        <SetupWizard
           panel={panel}
-          version={version}
           api={api}
           onSaved={refresh}
-          onUpdateAvailable={() => {
-            settingsHandlers.close();
-            setReleaseNotesOpen(true);
-          }}
+          onFinish={closeSetup}
         />
       </Modal>
 
@@ -428,11 +491,7 @@ export default function DeviceScreen({
         />
       </Modal>
 
-      <Modal.Root
-        opened={editPresetOpen}
-        onClose={closeEditPreset}
-        size="md"
-      >
+      <Modal.Root opened={editPresetOpen} onClose={closeEditPreset} size="md">
         <Modal.Overlay />
         <Modal.Content>
           <Modal.Header>
