@@ -110,10 +110,7 @@ export default function DeviceScreen({
 
   const closeSetup = async () => {
     try {
-      await api.updateSetup({
-        completedAt: new Date().toJSON(),
-        testPatternUntil: null,
-      });
+      await api.updateSetup({ completedAt: new Date().toJSON() });
     } finally {
       setSetupDismissed(true);
       setupHandlers.close();

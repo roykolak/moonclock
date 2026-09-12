@@ -9,7 +9,6 @@ export async function PUT(request: Request) {
   setData({
     setup: {
       completedAt: setup?.completedAt ?? null,
-      testPatternUntil: setup?.testPatternUntil ?? null,
       ...changes,
     },
   });

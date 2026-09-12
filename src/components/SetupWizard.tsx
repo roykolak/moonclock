@@ -15,7 +15,8 @@ import {
 import { showNotification } from "@mantine/notifications";
 import { IconArrowLeft, IconInfoCircle, IconWand } from "@tabler/icons-react";
 import { DeviceApi } from "@/client/deviceApi";
-import { Panel } from "@/types";
+import { Panel, Preset } from "@/types";
+import { SceneId } from "@/scenes/types";
 import { recommendedPanelSettings } from "@/helpers/recommendedPanelSettings";
 import { panelSliders, PanelSlider } from "./PanelSlider";
 
@@ -31,9 +32,17 @@ const recommendedTuning = Object.fromEntries(
 const SOLDERED_MAPPING = "adafruit-hat-pwm";
 const UNSOLDERED_MAPPING = "adafruit-hat";
 
-const LEASE_MS = 30000;
-const RENEW_MS = 10000;
 const RESTART_SETTLE_MS = 4000;
+
+const testPattern: Preset = {
+  name: "Setup",
+  sceneId: SceneId.Setup,
+  mode: "for",
+  untilDay: "0",
+  untilHour: "0",
+  untilMinute: "0",
+  forTime: "0:00",
+};
 
 interface SetupWizardProps {
   panel: Panel;
@@ -57,7 +66,6 @@ export function SetupWizard({
   const [finishing, setFinishing] = useState(false);
 
   const restartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const finished = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -94,25 +102,12 @@ export function SetupWizard({
   useEffect(() => {
     if (step !== "tuning") return;
 
-    let live = true;
-
-    const renew = () => {
-      if (!live || finished.current) return;
-      api
-        .updateSetup({
-          testPatternUntil: new Date(Date.now() + LEASE_MS).toJSON(),
-        })
-        .catch(() => {});
-    };
-
-    renew();
-    const interval = setInterval(renew, RENEW_MS);
+    api
+      .setScheduledPreset({ preset: testPattern, endTime: null })
+      .catch(() => {});
 
     return () => {
-      live = false;
-      clearInterval(interval);
-      if (finished.current) return;
-      api.updateSetup({ testPatternUntil: null }).catch(() => {});
+      api.setScheduledPreset({ preset: null, endTime: null }).catch(() => {});
     };
   }, [api, step]);
 
@@ -262,7 +257,6 @@ export function SetupWizard({
           data-testid="finish-setup"
           loading={finishing}
           onClick={async () => {
-            finished.current = true;
             setFinishing(true);
             try {
               await onFinish();

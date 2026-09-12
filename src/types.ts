@@ -9,7 +9,6 @@ export interface DataTypes {
 
 export interface Setup {
   completedAt: string | null;
-  testPatternUntil: string | null;
 }
 
 export interface ScheduledPreset {

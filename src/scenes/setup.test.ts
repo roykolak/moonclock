@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { createSetupScene } from "./setup";
+import { setupScene } from "./setup";
 
 const dimensions = { width: 32, height: 32 };
 
@@ -33,7 +33,7 @@ function paint(): Painted {
     },
   };
 
-  createSetupScene().draw({
+  setupScene.draw({
     ctx: ctx as unknown as CanvasRenderingContext2D,
     dimensions,
     elapsed: 0,

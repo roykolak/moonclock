@@ -29,7 +29,6 @@ function createDefaultData(): DataTypes {
     },
     setup: {
       completedAt: null,
-      testPatternUntil: null,
     },
     scheduledPreset: {
       preset: null,

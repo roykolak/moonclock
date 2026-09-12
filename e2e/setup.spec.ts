@@ -49,17 +49,30 @@ test.describe("First run setup", () => {
       .toBe("adafruit-hat-pwm");
   });
 
-  test("holds a test pattern lease while the tuning step is open", async ({
+  test("puts the test pattern on the panel while the tuning step is open", async ({
     page,
   }) => {
     await reachTuningStep(page);
 
     await expect
-      .poll(() => {
-        const until = readDatabase().setup?.testPatternUntil;
-        return until != null && new Date(until).getTime() > Date.now();
-      })
-      .toBe(true);
+      .poll(() => readDatabase().scheduledPreset?.preset?.sceneId)
+      .toBe("setup");
+    expect(readDatabase().scheduledPreset?.endTime).toBeNull();
+  });
+
+  test("leaves the test pattern up when you step back and forth", async ({
+    page,
+  }) => {
+    await reachTuningStep(page);
+
+    await page.getByRole("button", { name: "Back" }).click();
+    await expect(page.getByTestId("setup-jumper-step")).toBeVisible();
+    await expect.poll(() => readDatabase().scheduledPreset?.preset).toBeNull();
+
+    await page.getByTestId("setup-continue").click();
+    await expect
+      .poll(() => readDatabase().scheduledPreset?.preset?.sceneId)
+      .toBe("setup");
   });
 
   test("saves and reloads the hardware as soon as a slider moves", async ({
@@ -128,7 +141,7 @@ test.describe("First run setup", () => {
 
     await expect(page.getByTestId("setup-tuning-step")).toBeHidden();
     await expect.poll(() => readDatabase().setup?.completedAt).not.toBeNull();
-    await expect.poll(() => readDatabase().setup?.testPatternUntil).toBeNull();
+    await expect.poll(() => readDatabase().scheduledPreset?.preset).toBeNull();
 
     await page.reload();
     await expect(page.getByTestId("panel-name")).toBeVisible();
