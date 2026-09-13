@@ -1,21 +1,23 @@
 import { Scene } from "../../src/display-engine/types";
+import { bootGlow } from "@/scenes/boot-palette";
 
 // Shown on the panel while the device is offline and the wifi-connect setup
 // portal is up. Alternates between a WiFi glyph and an exclamation mark (~8s
 // round trip), each fading fully out before the other fades in, so it reads as
 // "your wifi needs attention" — a call to set it up, not a "connecting"
 // progress animation. The two share one dot, drawn at the same point in both
-// glyphs, so the swap pivots on it. Amber throughout. Both glyphs stay inside a
-// centered 24x24 box, leaving >=4px of blank padding on every edge. No text or
+// glyphs, so the swap pivots on it. Amber throughout, at the same weight as the
+// boot ring and the connected check rather than half again their size. Both
+// glyphs stay inside a centered 24x24 box, leaving >=4px of blank padding. No text or
 // QR, since neither reads well on a 32x32 matrix; the discoverable "Moonclock"
 // hotspot carries the rest.
 export function createSetupNeededScene(): Scene {
-  const bright = "#FACC0D"; // amber — "attention"
+  const bright = bootGlow();
 
   const cx = 16;
-  const cy = 22;
-  const dotRadius = 1.8;
-  const radii = [4, 8, 12]; // outer arc + lineWidth keeps x within cols 4..27
+  const cy = 20;
+  const dotRadius = 1.5;
+  const radii = [3, 6, 9];
   const startAngle = (222 * Math.PI) / 180; // top-opening fan...
   const endAngle = (318 * Math.PI) / 180; // ...centered on straight up (270deg)
 
@@ -43,7 +45,7 @@ export function createSetupNeededScene(): Scene {
   function drawBang(ctx: CanvasRenderingContext2D, alpha: number) {
     ctx.globalAlpha = alpha;
     ctx.fillStyle = bright;
-    ctx.fillRect(cx - 1, 7, 2, 11); // stem, 2px wide to center on cx
+    ctx.fillRect(cx - 1, 10, 2, 8); // stem, 2px wide to center on cx
     drawDot(ctx);
     ctx.globalAlpha = 1;
   }

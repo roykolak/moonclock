@@ -13,6 +13,7 @@
 //     hard guarantee (max radius 7.5 keeps everything comfortably within).
 
 import type { Scene } from "@/display-engine/types";
+import { bootGlow } from "./boot-palette";
 
 const CX = 16;
 const CY = 16;
@@ -50,21 +51,24 @@ function softDisc(
 
 // ---------------------------------------------------------------------------
 // The orbiting ring, shared by the loader and its resolution beat below.
-// Soft dots hold a fixed radius, drifting slowly around the center — no
-// convergence, no center flash. Each dot carries its own hue, evenly spaced
-// around the color wheel, so the ring reads as a slowly rotating rainbow.
+// Soft dots hold a fixed radius, orbiting the center — no convergence, no
+// center flash. One colour throughout, so the rotation has to be carried by a
+// brightness trail: the dots fade from full at the head to nearly out at the
+// tail, and that bright head is what you see travelling.
 // ---------------------------------------------------------------------------
 
 const RING_R = 4.4; // orbit radius — keeps the soft dots inside the box
 const DOT_R = 1.3; // travelling-dot radius (soft-edged, so this reads smaller)
-const ROT = 0.0003; // rad/ms — gentle drift of the whole ring
-const RING_ALPHA = 0.7;
+const REVOLUTION_MS = 2600;
+const ROT = TAU / REVOLUTION_MS; // rad/ms
+const RING_ALPHA = 0.85;
+const TAIL_ALPHA = 0.12;
 
 const DOT_COUNT = 10;
 
 const DOTS = Array.from({ length: DOT_COUNT }, (_, i) => ({
   angle: -Math.PI / 2 + i * (TAU / DOT_COUNT),
-  hue: (i / DOT_COUNT) * 360, // evenly spaced around the color wheel
+  trail: 1 - (1 - TAIL_ALPHA) * (i / (DOT_COUNT - 1)),
 }));
 
 /** `phase` is time-since-the-ring-appeared, not scene elapsed, so the handoff
@@ -80,14 +84,14 @@ function drawRing(
 
   const rot = phase * ROT;
   ctx.globalAlpha = alpha;
-  for (const { angle, hue } of DOTS) {
+  for (const { angle, trail } of DOTS) {
     softDisc(
       ctx,
-      CX + Math.cos(angle + rot) * RING_R * radiusScale,
-      CY + Math.sin(angle + rot) * RING_R * radiusScale,
+      CX + Math.cos(angle - rot) * RING_R * radiusScale,
+      CY + Math.sin(angle - rot) * RING_R * radiusScale,
       DOT_R,
-      `hsl(${hue}, 85%, 65%)`,
-      `hsla(${hue}, 85%, 65%, 0)`,
+      bootGlow(trail),
+      bootGlow(0),
     );
   }
   ctx.globalAlpha = 1;
@@ -114,7 +118,7 @@ export function createStartupRing(): Scene {
 // Called standalone (no `phase`) it is just the check: see createStartupConnected.
 // ---------------------------------------------------------------------------
 
-const GREEN = "#22C55E";
+const CHECK_COLOR = bootGlow();
 
 // Polyline of the check, inside the centered 16x16 box (x/y both 8..24).
 const CHECK = [
@@ -151,7 +155,7 @@ export function createStartupConnected(phase?: number): Scene {
   function strokeCheck(ctx: CanvasRenderingContext2D, progress: number) {
     let remaining = totalLength * progress;
 
-    ctx.strokeStyle = GREEN;
+    ctx.strokeStyle = CHECK_COLOR;
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
