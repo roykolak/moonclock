@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { collectDevices, toDevice } from "./peers";
+import { advertisedName, collectDevices, toDevice } from "./peers";
 
 function service(overrides = {}) {
   return {
@@ -116,5 +116,32 @@ describe("collectDevices", () => {
       devices.map((device) => device.name),
       ["Bedroom", "Living room", "Nursery"],
     );
+  });
+});
+
+describe("advertisedName", () => {
+  it("separates two clocks that share the installed hostname", () => {
+    assert.notStrictEqual(
+      advertisedName("moonclock", "3f2a91b4-1c2d-4e5f-8a9b-0c1d2e3f4a5b"),
+      advertisedName("moonclock", "7d8e9f01-2a3b-4c5d-6e7f-8a9b0c1d2e3f"),
+    );
+  });
+
+  it("keeps the hostname readable ahead of the device id", () => {
+    assert.strictEqual(
+      advertisedName("moonclock", "3f2a91b4-1c2d-4e5f-8a9b-0c1d2e3f4a5b"),
+      "moonclock-3f2a91b4",
+    );
+  });
+
+  it("stays a single dns label when the hostname is qualified", () => {
+    assert.strictEqual(
+      advertisedName("moonclock.lan", "3f2a91b4-1c2d-4e5f-8a9b-0c1d2e3f4a5b"),
+      "moonclock-3f2a91b4",
+    );
+  });
+
+  it("falls back to the hostname when there is no device id", () => {
+    assert.strictEqual(advertisedName("moonclock", ""), "moonclock");
   });
 });

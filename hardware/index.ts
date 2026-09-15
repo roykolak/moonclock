@@ -29,7 +29,7 @@ import {
   createSetupNeededScene,
 } from "./wifi/scenes";
 import { createStartupConnected, createStartupRing } from "@/scenes/startup";
-import { collectDevices, DiscoveredService } from "./peers";
+import { advertisedName, collectDevices, DiscoveredService } from "./peers";
 import { appPort, hardwarePort } from "@/server/ports";
 import packageInfo from "../package.json";
 
@@ -169,7 +169,7 @@ export async function createCanvas(dimensions: Dimensions) {
     }
 
     function advertisedInstanceName() {
-      return appPort() === 80 ? os.hostname() : `${os.hostname()}-${appPort()}`;
+      return advertisedName(os.hostname(), getData().deviceId);
     }
 
     app.use((req: any, res: any, next) => {
@@ -269,29 +269,29 @@ export async function createCanvas(dimensions: Dimensions) {
       // _http._tcp is the type network browsers and "find devices on my network"
       // tooling look for; _moonclock._tcp is the one clocks query for each other.
       //
-      // The instance name is the hostname, which avahi already guarantees unique
-      // on the link, so multiple clocks can't collide here — and it matches the
-      // <hostname>.local address the panel now points people at. A duplicate is
-      // still rejected with "Service name is already in use", so handle the
-      // error to keep a collision (e.g. a stale record after a hard restart)
-      // non-fatal rather than throwing from bonjour's internals.
+      // Every clock install.sh touches ends up with the hostname `moonclock`, so
+      // the instance name carries the device id: two clocks sharing an fqdn are
+      // collapsed into one entry by every browser on the link, including ours.
+      // The host is named to match rather than left at os.hostname(), which
+      // would claim the bare `moonclock` that avahi publishes as moonclock.local.
+      const instanceName = advertisedInstanceName();
+
       for (const type of ["http", "moonclock"]) {
         const service = bonjour.publish({
-          name: advertisedInstanceName(),
+          name: instanceName,
+          host: `${instanceName}.local`,
           type,
           port: appPort(),
           txt: advertisedIdentity(),
         });
-        service.on("error", (error) => {
-          console.error(`[HARDWARE] mDNS publish error (${type}):`, error);
+        service.on("up", () => {
+          console.log(
+            `[HARDWARE] Advertising ${service.fqdn} on port ${appPort()} via mDNS`,
+          );
         });
       }
 
       peerBrowser = bonjour.find({ type: "moonclock" });
-
-      console.log(
-        `[HARDWARE] Advertising ${advertisedInstanceName()} on port ${appPort()} as _http._tcp and _moonclock._tcp via mDNS`,
-      );
 
       const exitAfterUnpublishing = () => {
         const exit = () => process.exit(0);

@@ -71,3 +71,10 @@ export function collectDevices(
 
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
+
+export function advertisedName(hostname: string, deviceId: string) {
+  const label = hostname.split(".")[0];
+  const suffix = deviceId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+
+  return suffix ? `${label}-${suffix}` : label;
+}
