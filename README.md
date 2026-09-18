@@ -73,6 +73,8 @@ You'll need the following supplies:
 - Highly recommend soldering a jumper between `GPIO4` and `GPIO18`.
   - This will improve image stability!
   - After soldering be sure to switch the "Hardware Mapping" to **Adafruit HAT (PWM)**
+- If you have a frame, drill a hole in the frame for the button
+  - Use a 5/8" bit for the hole
 - Wire up the button
   - Run the quick-connect wires from the 16mm push button to
     **physical pin 22** (BCM 25) and the ground at **physical pin 20**.
