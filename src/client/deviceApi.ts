@@ -37,6 +37,7 @@ export interface DeviceApi {
   logsStreamUrl: string;
   getState(): Promise<DeviceState>;
   getPeers(): Promise<PeerListing>;
+  refreshPeers(): Promise<void>;
   setScheduledPreset(scheduledPreset: Partial<ScheduledPreset>): Promise<void>;
   createPreset(preset: Preset): Promise<void>;
   updatePreset(preset: Preset): Promise<void>;
@@ -90,6 +91,7 @@ function createDeviceApi(
     logsStreamUrl: `${appOrigin}/api/logs/stream`,
     getState: () => json<DeviceState>("/api/state"),
     getPeers: () => json<PeerListing>("/api/peers"),
+    refreshPeers: () => send("/api/peers/refresh", "POST"),
     setScheduledPreset: (scheduledPreset) =>
       send("/api/scheduled-preset", "PUT", scheduledPreset),
     createPreset: (preset) => send("/api/presets", "POST", preset),

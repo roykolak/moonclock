@@ -29,7 +29,7 @@ import {
   createSetupNeededScene,
 } from "./wifi/scenes";
 import { createStartupConnected, createStartupRing } from "@/scenes/startup";
-import { advertisedName, collectDevices, DiscoveredService } from "./peers";
+import { advertisedName, collectDevices, createPeerDirectory } from "./peers";
 import { appPort, hardwarePort } from "@/server/ports";
 import packageInfo from "../package.json";
 
@@ -63,6 +63,22 @@ const PANEL_HEIGHT = 32;
 const IDLE_SYNC_MS = 16;
 
 const SSE_RETRY_MS = 500;
+
+// bonjour-service's browser never re-queries and never ages an entry out: a
+// clock that is unplugged sends no goodbye and stays listed forever, at
+// whatever version it was first seen at. Its expire() is called by nothing, and
+// would not help — lastSeen only moves when a record's SRV or TXT changes, so a
+// healthy peer looks as stale as a dead one. Browsing afresh on an interval and
+// swapping the list in once the answers are back ages both out together.
+//
+// The settle only decides how long to hold the old list over the new one, not
+// how long anything listens: the browse that is adopted keeps running, so a
+// clock that answers late still lands, a moment later than the rest. Answers
+// here arrive in single-digit milliseconds, and a responder may hold a shared
+// record back by up to 120ms by spec, so this is generous either way — and
+// short enough to watch, since asking for a search waits it out.
+const PEER_REFRESH_MS = 30000;
+const PEER_SETTLE_MS = 3000;
 
 const virtualPanel: { [k: string]: string } = {};
 
@@ -156,7 +172,30 @@ export async function createCanvas(dimensions: Dimensions) {
     const app = express();
     const port = hardwarePort();
 
-    let peerBrowser: { services: DiscoveredService[] } | null = null;
+    let peers: ReturnType<typeof createPeerDirectory> | null = null;
+
+    // Resolves when the answers are in and adopted, so whoever asked can wait
+    // for a settled list rather than guess how long to wait. A browse already
+    // on its way will answer the next asker just as well, so a request that
+    // arrives mid-browse joins it: starting over instead would push the moment
+    // the answers are adopted further out on every ask, and a page asking more
+    // often than the settle would never see the list update at all.
+    let settling: Promise<void> | null = null;
+
+    function refreshPeers() {
+      if (settling) return settling;
+      if (!peers?.startRefresh()) return Promise.resolve();
+
+      settling = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          peers?.finishRefresh();
+          settling = null;
+          resolve();
+        }, PEER_SETTLE_MS);
+      });
+
+      return settling;
+    }
 
     function advertisedIdentity() {
       const { deviceId, panel: currentPanel } = getData();
@@ -195,11 +234,16 @@ export async function createCanvas(dimensions: Dimensions) {
       res.send(true);
     });
 
+    app.post("/api/peers/refresh", async (req, res) => {
+      await refreshPeers();
+      res.send(true);
+    });
+
     app.get("/api/peers", (req, res) => {
       const { deviceId } = getData();
       res.json({
         deviceId,
-        devices: collectDevices(peerBrowser?.services ?? [], deviceId),
+        devices: collectDevices(peers?.services ?? [], deviceId),
       });
     });
 
@@ -291,7 +335,9 @@ export async function createCanvas(dimensions: Dimensions) {
         });
       }
 
-      peerBrowser = bonjour.find({ type: "moonclock" });
+      peers = createPeerDirectory(() => bonjour.find({ type: "moonclock" }));
+
+      setInterval(() => void refreshPeers(), PEER_REFRESH_MS);
 
       const exitAfterUnpublishing = () => {
         const exit = () => process.exit(0);

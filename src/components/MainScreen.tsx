@@ -16,13 +16,14 @@ export default function MainScreen({ initialState }: MainScreenProps) {
     [initialState.hardwarePort],
   );
   const peers = usePeers(localApi);
+  const { devices } = peers;
 
   const localDeviceId = initialState.deviceId;
   const [selectedDeviceId, setSelectedDeviceId] = useState(localDeviceId);
   const [localName, setLocalName] = useState(initialState.panel.name);
 
   const selectedPeer =
-    peers.find((peer) => peer.id === selectedDeviceId) ?? null;
+    devices.find((peer) => peer.id === selectedDeviceId) ?? null;
   const isLocal = selectedDeviceId === localDeviceId;
 
   useEffect(() => {
