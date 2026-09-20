@@ -125,11 +125,17 @@ Clocks on this network
     Nursery    192.168.1.51
 ```
 
+The first clock on a network takes `moonclock.local`. A clock installed after
+that finds the name already claimed and takes `moonclock-<id>.local` instead,
+where `<id>` comes from its WiFi MAC — so each address is decided once at install
+and never changes hands. The setup portal shows you which address that clock
+answers to once it joins your WiFi.
+
 _Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
 record that "find devices on my network" tooling looks for. Both point at the app
 on port 80. The name in the switcher is the one you set in Settings, carried in
 the record's TXT data along with a device id that stays put across renames and
-DHCP leases — so `moonclock-2.local` can still call itself "Bedroom"._
+DHCP leases — so `moonclock-a302a6.local` can still call itself "Bedroom"._
 
 ## WiFi setup
 

@@ -303,8 +303,23 @@ log " -> Configuring mDNS hostname"
 # That name is published by avahi straight from the system hostname, so both are
 # set here rather than only in bootstrap.sh — same reasoning as the boot config
 # above: it's what lets already-installed clocks pick this up on update.
-DESIRED_HOSTNAME="moonclock"
+moonclock_name_taken() {
+  getent ahostsv4 moonclock.local > /dev/null 2>&1
+}
+
+device_suffix() {
+  local mac
+  mac="$(tr -d ':' < /sys/class/net/wlan0/address 2>/dev/null)"
+  if [ -n "$mac" ]; then
+    printf '%s' "${mac: -6}"
+  else
+    cut -c1-6 /etc/machine-id 2>/dev/null
+  fi
+}
+
 CURRENT_HOSTNAME="$(hostname)"
+DESIRED_HOSTNAME="moonclock"
+DEVICE_SUFFIX="$(device_suffix)"
 
 # Present on a stock Raspberry Pi OS image; installed defensively for VMs and
 # any image that dropped it. Guarded so a normal update never touches apt.
@@ -313,6 +328,11 @@ if ! dpkg -s avahi-daemon > /dev/null 2>&1; then
   sudo apt-get install -y avahi-daemon
 fi
 sudo systemctl enable --now avahi-daemon > /dev/null 2>&1
+
+if [ "$CURRENT_HOSTNAME" = "raspberrypi" ] && [ -n "$DEVICE_SUFFIX" ] && moonclock_name_taken; then
+  DESIRED_HOSTNAME="moonclock-$DEVICE_SUFFIX"
+  log "   -> moonclock.local is already claimed on this network"
+fi
 
 if [ "$CURRENT_HOSTNAME" = "$DESIRED_HOSTNAME" ]; then
   log "   -> Hostname already $DESIRED_HOSTNAME, skipping"
@@ -340,6 +360,15 @@ else
   sudo systemctl restart avahi-daemon > /dev/null 2>&1
 
   log "   -> Reach the app at http://$DESIRED_HOSTNAME.local"
+fi
+
+log " -> Pointing the setup portal at this clock's address"
+
+PORTAL_INDEX="$RELEASE_FOLDER/wifi-connect-ui/index.html"
+if [ -f "$PORTAL_INDEX" ]; then
+  sudo sed -i "s/{HOSTNAME}/$(hostname)/g" "$PORTAL_INDEX"
+else
+  log "   -> No setup portal in this release, skipping"
 fi
 
 if [ -n "$UNITS_CHANGED" ]; then
