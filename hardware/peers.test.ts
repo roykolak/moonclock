@@ -1,6 +1,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { advertisedName, collectDevices, toDevice } from "./peers";
+import {
+  advertisedName,
+  collectDevices,
+  createPeerDirectory,
+  PeerBrowser,
+  toDevice,
+} from "./peers";
 
 function service(overrides = {}) {
   return {
@@ -143,5 +149,92 @@ describe("advertisedName", () => {
 
   it("falls back to the hostname when there is no device id", () => {
     assert.strictEqual(advertisedName("moonclock", ""), "moonclock");
+  });
+});
+
+describe("createPeerDirectory", () => {
+  function browsers(...listings: string[][]) {
+    const opened: Array<PeerBrowser & { stopped: boolean }> = [];
+
+    const open = () => {
+      const browser = {
+        services: (listings[opened.length] ?? []).map((id) => ({
+          txt: { id },
+        })),
+        stopped: false,
+        stop() {
+          browser.stopped = true;
+        },
+      };
+      opened.push(browser);
+      return browser;
+    };
+
+    return { open, opened };
+  }
+
+  function ids(directory: { services: { txt?: { [k: string]: unknown } }[] }) {
+    return directory.services.map((service) => service.txt?.id);
+  }
+
+  it("keeps serving the clocks it knows while the next browse settles", () => {
+    const { open } = browsers(["a", "b"], ["a"]);
+    const directory = createPeerDirectory(open);
+
+    directory.startRefresh();
+
+    assert.deepStrictEqual(ids(directory), ["a", "b"]);
+  });
+
+  it("drops a clock that stopped answering once the browse settles", () => {
+    const { open } = browsers(["a", "b"], ["a"]);
+    const directory = createPeerDirectory(open);
+
+    directory.startRefresh();
+    directory.finishRefresh();
+
+    assert.deepStrictEqual(ids(directory), ["a"]);
+  });
+
+  it("picks up a clock that only answered the second browse", () => {
+    const { open } = browsers([], ["c"]);
+    const directory = createPeerDirectory(open);
+
+    directory.startRefresh();
+    directory.finishRefresh();
+
+    assert.deepStrictEqual(ids(directory), ["c"]);
+  });
+
+  it("closes the browse it replaces rather than leaving it listening", () => {
+    const { open, opened } = browsers(["a"], ["a"]);
+    const directory = createPeerDirectory(open);
+
+    directory.startRefresh();
+    directory.finishRefresh();
+
+    assert.strictEqual(opened[0].stopped, true);
+    assert.strictEqual(opened[1].stopped, false);
+  });
+
+  it("abandons a settling browse rather than stacking them up", () => {
+    const { open, opened } = browsers(["a"], ["b"], ["c"]);
+    const directory = createPeerDirectory(open);
+
+    directory.startRefresh();
+    directory.startRefresh();
+    directory.finishRefresh();
+
+    assert.strictEqual(opened[1].stopped, true);
+    assert.deepStrictEqual(ids(directory), ["c"]);
+  });
+
+  it("stays put when nothing is settling", () => {
+    const { open } = browsers(["a"], ["b"]);
+    const directory = createPeerDirectory(open);
+
+    directory.finishRefresh();
+
+    assert.deepStrictEqual(ids(directory), ["a"]);
   });
 });

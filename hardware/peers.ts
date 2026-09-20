@@ -78,3 +78,29 @@ export function advertisedName(hostname: string, deviceId: string) {
 
   return suffix ? `${label}-${suffix}` : label;
 }
+
+export interface PeerBrowser {
+  services: DiscoveredService[];
+  stop(): void;
+}
+
+export function createPeerDirectory(openBrowser: () => PeerBrowser) {
+  let serving = openBrowser();
+  let pending: PeerBrowser | null = null;
+
+  return {
+    get services() {
+      return serving.services;
+    },
+    startRefresh() {
+      pending?.stop();
+      pending = openBrowser();
+    },
+    finishRefresh() {
+      if (!pending) return;
+      serving.stop();
+      serving = pending;
+      pending = null;
+    },
+  };
+}

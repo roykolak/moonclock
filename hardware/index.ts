@@ -29,7 +29,7 @@ import {
   createSetupNeededScene,
 } from "./wifi/scenes";
 import { createStartupConnected, createStartupRing } from "@/scenes/startup";
-import { advertisedName, collectDevices, DiscoveredService } from "./peers";
+import { advertisedName, collectDevices, createPeerDirectory } from "./peers";
 import { appPort, hardwarePort } from "@/server/ports";
 import packageInfo from "../package.json";
 
@@ -63,6 +63,15 @@ const PANEL_HEIGHT = 32;
 const IDLE_SYNC_MS = 16;
 
 const SSE_RETRY_MS = 500;
+
+// bonjour-service's browser never re-queries and never ages an entry out: a
+// clock that is unplugged sends no goodbye and stays listed forever, at
+// whatever version it was first seen at. Its expire() is called by nothing, and
+// would not help — lastSeen only moves when a record's SRV or TXT changes, so a
+// healthy peer looks as stale as a dead one. Browsing afresh on an interval and
+// swapping the list in once the answers are back ages both out together.
+const PEER_REFRESH_MS = 30000;
+const PEER_SETTLE_MS = 5000;
 
 const virtualPanel: { [k: string]: string } = {};
 
@@ -156,7 +165,7 @@ export async function createCanvas(dimensions: Dimensions) {
     const app = express();
     const port = hardwarePort();
 
-    let peerBrowser: { services: DiscoveredService[] } | null = null;
+    let peers: ReturnType<typeof createPeerDirectory> | null = null;
 
     function advertisedIdentity() {
       const { deviceId, panel: currentPanel } = getData();
@@ -199,7 +208,7 @@ export async function createCanvas(dimensions: Dimensions) {
       const { deviceId } = getData();
       res.json({
         deviceId,
-        devices: collectDevices(peerBrowser?.services ?? [], deviceId),
+        devices: collectDevices(peers?.services ?? [], deviceId),
       });
     });
 
@@ -291,7 +300,12 @@ export async function createCanvas(dimensions: Dimensions) {
         });
       }
 
-      peerBrowser = bonjour.find({ type: "moonclock" });
+      peers = createPeerDirectory(() => bonjour.find({ type: "moonclock" }));
+
+      setInterval(() => {
+        peers?.startRefresh();
+        setTimeout(() => peers?.finishRefresh(), PEER_SETTLE_MS);
+      }, PEER_REFRESH_MS);
 
       const exitAfterUnpublishing = () => {
         const exit = () => process.exit(0);
