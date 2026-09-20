@@ -217,7 +217,7 @@ describe("createPeerDirectory", () => {
     assert.strictEqual(opened[1].stopped, false);
   });
 
-  it("abandons a settling browse rather than stacking them up", () => {
+  it("does not stack browses up while one is settling", () => {
     const { open, opened } = browsers(["a"], ["b"], ["c"]);
     const directory = createPeerDirectory(open);
 
@@ -225,8 +225,8 @@ describe("createPeerDirectory", () => {
     directory.startRefresh();
     directory.finishRefresh();
 
-    assert.strictEqual(opened[1].stopped, true);
-    assert.deepStrictEqual(ids(directory), ["c"]);
+    assert.strictEqual(opened.length, 2);
+    assert.deepStrictEqual(ids(directory), ["b"]);
   });
 
   it("stays put when nothing is settling", () => {
@@ -236,5 +236,18 @@ describe("createPeerDirectory", () => {
     directory.finishRefresh();
 
     assert.deepStrictEqual(ids(directory), ["a"]);
+  });
+
+  it("joins the browse already on its way rather than restarting it", () => {
+    const { open } = browsers(["a"], ["b"]);
+    const directory = createPeerDirectory(open);
+
+    assert.strictEqual(directory.startRefresh(), true);
+    assert.strictEqual(directory.startRefresh(), false);
+    assert.strictEqual(directory.startRefresh(), false);
+
+    directory.finishRefresh();
+
+    assert.deepStrictEqual(ids(directory), ["b"]);
   });
 });

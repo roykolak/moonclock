@@ -30,10 +30,11 @@ import {
   IconWand,
 } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
-import { Device, DeviceState, Preset } from "../types";
+import { DeviceState, Preset } from "../types";
 import { DeviceApi } from "@/client/deviceApi";
 import Panel from "./Panel";
 import { DeviceSwitcher } from "./DeviceSwitcher";
+import { Peers } from "./usePeers";
 import { Settings } from "./Settings";
 import { LogsViewer } from "./LogsViewer";
 import { UpdatePrompt } from "./UpdatePrompt";
@@ -51,7 +52,7 @@ interface DeviceScreenProps {
   localName: string;
   localDeviceId: string;
   selectedDeviceId: string;
-  peers: Device[];
+  peers: Peers;
   onSelectDevice: (deviceId: string) => void;
   onLocalNameChange: (name: string) => void;
 }
@@ -157,17 +158,16 @@ export default function DeviceScreen({
 
   const { panel, presets, nextVersion, version } = state;
 
-  const nameControl =
-    peers.length > 0 ? (
-      <DeviceSwitcher
-        name={panel.name}
-        localName={localName}
-        localDeviceId={localDeviceId}
-        selectedDeviceId={selectedDeviceId}
-        peers={peers}
-        onSelect={onSelectDevice}
-      />
-    ) : undefined;
+  const nameControl = (
+    <DeviceSwitcher
+      name={panel.name}
+      localName={localName}
+      localDeviceId={localDeviceId}
+      selectedDeviceId={selectedDeviceId}
+      peers={peers}
+      onSelect={onSelectDevice}
+    />
+  );
 
   const samePreset = (a: Preset | null, b: Preset | null) =>
     a != null &&

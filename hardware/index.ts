@@ -70,8 +70,15 @@ const SSE_RETRY_MS = 500;
 // would not help — lastSeen only moves when a record's SRV or TXT changes, so a
 // healthy peer looks as stale as a dead one. Browsing afresh on an interval and
 // swapping the list in once the answers are back ages both out together.
+//
+// The settle only decides how long to hold the old list over the new one, not
+// how long anything listens: the browse that is adopted keeps running, so a
+// clock that answers late still lands, a moment later than the rest. Answers
+// here arrive in single-digit milliseconds, and a responder may hold a shared
+// record back by up to 120ms by spec, so this is generous either way — and
+// short enough to watch, since asking for a search waits it out.
 const PEER_REFRESH_MS = 30000;
-const PEER_SETTLE_MS = 5000;
+const PEER_SETTLE_MS = 3000;
 
 const virtualPanel: { [k: string]: string } = {};
 
@@ -167,6 +174,29 @@ export async function createCanvas(dimensions: Dimensions) {
 
     let peers: ReturnType<typeof createPeerDirectory> | null = null;
 
+    // Resolves when the answers are in and adopted, so whoever asked can wait
+    // for a settled list rather than guess how long to wait. A browse already
+    // on its way will answer the next asker just as well, so a request that
+    // arrives mid-browse joins it: starting over instead would push the moment
+    // the answers are adopted further out on every ask, and a page asking more
+    // often than the settle would never see the list update at all.
+    let settling: Promise<void> | null = null;
+
+    function refreshPeers() {
+      if (settling) return settling;
+      if (!peers?.startRefresh()) return Promise.resolve();
+
+      settling = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          peers?.finishRefresh();
+          settling = null;
+          resolve();
+        }, PEER_SETTLE_MS);
+      });
+
+      return settling;
+    }
+
     function advertisedIdentity() {
       const { deviceId, panel: currentPanel } = getData();
       return {
@@ -201,6 +231,11 @@ export async function createCanvas(dimensions: Dimensions) {
 
     app.get("/api/reload", (req, res) => {
       runConditionalRenderUpdate();
+      res.send(true);
+    });
+
+    app.post("/api/peers/refresh", async (req, res) => {
+      await refreshPeers();
       res.send(true);
     });
 
@@ -302,10 +337,7 @@ export async function createCanvas(dimensions: Dimensions) {
 
       peers = createPeerDirectory(() => bonjour.find({ type: "moonclock" }));
 
-      setInterval(() => {
-        peers?.startRefresh();
-        setTimeout(() => peers?.finishRefresh(), PEER_SETTLE_MS);
-      }, PEER_REFRESH_MS);
+      setInterval(() => void refreshPeers(), PEER_REFRESH_MS);
 
       const exitAfterUnpublishing = () => {
         const exit = () => process.exit(0);

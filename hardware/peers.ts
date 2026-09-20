@@ -93,8 +93,9 @@ export function createPeerDirectory(openBrowser: () => PeerBrowser) {
       return serving.services;
     },
     startRefresh() {
-      pending?.stop();
+      if (pending) return false;
       pending = openBrowser();
+      return true;
     },
     finishRefresh() {
       if (!pending) return;
