@@ -137,6 +137,34 @@ for (const file of releaseFiles) {
   fs.copyFileSync(file, `${releaseFolder}/${file}`);
 }
 
+console.log("\n -> Writing release manifest");
+
+function collectNonEmptyFiles(directory, base = "") {
+  const collected = [];
+
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolutePath = `${directory}/${entry.name}`;
+    const relativePath = base ? `${base}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      collected.push(...collectNonEmptyFiles(absolutePath, relativePath));
+    } else if (entry.isFile() && fs.statSync(absolutePath).size > 0) {
+      collected.push(relativePath);
+    }
+  }
+
+  return collected;
+}
+
+const manifestEntries = collectNonEmptyFiles(releaseFolder).sort();
+
+fs.writeFileSync(
+  `${releaseFolder}/release-manifest`,
+  `${manifestEntries.length}\n${manifestEntries.join("\n")}\n`,
+);
+
+console.log(`   -> ${manifestEntries.length} files listed`);
+
 console.log("\n -> Compiled release folder");
 
 exec("tar -czf release.tar.gz moonclock", (error, stdout, stderr) => {
