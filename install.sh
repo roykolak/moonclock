@@ -115,6 +115,16 @@ else
   cd "$RELEASE_FOLDER"
 fi
 
+log " -> Verifying the release is complete"
+
+if [ ! -s ./bin/verify-release ] || ! bash ./bin/verify-release "$RELEASE_FOLDER"; then
+  message="Update failed: $MOONCLOCK_VERSION is incomplete"
+  log "$message"
+  log "   -> Left current pointed at ${PREVIOUS_VERSION:-the running release}"
+  echo "$message" > $DATA_FOLDER/current_install_step.txt
+  exit 1
+fi
+
 log " -> Copying services to /etc/systemd/system/"
 
 # Tracked so the daemon-reload further down can be skipped when every unit is
@@ -359,6 +369,10 @@ NODE_ENV=production node ./dist/hardware/configure-panel.cjs "${PANEL_ARGS[@]}"
 log " -> Loosen fontconfig cache permissions"
 
 sudo chmod 666 /var/cache/fontconfig
+
+log " -> Flushing the release to disk before activating it"
+
+sync
 
 message="Starting Moonclock"
 log "$message"

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+RELEASE_FOLDER="$1"
+
+if [ -z "$RELEASE_FOLDER" ]; then
+  echo "Usage: verify-release <release folder>" >&2
+  exit 2
+fi
+
+MANIFEST="$RELEASE_FOLDER/release-manifest"
+
+if [ ! -s "$MANIFEST" ]; then
+  echo "Release manifest is missing or empty: $MANIFEST" >&2
+  exit 1
+fi
+
+{
+  read -r EXPECTED_COUNT
+
+  case "$EXPECTED_COUNT" in
+    '' | *[!0-9]*)
+      echo "Release manifest does not start with a file count" >&2
+      exit 1
+      ;;
+  esac
+
+  LISTED=0
+  DAMAGED=0
+
+  while IFS= read -r file || [ -n "$file" ]; do
+    [ -n "$file" ] || continue
+
+    LISTED=$((LISTED + 1))
+
+    if [ ! -s "$RELEASE_FOLDER/$file" ]; then
+      DAMAGED=$((DAMAGED + 1))
+
+      if [ "$DAMAGED" -le 5 ]; then
+        echo "  missing or empty: $file" >&2
+      fi
+    fi
+  done
+
+  if [ "$LISTED" -ne "$EXPECTED_COUNT" ]; then
+    echo "Release manifest is truncated ($LISTED of $EXPECTED_COUNT entries)" >&2
+    exit 1
+  fi
+
+  if [ "$DAMAGED" -gt 0 ]; then
+    echo "$DAMAGED of $LISTED release files are missing or empty" >&2
+    exit 1
+  fi
+
+  echo "Verified $LISTED release files"
+  exit 0
+} < "$MANIFEST"
