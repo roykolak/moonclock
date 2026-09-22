@@ -49,6 +49,27 @@ describe("toDevice", () => {
     );
   });
 
+  it("never invents a hostname from the service instance name", () => {
+    const device = toDevice(service({ host: undefined }));
+
+    assert.strictEqual(device?.host, "");
+    assert.strictEqual(device?.address, "192.168.1.42");
+  });
+
+  it("keeps a clock that advertises an address but no hostname", () => {
+    assert.strictEqual(
+      toDevice(service({ host: undefined, txt: { id: "peer-id" } }))?.name,
+      "192.168.1.42",
+    );
+  });
+
+  it("drops a clock with neither a hostname nor a reachable address", () => {
+    assert.strictEqual(
+      toDevice(service({ host: undefined, addresses: ["169.254.7.7"] })),
+      null,
+    );
+  });
+
   it("drops the trailing dot mDNS puts on a hostname", () => {
     assert.strictEqual(
       toDevice(service({ host: "moonclock-2.local." }))?.host,

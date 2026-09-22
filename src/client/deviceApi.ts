@@ -56,18 +56,27 @@ export interface DeviceApi {
   getUpdateStatus(): Promise<UpdateStatus>;
 }
 
+const REQUEST_TIMEOUT_MS = 8000;
+const SEARCH_TIMEOUT_MS = 20000;
+
 function createDeviceApi(
   appOrigin: string,
   hardwareOrigin: string,
   isLocal: boolean,
 ): DeviceApi {
-  async function request(path: string, method = "GET", body?: unknown) {
+  async function request(
+    path: string,
+    method = "GET",
+    body?: unknown,
+    timeoutMs: number = REQUEST_TIMEOUT_MS,
+  ) {
     const response = await fetch(`${appOrigin}${path}`, {
       method,
       cache: "no-store",
       headers:
         body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) {
@@ -81,8 +90,13 @@ function createDeviceApi(
     return (await request(path, method, body)).json() as Promise<T>;
   }
 
-  async function send(path: string, method: string, body?: unknown) {
-    await request(path, method, body);
+  async function send(
+    path: string,
+    method: string,
+    body?: unknown,
+    timeoutMs?: number,
+  ) {
+    await request(path, method, body, timeoutMs);
   }
 
   return {
@@ -91,7 +105,8 @@ function createDeviceApi(
     logsStreamUrl: `${appOrigin}/api/logs/stream`,
     getState: () => json<DeviceState>("/api/state"),
     getPeers: () => json<PeerListing>("/api/peers"),
-    refreshPeers: () => send("/api/peers/refresh", "POST"),
+    refreshPeers: () =>
+      send("/api/peers/refresh", "POST", undefined, SEARCH_TIMEOUT_MS),
     setScheduledPreset: (scheduledPreset) =>
       send("/api/scheduled-preset", "PUT", scheduledPreset),
     createPreset: (preset) => send("/api/presets", "POST", preset),
@@ -103,7 +118,10 @@ function createDeviceApi(
     reloadHardware: () => send("/api/hardware/reload", "POST"),
     rebootMachine: () => send("/api/reboot", "POST"),
     pressButton: async () => {
-      await fetch(`${hardwareOrigin}/api/button-press`, { method: "POST" });
+      await fetch(`${hardwareOrigin}/api/button-press`, {
+        method: "POST",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
     },
     checkForUpdate: () => json<UpdateCheck>("/api/check-for-update", "PUT"),
     startDownload: () => send("/api/download-update", "POST"),
@@ -122,13 +140,44 @@ export function localDeviceApi(hardwarePort: number): DeviceApi {
   return createDeviceApi("", `http://${hostname}:${hardwarePort}`, true);
 }
 
+function unreachableDeviceApi(): DeviceApi {
+  const fail = () =>
+    Promise.reject(new Error("This clock has no reachable address"));
+
+  return {
+    isLocal: false,
+    panelStreamUrl: "",
+    logsStreamUrl: "",
+    getState: fail,
+    getPeers: fail,
+    refreshPeers: fail,
+    setScheduledPreset: fail,
+    createPreset: fail,
+    updatePreset: fail,
+    deletePreset: fail,
+    updatePanel: fail,
+    updateSetup: fail,
+    resetDatabase: fail,
+    reloadHardware: fail,
+    rebootMachine: fail,
+    pressButton: fail,
+    checkForUpdate: fail,
+    startDownload: fail,
+    getDownloadProgress: fail,
+    startUpdate: fail,
+    completeUpdate: fail,
+    getUpdateStatus: fail,
+  };
+}
+
 export function remoteDeviceApi(device: Device): DeviceApi {
-  const host = device.address ?? device.host;
+  if (!device.address) return unreachableDeviceApi();
+
   const appPort = device.port === 80 ? "" : `:${device.port}`;
 
   return createDeviceApi(
-    `http://${host}${appPort}`,
-    `http://${host}:${device.hardwarePort}`,
+    `http://${device.address}${appPort}`,
+    `http://${device.address}:${device.hardwarePort}`,
     false,
   );
 }
