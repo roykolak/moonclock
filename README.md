@@ -45,9 +45,7 @@ The webapp is a Nextjs app that uses React Server Components and Server Actions.
 
 The panel communication happens via the incredible [hzeller/rpi-rgb-led-matrix](https://github.com/hzeller/rpi-rgb-led-matrix) library and uses [alexeden/rpi-led-matrix](https://github.com/alexeden/rpi-led-matrix) which provides typescript bindings to hzeller's project.
 
-The panel rendering is powered by [skia-canvas](skia-canvas). This allows for text, shapes, and more to easily be rendered on the panel.
-
-The virtual panel in the webapp gets the hardware state via Server Send Events.
+The panel rendering is powered by [skia-canvas](https://github.com/samizdatco/skia-canvas). This allows for text, shapes, and more to easily be rendered on the panel.
 
 There are three processes (via systemd) that are run together:
 
@@ -99,7 +97,7 @@ before that and nothing happens.
 
 ## Installation
 
-Install the latest raspbian (not desktop verion!) on your pi. Then ssh into the machine and run...
+Install the latest raspbian (not desktop version!) on your pi. Then ssh into the machine and run...
 
 ```
 curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.sh | sudo bash
@@ -107,7 +105,7 @@ curl -fsSL https://raw.githubusercontent.com/roykolak/moonclock/main/bootstrap.s
 
 That's the whole thing. It prepares the machine, downloads the latest release, installs it, and reboots.
 
-You be able to reach the app by visiting...
+You'll be able to reach the app by visiting...
 
 ```
 http://moonclock.local
@@ -134,6 +132,21 @@ where `<id>` comes from its WiFi MAC — so each address is decided once at inst
 and never changes hands. The setup portal shows you which address that clock
 answers to once it joins your WiFi.
 
+That name is chosen once, during install, by checking who already answers to
+`moonclock.local`. So a second clock can still end up claiming it if it's
+installed while the first clock is unplugged, or on a different network from the
+one it'll live on. With both running, one of them gets renamed to
+`moonclock-2.local`, and which one is unpredictable. Give the newer clock a name
+of its own and reboot it:
+
+```
+sudo sed -i "s/^127\.0\.1\.1.*/127.0.1.1\tbedroom-moonclock/" /etc/hosts
+sudo hostnamectl set-hostname bedroom-moonclock
+sudo reboot
+```
+
+Updates never change a clock's name once it has one.
+
 _Each clock advertises itself as `_moonclock._tcp` alongside the `_http._tcp`
 record that "find devices on my network" tooling looks for. Both point at the app
 on port 80. The name in the switcher is the one you set in Settings, carried in
@@ -142,7 +155,7 @@ DHCP leases — so `moonclock-a302a6.local` can still call itself "Bedroom"._
 
 ## WiFi setup
 
-If the pi boots without a network connection, Moonclock guides you through joining one by display this...
+If the pi boots without a network connection, Moonclock guides you through joining one by displaying this...
 
 <img src="images/wifi-setup.gif" width="100" />
 
@@ -151,7 +164,7 @@ When you see this displayed, follow the steps below....
 1. On your phone, open WiFi settings and join the open **Moonclock** network.
 1. A setup page pops up automatically.
 1. Pick your home WiFi, enter its password, and submit.
-1. The pi will connect and you'll all set!
+1. The pi will connect and you're all set!
 
 _To change the network later, press and hold the external button for ten
 seconds. The "Reset WiFi?" countdown appears five seconds in and counts down the
@@ -162,7 +175,7 @@ to the start above._
 
 All data is stored in `/var/lib/moonclock`. This includes `database.json`.
 
-This means that updating moonclock to the latest release will not effect the current of moonclock's data and configuration.
+This means that updating moonclock to the latest release won't affect the clock's data and configuration.
 
 ## Debugging
 
@@ -172,7 +185,14 @@ You can view logs with the following commands:
 mc logs
 ```
 
-Also you can trigger a restart of the hardware process with:
+Logs survive a reboot, so after the clock has been restarted you can still see
+what happened before it — this shows the end of the previous boot:
+
+```
+sudo journalctl -b -1 -e
+```
+
+Also you can restart the web app and the hardware process with:
 
 ```
 mc restart
@@ -199,7 +219,7 @@ To test an additional moonclock run...
 npm run peer:dev    # clock two — app on 3010, hardware on 3011
 ```
 
-They discover each other over real mDNS, and driving one from the other writes to `database-peer.json`, not `database.json`.
+They discover each other over real mDNS, and the second one keeps its data in `database-peer.json`, not `database.json`.
 
 ## Build a release
 
@@ -235,14 +255,18 @@ To promote a beta line to stable, run `npm run release prod` — on `0.92.0-beta
 ## Developing on a pi
 
 ```
-scp release.tar.gz pi@192.168.4.225:~/
+scp -O release.tar.gz pi@<clock-ip>:~/
 ```
+
+_`-O` uses the older scp protocol. Newer Raspberry Pi OS images (Debian 13) don't
+include the SFTP server that plain `scp` expects, and it fails with
+"Connection closed"._
 
 ## Developing on a vm
 
 This is useful to test updates to the service files, install scripts, and the update process.
 
-Would recommend using [multipass](https://canonical.com/multipass) as it is the quickiest way to start up a vm via the commandline.
+Would recommend using [multipass](https://canonical.com/multipass) as it is the quickest way to start up a vm via the commandline.
 
 ```
 npm run build
