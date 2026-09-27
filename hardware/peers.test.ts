@@ -11,9 +11,8 @@ import {
 function service(overrides = {}) {
   return {
     name: "moonclock-2",
-    host: "moonclock-2.local",
     port: 80,
-    addresses: ["192.168.1.42", "fe80::1"],
+    referer: { address: "192.168.1.42" },
     txt: {
       id: "peer-id",
       name: "Bedroom",
@@ -25,12 +24,11 @@ function service(overrides = {}) {
 }
 
 describe("toDevice", () => {
-  it("maps an advertised service onto a device", () => {
+  it("reaches a clock at the address its announcement came from", () => {
     assert.deepStrictEqual(toDevice(service()), {
       id: "peer-id",
       name: "Bedroom",
       version: "0.97.0",
-      host: "moonclock-2.local",
       address: "192.168.1.42",
       port: 80,
       hardwarePort: 3001,
@@ -42,38 +40,18 @@ describe("toDevice", () => {
     assert.strictEqual(toDevice(service({ txt: undefined })), null);
   });
 
-  it("falls back to the hostname when no name is advertised", () => {
+  it("drops a service whose sender isn't an IPv4 address", () => {
+    assert.strictEqual(toDevice(service({ referer: undefined })), null);
     assert.strictEqual(
-      toDevice(service({ txt: { id: "peer-id" } }))?.name,
-      "moonclock-2",
-    );
-  });
-
-  it("never invents a hostname from the service instance name", () => {
-    const device = toDevice(service({ host: undefined }));
-
-    assert.strictEqual(device?.host, "");
-    assert.strictEqual(device?.address, "192.168.1.42");
-  });
-
-  it("keeps a clock that advertises an address but no hostname", () => {
-    assert.strictEqual(
-      toDevice(service({ host: undefined, txt: { id: "peer-id" } }))?.name,
-      "192.168.1.42",
-    );
-  });
-
-  it("drops a clock with neither a hostname nor a reachable address", () => {
-    assert.strictEqual(
-      toDevice(service({ host: undefined, addresses: ["169.254.7.7"] })),
+      toDevice(service({ referer: { address: "fe80::1" } })),
       null,
     );
   });
 
-  it("drops the trailing dot mDNS puts on a hostname", () => {
+  it("falls back to the instance name when no name is advertised", () => {
     assert.strictEqual(
-      toDevice(service({ host: "moonclock-2.local." }))?.host,
-      "moonclock-2.local",
+      toDevice(service({ txt: { id: "peer-id" } }))?.name,
+      "moonclock-2",
     );
   });
 
@@ -94,18 +72,6 @@ describe("toDevice", () => {
       toDevice(service({ txt: { id: "peer-id", hardwarePort: "nonsense" } }))
         ?.hardwarePort,
       3001,
-    );
-  });
-
-  it("skips link-local addresses, which no browser can reach", () => {
-    assert.strictEqual(
-      toDevice(service({ addresses: ["169.254.7.7", "192.168.1.42"] }))
-        ?.address,
-      "192.168.1.42",
-    );
-    assert.strictEqual(
-      toDevice(service({ addresses: ["169.254.7.7"] }))?.address,
-      null,
     );
   });
 });

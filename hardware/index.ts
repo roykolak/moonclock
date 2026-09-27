@@ -211,9 +211,6 @@ export async function createCanvas(dimensions: Dimensions) {
       return advertisedName(os.hostname(), getData().deviceId);
     }
 
-    function advertisedHost() {
-      return `${os.hostname().split(".")[0]}.local`;
-    }
 
     app.use((req: any, res: any, next) => {
       res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
@@ -327,7 +324,7 @@ export async function createCanvas(dimensions: Dimensions) {
       for (const type of ["http", "moonclock"]) {
         const service = bonjour.publish({
           name: instanceName,
-          host: advertisedHost(),
+          host: `${instanceName}.local`,
           type,
           port: appPort(),
           txt: advertisedIdentity(),

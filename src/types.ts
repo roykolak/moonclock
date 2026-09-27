@@ -33,8 +33,7 @@ export interface Device {
   id: string;
   name: string;
   version: string;
-  host: string;
-  address: string | null;
+  address: string;
   port: number;
   hardwarePort: number;
 }

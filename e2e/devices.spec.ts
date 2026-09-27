@@ -7,7 +7,6 @@ const peer = {
   id: "peer-0001",
   name: "Bedroom",
   version: "0.97.0",
-  host: "moonclock-2.local",
   address: "192.168.9.9",
   port: 80,
   hardwarePort: 3001,
