@@ -1,27 +1,67 @@
+import { exec } from "child_process";
+import fs from "fs";
+import { pipeline, Readable, Transform } from "stream";
+import { promisify } from "util";
+import packageInfo from "../../package.json";
 import { getData, setData } from "@/server/db";
 import {
   currentDownloadProgressFile,
   releaseDownloadPath,
 } from "@/server/utils";
-import fs from "fs";
-import { pipeline, Readable, Transform } from "stream";
-import { promisify } from "util";
+import { selectEligibleRelease } from "@/helpers/selectEligibleRelease";
+import { DownloadProgress, UpdateCheck } from "@/types";
 
 const pipelineAsync = promisify(pipeline);
 
-function writeProgress(progress: {
-  version: string;
-  status: "downloading" | "complete" | "error";
-  bytesDownloaded: number;
-  totalBytes: number;
-  message?: string;
-}) {
+export async function checkForUpdate(): Promise<UpdateCheck> {
+  try {
+    const url = `https://api.github.com/repos/roykolak/moonclock/releases`;
+    const releases = await fetch(url).then((response) => response.json());
+
+    const { panel, nextVersion } = getData();
+    const channel = panel?.updateChannel ?? "stable";
+
+    const eligible = selectEligibleRelease(
+      releases,
+      channel,
+      packageInfo.version,
+    );
+
+    if (!eligible) {
+      if (nextVersion) setData({ nextVersion: null });
+      return { message: "Up to date.", available: false };
+    }
+
+    setData({
+      nextVersion: {
+        version: eligible.version,
+        releaseNotes: eligible.release.body,
+        downloadUrl: eligible.asset.browser_download_url,
+        absoluteFilePath: releaseDownloadPath(),
+        downloadedAt: null,
+        updateFinishedAt: null,
+        updateStartedAt: null,
+      },
+    });
+
+    return {
+      message: `Update available - ${eligible.version}`,
+      available: true,
+      version: eligible.version,
+    };
+  } catch (e) {
+    console.log(e);
+    return { message: "Error checking for update", available: false };
+  }
+}
+
+function writeProgress(progress: DownloadProgress) {
   fs.writeFileSync(currentDownloadProgressFile(), JSON.stringify(progress), {
     mode: 0o666,
   });
 }
 
-function readProgress() {
+function readProgress(): DownloadProgress | null {
   try {
     return JSON.parse(fs.readFileSync(currentDownloadProgressFile(), "utf-8"));
   } catch {
@@ -98,12 +138,10 @@ async function runDownload(version: string, downloadUrl: string) {
   }
 }
 
-export async function POST() {
+export function startDownload() {
   const { nextVersion } = getData();
 
-  if (!nextVersion) {
-    return Response.json({ status: "no-update" });
-  }
+  if (!nextVersion) return;
 
   if (nextVersion.downloadedAt && fs.existsSync(nextVersion.absoluteFilePath)) {
     writeProgress({
@@ -112,7 +150,7 @@ export async function POST() {
       bytesDownloaded: 0,
       totalBytes: 0,
     });
-    return Response.json({ status: "already-downloaded" });
+    return;
   }
 
   if (!nextVersion.downloadUrl) {
@@ -123,7 +161,7 @@ export async function POST() {
       totalBytes: 0,
       message: "Stale update record — please check for update again.",
     });
-    return Response.json({ status: "stale" });
+    return;
   }
 
   const progress = readProgress();
@@ -131,10 +169,25 @@ export async function POST() {
     progress?.status === "downloading" &&
     progress.version === nextVersion.version
   ) {
-    return Response.json({ status: "in-progress" });
+    return;
   }
 
   void runDownload(nextVersion.version, nextVersion.downloadUrl);
+}
 
-  return Response.json({ status: "started" });
+export function startUpdate() {
+  const { nextVersion } = getData();
+
+  if (!nextVersion || nextVersion.updateStartedAt) return;
+
+  setData({
+    nextVersion: { ...nextVersion, updateStartedAt: new Date().toJSON() },
+  });
+
+  exec(`{
+    sudo mkdir -p "/usr/local/bin/moonclock/update" &&
+    sudo tar -xzf ${nextVersion.absoluteFilePath} --strip-components=1 -C "/usr/local/bin/moonclock/update" &&
+    cd /usr/local/bin/moonclock/update/ &&
+    sudo ./install.sh
+  }`);
 }

@@ -38,6 +38,30 @@ export interface Device {
   hardwarePort: number;
 }
 
+export interface PeerListing {
+  deviceId: string;
+  devices: Device[];
+}
+
+export interface UpdateCheck {
+  message: string;
+  available: boolean;
+  version?: string;
+}
+
+export interface DownloadProgress {
+  version: string;
+  status: "downloading" | "complete" | "error";
+  bytesDownloaded: number;
+  totalBytes: number;
+  message?: string;
+}
+
+export interface UpdateStatus {
+  version: string;
+  step: string;
+}
+
 export interface DeviceState {
   deviceId: string;
   version: string;

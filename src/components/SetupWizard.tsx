@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconArrowLeft, IconInfoCircle, IconWand } from "@tabler/icons-react";
-import { DeviceApi } from "@/client/deviceApi";
+import { setScheduledPreset, updatePanel } from "@/app/actions";
 import { Panel, Preset } from "@/types";
 import { SceneId } from "@/scenes/types";
 import { recommendedPanelSettings } from "@/helpers/recommendedPanelSettings";
@@ -46,17 +46,10 @@ const testPattern: Preset = {
 
 interface SetupWizardProps {
   panel: Panel;
-  api: DeviceApi;
-  onSaved: () => Promise<void>;
   onFinish: () => Promise<void>;
 }
 
-export function SetupWizard({
-  panel,
-  api,
-  onSaved,
-  onFinish,
-}: SetupWizardProps) {
+export function SetupWizard({ panel, onFinish }: SetupWizardProps) {
   const [step, setStep] = useState<"jumper" | "tuning">("jumper");
   const [values, setValues] = useState<Panel>(panel);
   const [soldered, setSoldered] = useState(
@@ -82,8 +75,7 @@ export function SetupWizard({
       if (restartTimer.current) clearTimeout(restartTimer.current);
 
       try {
-        await api.updatePanel(next);
-        await onSaved();
+        await updatePanel(next);
       } catch {
         showNotification({
           message: "Couldn't save that — the clock didn't answer",
@@ -96,20 +88,18 @@ export function SetupWizard({
         RESTART_SETTLE_MS,
       );
     },
-    [api, onSaved, values],
+    [values],
   );
 
   useEffect(() => {
     if (step !== "tuning") return;
 
-    api
-      .setScheduledPreset({ preset: testPattern, endTime: null })
-      .catch(() => {});
+    setScheduledPreset({ preset: testPattern, endTime: null }).catch(() => {});
 
     return () => {
-      api.setScheduledPreset({ preset: null, endTime: null }).catch(() => {});
+      setScheduledPreset({ preset: null, endTime: null }).catch(() => {});
     };
-  }, [api, step]);
+  }, [step]);
 
   if (step === "jumper") {
     return (

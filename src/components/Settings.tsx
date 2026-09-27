@@ -1,6 +1,6 @@
 "use client";
 
-import { DeviceApi } from "@/client/deviceApi";
+import { checkForUpdate, resetDatabase, updatePanel } from "@/app/actions";
 import { Panel } from "@/types";
 import {
   Accordion,
@@ -28,18 +28,10 @@ const basicSliders = panelSliders.filter((spec) => !spec.advanced);
 interface SettingsProps {
   panel: Panel;
   version: string;
-  api: DeviceApi;
-  onSaved: () => void;
   onUpdateAvailable: () => void;
 }
 
-export function Settings({
-  panel,
-  version,
-  api,
-  onSaved,
-  onUpdateAvailable,
-}: SettingsProps) {
+export function Settings({ panel, version, onUpdateAvailable }: SettingsProps) {
   const form = useForm<Panel>({
     initialValues: {
       ...panel,
@@ -57,9 +49,8 @@ export function Settings({
   const handleCheckForUpdate = async () => {
     setCheckingForUpdate(true);
     try {
-      const data = await api.checkForUpdate();
+      const data = await checkForUpdate();
       if (data.available) {
-        onSaved();
         onUpdateAvailable();
       } else if (data.message?.includes("Error")) {
         showNotification({ message: data.message, color: "red" });
@@ -76,7 +67,7 @@ export function Settings({
   const handleResetDatabase = async () => {
     setResetting(true);
     try {
-      await api.resetDatabase();
+      await resetDatabase();
       window.location.reload();
     } catch {
       setResetting(false);
@@ -92,8 +83,7 @@ export function Settings({
     <>
       <form
         onSubmit={form.onSubmit(async (values) => {
-          await api.updatePanel(values);
-          onSaved();
+          await updatePanel(values);
           showNotification({ message: "Successfully updated settings!" });
         })}
         data-testid="preset-form"

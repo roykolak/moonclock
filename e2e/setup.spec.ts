@@ -80,17 +80,11 @@ test.describe("First run setup", () => {
   }) => {
     await reachTuningStep(page);
 
-    const panelSaved = page.waitForRequest(
-      (request) =>
-        request.url().endsWith("/api/panel") && request.method() === "PUT",
-    );
-
     await page
       .getByTestId("pwn-lsb-nanoseconds-slider")
       .getByRole("slider")
       .press("ArrowRight");
 
-    await panelSaved;
     await expect.poll(() => readDatabase().panel.pwnLsbNanoseconds).toBe(554);
   });
 

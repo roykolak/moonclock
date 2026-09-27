@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeviceApi } from "@/client/deviceApi";
-import { Device } from "@/types";
+import { Device, PeerListing } from "@/types";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -12,7 +11,7 @@ export interface Peers {
   search: () => Promise<void>;
 }
 
-export function usePeers(api: DeviceApi): Peers {
+export function usePeers(): Peers {
   const [devices, setDevices] = useState<Device[]>([]);
   const [searching, setSearching] = useState(false);
   const mounted = useRef(true);
@@ -26,7 +25,8 @@ export function usePeers(api: DeviceApi): Peers {
 
   const load = useCallback(async () => {
     try {
-      const listing = await api.getPeers();
+      const response = await fetch("/api/peers", { cache: "no-store" });
+      const listing: PeerListing = await response.json();
       if (!mounted.current) return;
       setDevices((current) =>
         JSON.stringify(current) === JSON.stringify(listing.devices)
@@ -36,7 +36,7 @@ export function usePeers(api: DeviceApi): Peers {
     } catch {
       if (mounted.current) setDevices([]);
     }
-  }, [api]);
+  }, []);
 
   useEffect(() => {
     load();
@@ -51,13 +51,13 @@ export function usePeers(api: DeviceApi): Peers {
     setSearching(true);
 
     try {
-      await api.refreshPeers();
+      await fetch("/api/peers/refresh", { method: "POST" });
       await load();
     } catch {
     } finally {
       if (mounted.current) setSearching(false);
     }
-  }, [api, load]);
+  }, [load]);
 
   return { devices, searching, search };
 }

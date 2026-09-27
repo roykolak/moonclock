@@ -3,12 +3,14 @@ import { hardwareUrl } from "./ports";
 
 export function reloadHardware() {
   log("Triggering hardware restart");
-  exec("systemctl restart moonclock-hardware");
+  if (process.env.NODE_ENV === "production") {
+    exec("systemctl restart moonclock-hardware");
+  }
 }
 
 export function rebootMachine() {
   log("Triggering machine reboot");
-  exec("reboot");
+  if (process.env.NODE_ENV === "production") exec("reboot");
 }
 
 function log(message: string) {
