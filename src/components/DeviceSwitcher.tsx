@@ -30,7 +30,7 @@ export function DeviceSwitcher({
     ...devices.map((peer) => ({
       id: peer.id,
       name: peer.name,
-      detail: peer.address ?? peer.host,
+      detail: peer.address,
     })),
   ];
 

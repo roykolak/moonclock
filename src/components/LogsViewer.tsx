@@ -78,8 +78,6 @@ export function LogsViewer({
   }, [autoScroll]);
 
   useEffect(() => {
-    if (!streamUrl) return;
-
     const es = new EventSource(streamUrl);
 
     es.onmessage = (e) => {

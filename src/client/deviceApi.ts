@@ -140,39 +140,7 @@ export function localDeviceApi(hardwarePort: number): DeviceApi {
   return createDeviceApi("", `http://${hostname}:${hardwarePort}`, true);
 }
 
-function unreachableDeviceApi(): DeviceApi {
-  const fail = () =>
-    Promise.reject(new Error("This clock has no reachable address"));
-
-  return {
-    isLocal: false,
-    panelStreamUrl: "",
-    logsStreamUrl: "",
-    getState: fail,
-    getPeers: fail,
-    refreshPeers: fail,
-    setScheduledPreset: fail,
-    createPreset: fail,
-    updatePreset: fail,
-    deletePreset: fail,
-    updatePanel: fail,
-    updateSetup: fail,
-    resetDatabase: fail,
-    reloadHardware: fail,
-    rebootMachine: fail,
-    pressButton: fail,
-    checkForUpdate: fail,
-    startDownload: fail,
-    getDownloadProgress: fail,
-    startUpdate: fail,
-    completeUpdate: fail,
-    getUpdateStatus: fail,
-  };
-}
-
 export function remoteDeviceApi(device: Device): DeviceApi {
-  if (!device.address) return unreachableDeviceApi();
-
   const appPort = device.port === 80 ? "" : `:${device.port}`;
 
   return createDeviceApi(
