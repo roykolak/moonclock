@@ -5,7 +5,6 @@ import {
   Alert,
   Box,
   Button,
-  Center,
   Group,
   Loader,
   Menu,
@@ -17,6 +16,7 @@ import {
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   IconCheck,
   IconChevronDown,
@@ -31,43 +31,39 @@ import {
 } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { DeviceState, Preset } from "../types";
-import { DeviceApi } from "@/client/deviceApi";
+import {
+  createPreset,
+  deletePreset,
+  setScheduledPreset,
+  updatePreset,
+  updateSetup,
+} from "@/app/actions";
 import Panel from "./Panel";
 import { DeviceSwitcher } from "./DeviceSwitcher";
-import { Peers } from "./usePeers";
+import { usePeers } from "./usePeers";
 import { Settings } from "./Settings";
 import { LogsViewer } from "./LogsViewer";
 import { UpdatePrompt } from "./UpdatePrompt";
 import { PresetForm } from "./PresetForm";
 import { SetupWizard } from "./SetupWizard";
 import { getEndDate } from "@/helpers/getEndDate";
-import { useDeviceState } from "./useDeviceState";
 
 const PANEL_WIDTH = 560;
 const NARROW_VIEWPORT = "(max-width: 48em)";
+const POLL_INTERVAL_MS = 5000;
 
 interface DeviceScreenProps {
-  api: DeviceApi;
-  initialState: DeviceState | null;
-  localName: string;
-  localDeviceId: string;
-  selectedDeviceId: string;
-  peers: Peers;
-  onSelectDevice: (deviceId: string) => void;
-  onLocalNameChange: (name: string) => void;
+  state: DeviceState;
 }
 
-export default function DeviceScreen({
-  api,
-  initialState,
-  localName,
-  localDeviceId,
-  selectedDeviceId,
-  peers,
-  onSelectDevice,
-  onLocalNameChange,
-}: DeviceScreenProps) {
-  const { state, refresh, unreachable } = useDeviceState(api, initialState);
+export default function DeviceScreen({ state }: DeviceScreenProps) {
+  const router = useRouter();
+  const peers = usePeers();
+
+  useEffect(() => {
+    const poll = setInterval(() => router.refresh(), POLL_INTERVAL_MS);
+    return () => clearInterval(poll);
+  }, [router]);
 
   const narrowViewport = useMediaQuery(NARROW_VIEWPORT);
 
@@ -84,7 +80,7 @@ export default function DeviceScreen({
   const [pendingPreset, setPendingPreset] = useState<Preset | null>(null);
   const [editingPreset, setEditingPreset] = useState<Preset | null>(null);
 
-  const scheduledPreset = state?.scheduledPreset ?? null;
+  const scheduledPreset = state.scheduledPreset;
   const activePreset = scheduledPreset?.preset ?? null;
 
   const [formattedEndTime, setFormattedEndTime] = useState<string | null>(null);
@@ -103,7 +99,7 @@ export default function DeviceScreen({
     );
   }, [scheduledPreset]);
 
-  const setupNeeded = api.isLocal && state != null && !state.setup?.completedAt;
+  const setupNeeded = !state.setup?.completedAt;
 
   useEffect(() => {
     if (setupNeeded && !setupDismissed) setupHandlers.open();
@@ -111,63 +107,20 @@ export default function DeviceScreen({
 
   const closeSetup = async () => {
     try {
-      await api.updateSetup({ completedAt: new Date().toJSON() });
+      await updateSetup({ completedAt: new Date().toJSON() });
     } finally {
       setSetupDismissed(true);
       setupHandlers.close();
     }
-    await refresh();
   };
 
-  const currentName = state?.panel.name;
-
   useEffect(() => {
-    if (!currentName) return;
-
-    document.title = currentName;
-    if (api.isLocal) onLocalNameChange(currentName);
-  }, [api.isLocal, currentName, onLocalNameChange]);
-
-  if (!state) {
-    return (
-      <Center mih="100dvh" p="xl">
-        {unreachable ? (
-          <Alert
-            title="Can't reach that clock"
-            color="red"
-            icon={<IconExclamationCircleFilled />}
-          >
-            <Text size="sm">
-              It may be restarting or have left the network.
-            </Text>
-            <Button
-              mt="md"
-              size="xs"
-              variant="light"
-              onClick={() => onSelectDevice(localDeviceId)}
-            >
-              Back to this clock
-            </Button>
-          </Alert>
-        ) : (
-          <Loader />
-        )}
-      </Center>
-    );
-  }
+    document.title = state.panel.name;
+  }, [state.panel.name]);
 
   const { panel, presets, nextVersion, version } = state;
 
-  const nameControl = (
-    <DeviceSwitcher
-      name={panel.name}
-      localName={localName}
-      localDeviceId={localDeviceId}
-      selectedDeviceId={selectedDeviceId}
-      peers={peers}
-      onSelect={onSelectDevice}
-    />
-  );
+  const nameControl = <DeviceSwitcher name={panel.name} peers={peers} />;
 
   const samePreset = (a: Preset | null, b: Preset | null) =>
     a != null &&
@@ -180,8 +133,7 @@ export default function DeviceScreen({
     preset: Preset | null,
     endTime: string | null,
   ) => {
-    await api.setScheduledPreset({ preset, endTime });
-    await refresh();
+    await setScheduledPreset({ preset, endTime });
   };
 
   // Selecting the already-active preset unselects it, so the dropdown toggles.
@@ -228,8 +180,7 @@ export default function DeviceScreen({
   const deleteEditingPreset = async () => {
     if (!editingPreset?.id) return;
     closeEditPreset();
-    await api.deletePreset(editingPreset.id);
-    await refresh();
+    await deletePreset(editingPreset.id);
   };
 
   const presetControl = (
@@ -320,12 +271,6 @@ export default function DeviceScreen({
           maxWidth: PANEL_WIDTH,
         }}
       >
-        {unreachable && (
-          <Alert color="yellow" variant="light" mb="sm" py={6}>
-            <Text size="xs">Lost contact with {panel.name} — retrying...</Text>
-          </Alert>
-        )}
-
         {/* The panel itself */}
         <ErrorBoundary
           fallbackRender={({ error }) => {
@@ -344,8 +289,7 @@ export default function DeviceScreen({
           <Panel
             panel={panel}
             scheduledPreset={scheduledPreset}
-            api={api}
-            onRefresh={refresh}
+            hardwarePort={state.hardwarePort}
             nameControl={nameControl}
             headerAction={presetControl}
           />
@@ -380,14 +324,7 @@ export default function DeviceScreen({
             </Tooltip>
             <UpdatePrompt
               nextVersion={nextVersion}
-              api={api}
-              onFinished={() => {
-                if (api.isLocal) {
-                  window.location.reload();
-                } else {
-                  refresh();
-                }
-              }}
+              onFinished={() => window.location.reload()}
               releaseNotesOpen={releaseNotesOpen}
               onReleaseNotesOpenChange={setReleaseNotesOpen}
             />
@@ -433,8 +370,6 @@ export default function DeviceScreen({
             <Settings
               panel={panel}
               version={version}
-              api={api}
-              onSaved={refresh}
               onUpdateAvailable={() => {
                 settingsHandlers.close();
                 setReleaseNotesOpen(true);
@@ -466,12 +401,7 @@ export default function DeviceScreen({
           },
         }}
       >
-        <SetupWizard
-          panel={panel}
-          api={api}
-          onSaved={refresh}
-          onFinish={closeSetup}
-        />
+        <SetupWizard panel={panel} onFinish={closeSetup} />
       </Modal>
 
       <Modal
@@ -496,7 +426,7 @@ export default function DeviceScreen({
         }}
       >
         <LogsViewer
-          streamUrl={api.logsStreamUrl}
+          streamUrl="/api/logs/stream"
           narrowViewport={narrowViewport}
         />
       </Modal>
@@ -563,8 +493,7 @@ export default function DeviceScreen({
                 preset={editingPreset}
                 action={async (preset) => {
                   closeEditPreset();
-                  await api.updatePreset({ ...preset, id: editingPreset.id });
-                  await refresh();
+                  await updatePreset({ ...preset, id: editingPreset.id });
                 }}
                 submitLabel="Update Preset"
               />
@@ -583,8 +512,7 @@ export default function DeviceScreen({
           preset={null}
           action={async (preset) => {
             createPresetHandlers.close();
-            await api.createPreset(preset);
-            await refresh();
+            await createPreset(preset);
           }}
           submitLabel="Create Preset"
         />

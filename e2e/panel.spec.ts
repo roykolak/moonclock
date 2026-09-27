@@ -29,13 +29,9 @@ test.describe("Test", () => {
   test("rebooting the machine from the panel menu", async ({ page }) => {
     await page.goto("http://localhost:3000");
 
-    await page.route("**/api/reboot", (route) =>
-      route.fulfill({ json: { ok: true } }),
-    );
-
     const rebootRequest = page.waitForRequest(
       (request) =>
-        request.url().endsWith("/api/reboot") && request.method() === "POST",
+        request.method() === "POST" && request.headers()["next-action"] != null,
     );
 
     await page.getByTestId("panel-menu").click();

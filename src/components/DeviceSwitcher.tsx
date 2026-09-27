@@ -2,37 +2,49 @@
 
 import { useState } from "react";
 import { Group, Loader, Menu, Text, UnstyledButton } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconChevronDown, IconRadar } from "@tabler/icons-react";
+import { Device } from "@/types";
 import { Peers } from "./usePeers";
+
+const REACH_TIMEOUT_MS = 3000;
 
 interface DeviceSwitcherProps {
   name: string;
-  localName: string;
-  localDeviceId: string;
-  selectedDeviceId: string;
   peers: Peers;
-  onSelect: (deviceId: string) => void;
 }
 
-export function DeviceSwitcher({
-  name,
-  localName,
-  localDeviceId,
-  selectedDeviceId,
-  peers,
-  onSelect,
-}: DeviceSwitcherProps) {
+function appOrigin(device: Device) {
+  const port = device.port === 80 ? "" : `:${device.port}`;
+  return `http://${device.address}${port}`;
+}
+
+export function DeviceSwitcher({ name, peers }: DeviceSwitcherProps) {
   const [opened, setOpened] = useState(false);
+  const [opening, setOpening] = useState<string | null>(null);
   const { devices, searching, search } = peers;
 
-  const entries = [
-    { id: localDeviceId, name: localName, detail: "this clock" },
-    ...devices.map((peer) => ({
-      id: peer.id,
-      name: peer.name,
-      detail: peer.address,
-    })),
-  ];
+  const open = async (device: Device) => {
+    if (opening) return;
+    setOpening(device.id);
+
+    const origin = appOrigin(device);
+
+    try {
+      await fetch(origin, {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: AbortSignal.timeout(REACH_TIMEOUT_MS),
+      });
+      window.location.assign(origin);
+    } catch {
+      setOpening(null);
+      showNotification({
+        message: `Can't reach ${device.name}`,
+        color: "red",
+      });
+    }
+  };
 
   return (
     <Menu
@@ -60,24 +72,32 @@ export function DeviceSwitcher({
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Clocks on this network</Menu.Label>
-        {entries.map((entry) => (
+        <Menu.Item
+          onClick={() => setOpened(false)}
+          fw={600}
+          leftSection={<IconCheck size={16} />}
+        >
+          <Text size="sm">{name}</Text>
+          <Text size="xs" c="dimmed">
+            this clock
+          </Text>
+        </Menu.Item>
+        {devices.map((device) => (
           <Menu.Item
-            key={entry.id}
-            onClick={() => {
-              setOpened(false);
-              onSelect(entry.id);
-            }}
-            fw={entry.id === selectedDeviceId ? 600 : undefined}
+            key={device.id}
+            onClick={() => open(device)}
+            disabled={opening != null}
             leftSection={
-              <IconCheck
-                size={16}
-                style={{ opacity: entry.id === selectedDeviceId ? 1 : 0 }}
-              />
+              opening === device.id ? (
+                <Loader size={16} data-testid="opening-clock" />
+              ) : (
+                <IconCheck size={16} style={{ opacity: 0 }} />
+              )
             }
           >
-            <Text size="sm">{entry.name}</Text>
+            <Text size="sm">{device.name}</Text>
             <Text size="xs" c="dimmed">
-              {entry.detail}
+              {device.address}
             </Text>
           </Menu.Item>
         ))}

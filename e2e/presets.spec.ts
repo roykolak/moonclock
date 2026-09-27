@@ -114,7 +114,11 @@ test.describe("Test", () => {
     await page.goto("http://localhost:3000");
 
     let scheduleRequests = 0;
-    await page.route("**/api/scheduled-preset", async (route) => {
+    await page.route("**/panel", async (route) => {
+      const request = route.request();
+      if (request.method() !== "POST" || !request.headers()["next-action"]) {
+        return route.continue();
+      }
       scheduleRequests++;
       await new Promise((resolve) => setTimeout(resolve, 1500));
       await route.continue();

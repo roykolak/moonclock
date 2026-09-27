@@ -1,4 +1,4 @@
-import MainScreen from "../../components/MainScreen";
+import DeviceScreen from "../../components/DeviceScreen";
 import { Metadata } from "next";
 import { getData } from "@/server/db";
 import { hardwarePort } from "@/server/ports";
@@ -16,8 +16,8 @@ export default async function Page() {
     getData();
 
   return (
-    <MainScreen
-      initialState={{
+    <DeviceScreen
+      state={{
         deviceId,
         version: packageInfo.version,
         hardwarePort: hardwarePort(),

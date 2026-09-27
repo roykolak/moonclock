@@ -117,9 +117,9 @@ _It works over mDNS (Bonjour), which is built into macOS, iOS, Windows 10+, and 
 
 ## More than one clock...
 
-Every clock finds the others on its network over mDNS, so you can run the whole
-house from whichever one you happened to open. When a second clock shows up, the
-panel name at the top of the app turns into a switcher:
+Every clock finds the others on its network over mDNS. When a second clock shows
+up, the panel name at the top of the app turns into a switcher, and picking a
+clock opens that clock's own app at the address shown beneath its name:
 
 ```
 Clocks on this network

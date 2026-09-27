@@ -3,7 +3,8 @@
 import { ActionIcon, Card, Group, Menu, Text } from "@mantine/core";
 import { Panel as PanelType, ScheduledPreset } from "../types";
 import { LivePanelPreview } from "./LivePanelPreview";
-import { DeviceApi } from "@/client/deviceApi";
+import { rebootMachine, reloadHardware } from "@/app/actions";
+import { useRouter } from "next/navigation";
 import { showNotification } from "@mantine/notifications";
 import { IconDots } from "@tabler/icons-react";
 import { ReactNode } from "react";
@@ -11,8 +12,7 @@ import { ReactNode } from "react";
 interface PanelProps {
   panel: PanelType;
   scheduledPreset: ScheduledPreset | null;
-  api: DeviceApi;
-  onRefresh?: () => Promise<void>;
+  hardwarePort: number;
   nameControl?: ReactNode;
   headerAction?: ReactNode;
 }
@@ -20,17 +20,26 @@ interface PanelProps {
 export default function Panel({
   panel,
   scheduledPreset,
-  api,
-  onRefresh,
+  hardwarePort,
   nameControl,
   headerAction,
 }: PanelProps) {
+  const router = useRouter();
+  const hostname =
+    typeof window === "undefined" ? "localhost" : window.location.hostname;
+  const hardwareOrigin = `http://${hostname}:${hardwarePort}`;
+
   return (
     <Card padding="lg" radius="md" bg="transparent" style={{ width: "100%" }}>
       <Card.Section py="xs">
         <Group justify="space-between">
           {nameControl ?? (
-            <Text size="xl" ff="Pixelify Sans" fw={600} data-testid="panel-name">
+            <Text
+              size="xl"
+              ff="Pixelify Sans"
+              fw={600}
+              data-testid="panel-name"
+            >
               {panel.name}
             </Text>
           )}
@@ -50,8 +59,10 @@ export default function Panel({
               <Menu.Dropdown>
                 <Menu.Item
                   onClick={async () => {
-                    await api.pressButton();
-                    await onRefresh?.();
+                    await fetch(`${hardwareOrigin}/api/button-press`, {
+                      method: "POST",
+                    });
+                    router.refresh();
                   }}
                 >
                   Simulate Button Press
@@ -59,7 +70,7 @@ export default function Panel({
                 <Menu.Item
                   onClick={async () => {
                     showNotification({ message: "Reloaded hardware" });
-                    await api.reloadHardware();
+                    await reloadHardware();
                   }}
                 >
                   Reload Hardware
@@ -70,7 +81,7 @@ export default function Panel({
                   data-testid="reboot-machine"
                   onClick={async () => {
                     showNotification({ message: "Rebooting machine" });
-                    await api.rebootMachine();
+                    await rebootMachine();
                   }}
                 >
                   Reboot Machine
@@ -89,7 +100,7 @@ export default function Panel({
           }}
         >
           <LivePanelPreview
-            streamUrl={api.panelStreamUrl}
+            streamUrl={`${hardwareOrigin}/api/panel/stream`}
             isDefaultPreset={!scheduledPreset?.preset}
           />
         </div>
