@@ -37,18 +37,17 @@ export function toDevice(service: DiscoveredService): Device | null {
   const id = text(service.txt?.id);
   if (!id) return null;
 
-  const advertisedHost = text(service.host);
-  const host = withoutTrailingDot(
-    advertisedHost || (service.name ? `${service.name}.local` : ""),
-  );
-  if (!host) return null;
+  const host = withoutTrailingDot(text(service.host));
+  const address = routableIpv4(service.addresses);
+  if (!host && !address) return null;
 
   return {
     id,
-    name: text(service.txt?.name) || host.replace(/\.local$/, ""),
+    name:
+      text(service.txt?.name) || host.replace(/\.local$/, "") || address || "",
     version: text(service.txt?.version),
     host,
-    address: routableIpv4(service.addresses),
+    address,
     port: service.port || 80,
     hardwarePort: portOrDefault(
       service.txt?.hardwarePort,

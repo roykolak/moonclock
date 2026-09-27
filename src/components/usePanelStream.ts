@@ -26,6 +26,8 @@ export function usePanelStream(streamUrl: string): {
   const coordinatesRef = useRef<Coordinates>({});
 
   useEffect(() => {
+    if (!streamUrl) return;
+
     const source = new EventSource(streamUrl);
 
     source.addEventListener("open", () => setConnected(true));
