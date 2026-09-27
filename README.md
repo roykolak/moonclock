@@ -66,6 +66,7 @@ You'll need the following supplies:
 1. [16mm push button](https://www.adafruit.com/product/1504)
 1. [Button quick connect wire pairs](https://www.adafruit.com/product/1152)
 1. [Translucent plastic](https://www.amazon.com/dp/B09XR1XBWG?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) (to soften the LED Panel)
+1. [ND Filter Gel](https://www.amazon.com/gp/product/B0FY6997VN?ref=ppx_pt2_dt_b_prod_image&th=1) (to dim LEDs w/o effecting color)
 1. For Presentation: 8.5" x 8.5" frame to house the Panel
 
 ## Building your Moonclock
@@ -80,8 +81,10 @@ You'll need the following supplies:
     **physical pin 22** (BCM 25) and the ground at **physical pin 20**.
   - It's a plain
     switch, so either leg can take either wire, and it needs no resistor.
-- Place 3 sheets of translucent plastic in the frame
+- Correctly order translucent and ND filter sheets
   - This will soften the LEDs and bring out the colors more.
+
+  <img src="images/layer-stack.png" width="600" />
 
 ### What does the button do?
 
