@@ -6,6 +6,7 @@ import { blankScene } from "./blank";
 import { moonScene } from "./moon";
 import { catScene } from "./cat";
 import { flipClockScene } from "./flip-clock";
+import { pumpkinScene } from "./pumpkin";
 import { setupScene } from "./setup";
 import type { Scene } from "./types";
 import { SceneId } from "./types";
@@ -15,6 +16,7 @@ export const scenes: Scene<any>[] = [
   moonScene,
   catScene,
   flipClockScene,
+  pumpkinScene,
   setupScene,
 ];
 

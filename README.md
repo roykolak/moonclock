@@ -23,11 +23,13 @@ The animated scenes, rendered straight from the scene code.
 - Moon tracks the real lunar phase for the current date
 - Cat that breathes and dozes
 - Flip Clock turns the time over a card at a time
+- Pumpkin flickers like a candle is burning inside it
 
 <p float="left">
     <img src="images/moon-phases.gif" width="200" />
     <img src="images/cat-breathing.gif" width="200" />
     <img src="images/flip-clock.gif" width="200" />
+    <img src="images/pumpkin-candle.gif" width="200" />
 </p>
 
 ## The Webapp
