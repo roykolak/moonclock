@@ -16,7 +16,7 @@ const esbuildOptions = {
     ".node": "file",
   },
   keepNames: true,
-  external: ["*.node"],
+  external: ["*.node", "sharp"],
 };
 
 // rewrite hardcoded native module paths to match where build.js
