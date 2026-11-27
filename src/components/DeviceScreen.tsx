@@ -274,14 +274,16 @@ export default function DeviceScreen({ state }: DeviceScreenProps) {
         {/* The panel itself */}
         <ErrorBoundary
           fallbackRender={({ error }) => {
-            console.log(error.stack);
+            const failure =
+              error instanceof Error ? error : new Error(String(error));
+            console.log(failure.stack);
             return (
               <Alert
                 title="There was a problem!"
                 color="red"
                 icon={<IconExclamationCircleFilled />}
               >
-                {error.message}
+                {failure.message}
               </Alert>
             );
           }}
